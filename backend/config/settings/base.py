@@ -20,6 +20,8 @@ INSTALLED_APPS = [
     "corsheaders",
     "apps.accounts",
     "apps.resumes",
+    "apps.interviews",
+    "apps.scoring",
 ]
 
 MIDDLEWARE = [
