@@ -1,53 +1,34 @@
-import { useEffect, useState } from "react";
-import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
-import client from "./api/client";
-
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import AdminUsers from "./pages/AdminUsers";
 
 export default function App() {
-  const [status, setStatus] = useState("checking...");
-  const [user, setUser] = useState(null);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    client
-      .get("/api/health/")
-      .then((res) => setStatus(res.data.status))
-      .catch(() => setStatus("backend unreachable"));
-  }, []);
-
-  const handleGoogle = async (response) => {
-    setError("");
-    try {
-      const { data } = await client.post("/api/auth/google/", {
-        id_token: response.credential,
-      });
-      localStorage.setItem("access", data.access);
-      localStorage.setItem("refresh", data.refresh);
-      setUser(data.user);
-    } catch {
-      setError("Google login failed");
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-hero-glow flex flex-col items-center justify-center gap-6">
-      <h1 className="text-5xl font-extrabold">
-        SmartHire{" "}
-        <span className="bg-text-accent bg-clip-text text-transparent">AI</span>
-      </h1>
-      <p className="text-white/70">Backend status: {status}</p>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <BrowserRouter>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
-      {user ? (
-        <p className="text-white">
-          Logged in as {user.email} ({user.role})
-        </p>
-      ) : (
-        <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-          <GoogleLogin onSuccess={handleGoogle} onError={() => setError("Google sign-in was cancelled")} />
-        </GoogleOAuthProvider>
-      )}
-      {error && <p className="text-red-400">{error}</p>}
-    </div>
+            <Route element={<ProtectedRoute />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+            </Route>
+
+            <Route element={<ProtectedRoute roles={["admin"]} />}>
+              <Route path="/admin/users" element={<AdminUsers />} />
+            </Route>
+
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </AuthProvider>
+      </BrowserRouter>
+    </GoogleOAuthProvider>
   );
 }
