@@ -7,3 +7,5 @@ python-dotenv==1.2.4
 sqlparse==0.6.1
 tzdata==2026.6
 djangorestframework-simplejwt
+google-auth
+requests
