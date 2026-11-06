@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.http import JsonResponse
-from django.urls import path
+from django.urls import include, path
 
 def health(request):
     return JsonResponse({"status": "ok", "service": "smarthire-backend"})
@@ -24,4 +24,5 @@ def health(request):
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/health/", health),
+    path("api/auth/", include("apps.accounts.urls")),
 ]
