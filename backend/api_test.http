@@ -1,0 +1,143 @@
+POST http://127.0.0.1:8000/api/auth/register/
+Content-Type: application/json
+
+{
+    "username": "siva",
+    "email": "siva@example.com",
+    "password": "TestPass123",
+    "first_name": "Siva",
+    "last_name": "Prasad",
+    "role": "CANDIDATE"
+}
+
+###
+
+POST http://127.0.0.1:8000/api/auth/login/
+Content-Type: application/json
+
+{
+    "username": "siva",
+    "password": "TestPass123"
+}
+
+###
+
+GET http://127.0.0.1:8000/api/auth/profile/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzOTA2NDE2LCJpYXQiOjE3OTM5MDYxMTYsImp0aSI6ImI0YWZmNDYxNDFiNTQ2ZDY4NWMzNjY2YzZjNzM0OGU2IiwidXNlcl9pZCI6IjEifQ.874EgwOQd3n4FU5CEwOMIJQwqClqQ3fFT9c1MT2bPu4
+
+###
+
+POST http://127.0.0.1:8000/api/auth/login/
+Content-Type: application/json
+
+{
+    "username": "siva",
+    "password": "TestPass123"
+}
+
+
+###
+
+POST http://127.0.0.1:8000/api/interviews/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzOTczMTkyLCJpYXQiOjE3OTM5NzI4OTIsImp0aSI6IjJmNWE1OWRjMjEzMjQzZjg5ZTM0NWFjNzk5YTdkOWZlIiwidXNlcl9pZCI6IjEifQ.sfWP-0_6Kbq6HB6mmSwC8lUasbruAVons4wyADZuHN4
+
+{
+    "interview_type": "TECHNICAL",
+    "difficulty": "MEDIUM",
+    "total_questions": 5
+}
+
+###
+
+GET http://127.0.0.1:8000/api/interviews/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzOTczMzU3LCJpYXQiOjE3OTM5NzMwNTcsImp0aSI6ImVmNzUzM2FjNTE3NDQ4MWY5MGJiNmIzNTg1Y2ViOGQ4IiwidXNlcl9pZCI6IjEifQ.qNt1GIYlfXuL4kQTKvChkLwiFODyB6gJ8pAmaBKd-pQ
+
+###
+
+GET http://127.0.0.1:8000/api/interviews/1/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzOTczMzU3LCJpYXQiOjE3OTM5NzMwNTcsImp0aSI6ImVmNzUzM2FjNTE3NDQ4MWY5MGJiNmIzNTg1Y2ViOGQ4IiwidXNlcl9pZCI6IjEifQ.qNt1GIYlfXuL4kQTKvChkLwiFODyB6gJ8pAmaBKd-pQ
+
+
+###
+
+POST http://127.0.0.1:8000/api/interviews/1/questions/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzOTczODQ1LCJpYXQiOjE3OTM5NzM1NDUsImp0aSI6IjcyYWMyYjNkMjA1ZTQzMTM5ZDgxOGU0Y2I3NTAwODk0IiwidXNlcl9pZCI6IjEifQ.2EpW9SxuEVS66qdEC70vpoCeW-ZrGft1sHCDiYlqcdc
+
+{
+    "question_text": "Tell me about yourself and your technical skills.",
+    "category": "Introduction",
+    "order": 1
+}
+
+###
+
+POST http://127.0.0.1:8000/api/interviews/1/questions/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzOTczODQ1LCJpYXQiOjE3OTM5NzM1NDUsImp0aSI6IjcyYWMyYjNkMjA1ZTQzMTM5ZDgxOGU0Y2I3NTAwODk0IiwidXNlcl9pZCI6IjEifQ.2EpW9SxuEVS66qdEC70vpoCeW-ZrGft1sHCDiYlqcdc
+
+{
+    "question_text": "Explain the difference between a process and a thread.",
+    "category": "Operating Systems",
+    "order": 2
+}
+
+###
+
+POST http://127.0.0.1:8000/api/interviews/1/questions/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzOTczODQ1LCJpYXQiOjE3OTM5NzM1NDUsImp0aSI6IjcyYWMyYjNkMjA1ZTQzMTM5ZDgxOGU0Y2I3NTAwODk0IiwidXNlcl9pZCI6IjEifQ.2EpW9SxuEVS66qdEC70vpoCeW-ZrGft1sHCDiYlqcdc
+
+{
+    "question_text": "What is the difference between authentication and authorization?",
+    "category": "Security",
+    "order": 3
+}
+
+###
+
+GET http://127.0.0.1:8000/api/interviews/1/questions/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzOTczODQ1LCJpYXQiOjE3OTM5NzM1NDUsImp0aSI6IjcyYWMyYjNkMjA1ZTQzMTM5ZDgxOGU0Y2I3NTAwODk0IiwidXNlcl9pZCI6IjEifQ.2EpW9SxuEVS66qdEC70vpoCeW-ZrGft1sHCDiYlqcdc
+
+###
+
+POST http://127.0.0.1:8000/api/interviews/questions/1/answer/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzOTc0NzQ3LCJpYXQiOjE3OTM5NzQ0NDcsImp0aSI6Ijc3NDJjYjE3ODc3ZjQzMjA5Njk5ZDAwMWU1MjQ4MmU3IiwidXNlcl9pZCI6IjEifQ.dB3UohirNSi4L1bEc7oIVJb5KXoiaDjBgFxrIG03ULw
+
+{
+    "answer_text": "I am a Computer Science student with experience in Python, Java, web development, and machine learning."
+}
+
+
+###
+
+GET http://127.0.0.1:8000/api/interviews/1/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzOTc1NDg1LCJpYXQiOjE3OTM5NzUxODUsImp0aSI6ImVlZmQ5ZjI5YjEwOTQxOTI5YmUzY2ViMTU1MGM3YWVjIiwidXNlcl9pZCI6IjEifQ.OK5bhI3Vg-CvDYeo93QdALYJeCrkQou13axVAFBbNpI
+###
+
+POST http://127.0.0.1:8000/api/interviews/questions/2/answer/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzOTc1NDg1LCJpYXQiOjE3OTM5NzUxODUsImp0aSI6ImVlZmQ5ZjI5YjEwOTQxOTI5YmUzY2ViMTU1MGM3YWVjIiwidXNlcl9pZCI6IjEifQ.OK5bhI3Vg-CvDYeo93QdALYJeCrkQou13axVAFBbNpI
+
+{
+    "answer_text": "A process is an independent program in execution, while a thread is a smaller unit of execution within a process."
+}
+
+###
+POST http://127.0.0.1:8000/api/interviews/questions/3/answer/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzOTc1NDg1LCJpYXQiOjE3OTM5NzUxODUsImp0aSI6ImVlZmQ5ZjI5YjEwOTQxOTI5YmUzY2ViMTU1MGM3YWVjIiwidXNlcl9pZCI6IjEifQ.OK5bhI3Vg-CvDYeo93QdALYJeCrkQou13axVAFBbNpI
+
+{
+    "answer_text": "Authentication verifies who a user is, while authorization determines what that user is allowed to access."
+}
+
+###
+GET http://127.0.0.1:8000/api/interviews/1/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzOTc1ODIwLCJpYXQiOjE3OTM5NzU1MjAsImp0aSI6IjhlMDE1OGE4NjE4YTRkOTZiMzUxMzYxYzg2ZWUyODljIiwidXNlcl9pZCI6IjEifQ.OYAmprvR2XYxseSqtAA-hmtiXEw5m_PzCbHOAPIAgag
+
+###
+GET http://127.0.0.1:8000/api/interviews/1/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzOTc1ODIwLCJpYXQiOjE3OTM5NzU1MjAsImp0aSI6IjhlMDE1OGE4NjE4YTRkOTZiMzUxMzYxYzg2ZWUyODljIiwidXNlcl9pZCI6IjEifQ.OYAmprvR2XYxseSqtAA-hmtiXEw5m_PzCbHOAPIAgag
