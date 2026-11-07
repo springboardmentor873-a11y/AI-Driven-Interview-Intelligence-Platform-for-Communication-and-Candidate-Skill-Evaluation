@@ -31,20 +31,35 @@ export default function Navbar() {
     <header className="border-b border-white/10 bg-ink/80 backdrop-blur">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Logo />
+
         {user ? (
           <div className="flex items-center gap-5 text-sm">
             <Link to="/dashboard" className="text-white/70 hover:text-white">
               Dashboard
             </Link>
+
+            {/* Candidate Resumes Link */}
+            {user.role === "candidate" && (
+              <Link to="/resumes" className="text-white/70 hover:text-white">
+                Resumes
+              </Link>
+            )}
+
             {user.role === "admin" && (
               <Link to="/admin/users" className="text-white/70 hover:text-white">
                 Users
               </Link>
             )}
+
             <span className="rounded-full bg-brand-500/20 px-3 py-1 text-xs font-semibold capitalize text-brand-400">
               {user.role}
             </span>
-            <Button variant="solid" className="!px-4 !py-2 text-sm" onClick={handleLogout}>
+
+            <Button
+              variant="solid"
+              className="!px-4 !py-2 text-sm"
+              onClick={handleLogout}
+            >
               Logout
             </Button>
           </div>

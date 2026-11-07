@@ -1,9 +1,10 @@
+import { Link } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
 import { useAuth } from "../context/AuthContext";
 
 const CARDS = {
   candidate: [
-    { title: "Upload resume", note: "Coming on Day 7" },
+    { title: "My resumes", note: "Upload and manage your resumes", to: "/resumes" },
     { title: "Start a mock interview", note: "Milestone 2" },
     { title: "Performance analytics", note: "Milestone 4" },
   ],
@@ -35,16 +36,19 @@ export default function Dashboard() {
         </div>
 
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {CARDS[user.role].map((c) => (
-            <a
-              key={c.title}
-              href={c.to || undefined}
-              className="rounded-3xl border border-white/10 bg-surface p-6 transition hover:border-brand-500/50"
-            >
-              <h3 className="text-lg font-bold">{c.title}</h3>
-              <p className="mt-2 text-sm text-white/50">{c.note}</p>
-            </a>
-          ))}
+          {CARDS[user.role].map((c) => {
+            const Tag = c.to ? Link : "div";
+            return (
+              <Tag
+                key={c.title}
+                {...(c.to ? { to: c.to } : {})}
+                className="rounded-3xl border border-white/10 bg-surface p-6 transition hover:border-brand-500/50"
+              >
+                <h3 className="text-lg font-bold">{c.title}</h3>
+                <p className="mt-2 text-sm text-white/50">{c.note}</p>
+              </Tag>
+            );
+          })}
         </div>
       </main>
     </div>

@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Resumes from "./pages/Resumes";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
@@ -20,7 +21,9 @@ export default function App() {
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />
             </Route>
-
+               <Route element={<ProtectedRoute roles={["candidate"]} />}>
+              <Route path="/resumes" element={<Resumes />} />
+            </Route>
             <Route element={<ProtectedRoute roles={["admin"]} />}>
               <Route path="/admin/users" element={<AdminUsers />} />
             </Route>
