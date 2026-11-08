@@ -1,0 +1,30 @@
+
+# Python virtual environment
+backend/.venv/
+venv/
+
+# Environment variables and secrets
+.env
+backend/.env
+
+# Django database
+db.sqlite3
+backend/db.sqlite3
+
+# Python generated files
+__pycache__/
+*.py[cod]
+*.log
+
+# Django generated files
+media/
+staticfiles/
+
+# Frontend dependencies
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# IDE files
+.vscode/
+.idea/
