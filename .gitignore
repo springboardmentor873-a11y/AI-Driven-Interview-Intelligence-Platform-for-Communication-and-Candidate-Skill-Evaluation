@@ -1,11 +1,12 @@
-
 # Python virtual environment
 backend/.venv/
+.venv/
 venv/
 
 # Environment variables and secrets
 .env
 backend/.env
+*.env
 
 # Django database
 db.sqlite3
@@ -18,6 +19,7 @@ __pycache__/
 
 # Django generated files
 media/
+backend/media/
 staticfiles/
 
 # Frontend dependencies
