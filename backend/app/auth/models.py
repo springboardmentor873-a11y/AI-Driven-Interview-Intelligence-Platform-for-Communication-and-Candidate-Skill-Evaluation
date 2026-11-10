@@ -19,6 +19,10 @@ class RevokeReason(StrEnum):
     ADMIN_SUSPENDED = "admin_suspended"
 
 
+class TokenPurpose(StrEnum):
+    PASSWORD_RESET = "password_reset"  # noqa: S105 (label, not a secret)
+
+
 _HEX64 = "'^[0-9a-f]{64}$'"
 _REASONS = ", ".join(repr(r.value) for r in RevokeReason)
 
@@ -78,3 +82,22 @@ class RefreshSession(UUIDPrimaryKeyMixin, CreatedAtMixin, Base):
     user_agent: Mapped[str | None] = mapped_column(String(512))
     # INET (PostgreSQL-specific): validates the value and stores IPv4/IPv6 compactly.
     ip_address: Mapped[str | None] = mapped_column(INET)
+
+
+class OneTimeToken(UUIDPrimaryKeyMixin, CreatedAtMixin, Base):
+    """Single-use, expiring token (currently password reset). Only the SHA-256 digest is stored."""
+
+    __tablename__ = "one_time_tokens"
+    __table_args__ = (
+        CheckConstraint(f"token_hash ~ {_HEX64}", name="token_hash_format"),
+        CheckConstraint(
+            f"purpose IN ({', '.join(repr(p.value) for p in TokenPurpose)})", name="purpose_valid"
+        ),
+        Index("ix_one_time_tokens_user_id_purpose", "user_id", "purpose"),
+    )
+
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    purpose: Mapped[str] = mapped_column(String(30))
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

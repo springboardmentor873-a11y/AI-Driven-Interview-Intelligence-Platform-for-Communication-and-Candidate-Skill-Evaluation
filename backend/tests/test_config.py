@@ -7,6 +7,7 @@ VALID_URL = "postgresql+asyncpg://user:s3cret@localhost:5432/db"
 
 
 def make(**overrides):
+    overrides.setdefault("jwt_secret_key", "test-only-secret-key-that-is-at-least-32-characters")
     return Settings(_env_file=None, **overrides)
 
 

@@ -34,6 +34,7 @@ async def test_unknown_route_returns_404(client):
 
 async def test_docs_disabled_in_production(monkeypatch):
     monkeypatch.setenv("ENVIRONMENT", "production")
+    monkeypatch.setenv("COOKIE_SECURE", "true")
     app = create_app()
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
         assert (await c.get("/docs")).status_code == 404
