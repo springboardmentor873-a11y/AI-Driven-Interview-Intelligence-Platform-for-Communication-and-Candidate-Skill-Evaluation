@@ -1,5 +1,8 @@
-from sqlalchemy import MetaData
-from sqlalchemy.orm import DeclarativeBase
+import uuid
+from datetime import datetime
+
+from sqlalchemy import DateTime, MetaData, Uuid, func, text
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 # Deterministic constraint names keep Alembic autogenerate and downgrades predictable.
 NAMING_CONVENTION = {
@@ -13,3 +16,24 @@ NAMING_CONVENTION = {
 
 class Base(DeclarativeBase):
     metadata = MetaData(naming_convention=NAMING_CONVENTION)
+    # Fetch server-generated values (ids, timestamps) in the same statement via RETURNING.
+    # Without this, reading them after a flush would trigger lazy IO, which fails in async.
+    __mapper_args__ = {"eager_defaults": True}
+
+
+class UUIDPrimaryKeyMixin:
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, server_default=text("gen_random_uuid()"), sort_order=-10
+    )
+
+
+class CreatedAtMixin:
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), sort_order=10
+    )
+
+
+class TimestampMixin(CreatedAtMixin):
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), sort_order=11
+    )
