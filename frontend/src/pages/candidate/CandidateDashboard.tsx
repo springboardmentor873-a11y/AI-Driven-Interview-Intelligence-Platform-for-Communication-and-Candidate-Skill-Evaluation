@@ -141,50 +141,43 @@ export default function CandidateDashboard() {
           )}
         </div>
 
-        {/* Milestone 1 Workflow Status */}
+        {/* Recent Mock Interviews */}
         <div className="card space-y-4">
-          <h2 className="text-lg font-bold text-gray-900 border-b pb-3">Milestone 1 Readiness Checklist</h2>
-          <div className="space-y-3 text-sm">
-            <div className="flex items-start gap-3">
-              <CheckCircle2 className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-medium text-gray-800">Authentication & JWT Session</p>
-                <p className="text-xs text-gray-500">Candidate session authenticated and verified</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <CheckCircle2 className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-medium text-gray-800">Role-Based Access Control (RBAC)</p>
-                <p className="text-xs text-gray-500">Candidate, Recruiter, and Admin boundaries active</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              {latestResume ? (
-                <CheckCircle2 className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-              ) : (
-                <div className="h-5 w-5 rounded-full border-2 border-dashed border-gray-300 flex-shrink-0 mt-0.5" />
-              )}
-              <div>
-                <p className="font-medium text-gray-800">AI Resume Parsing & Skill Extraction</p>
-                <p className="text-xs text-gray-500">
-                  {latestResume ? 'Resume processed with skills and experience parsed' : 'Pending resume upload'}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <CheckCircle2 className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-medium text-gray-800">Database Schema & Environment Initialized</p>
-                <p className="text-xs text-gray-500">PostgreSQL / SQLite models with full interview workflows</p>
-              </div>
-            </div>
+          <div className="flex items-center justify-between border-b pb-3">
+            <h2 className="text-lg font-bold text-gray-900">Recent Mock Interviews</h2>
+            <Link to="/candidate/interviews" className="text-sm text-primary-600 hover:underline flex items-center gap-1">
+              View All <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
+
+          {sessions.length === 0 ? (
+            <div className="text-center py-8">
+              <Video className="h-10 w-10 text-gray-300 mx-auto mb-2" />
+              <p className="text-sm text-gray-500">No mock interviews scheduled yet.</p>
+              <Link to="/candidate/interviews" className="btn-primary mt-3 inline-block text-xs">
+                Schedule First Session
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {sessions.slice(0, 3).map(s => (
+                <div key={s.id} className="p-3 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">{s.title}</p>
+                    <p className="text-xs text-gray-400 capitalize">
+                      {s.interview_type} • {s.difficulty} difficulty
+                    </p>
+                  </div>
+                  <span className={`badge text-xs capitalize ${s.status === 'completed' ? 'badge-green' : 'badge-yellow'}`}>
+                    {s.status.replace('_', ' ')}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
+
