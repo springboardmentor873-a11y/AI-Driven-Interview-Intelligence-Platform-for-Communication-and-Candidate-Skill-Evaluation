@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+backend/.venv/
+.venv/
+backend/uploads/*
+!backend/uploads/.gitkeep
+*.db
+*.sqlite3
+.pytest_cache/
+
+# Node / Frontend
+frontend/node_modules/
+node_modules/
+frontend/dist/
+dist/
+.npm
+*.tsbuildinfo
+
+# Environment & IDE
+.env
+.vscode/
+.idea/
+*.log

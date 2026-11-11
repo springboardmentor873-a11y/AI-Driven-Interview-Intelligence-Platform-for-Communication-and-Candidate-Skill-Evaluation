@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database Container
+  postgres:
+    image: postgres:16-alpine
+    container_name: smarthire-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: smarthire_user
+      POSTGRES_PASSWORD: smarthire_password
+      POSTGRES_DB: smarthire_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smarthire_user -d smarthire_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: smarthire-backend
+    restart: always
+    environment:
+      PROJECT_NAME: "SmartHire AI"
+      ENVIRONMENT: "production"
+      DATABASE_URL: "postgresql://smarthire_user:smarthire_password@postgres:5432/smarthire_db"
+      SECRET_KEY: "smarthire-production-secret-key-change-in-production-env"
+      ACCESS_TOKEN_EXPIRE_MINUTES: 1440
+      UPLOAD_DIR: "uploads"
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend/uploads:/app/uploads
+
+  # React Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: smarthire-frontend
+    restart: always
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
