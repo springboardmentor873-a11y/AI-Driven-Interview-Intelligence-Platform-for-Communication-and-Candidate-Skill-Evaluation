@@ -144,4 +144,5 @@ export const adminApi = {
     api.delete(`/admin/users/${userId}/roles/${role}`),
   updateStatus: (userId, status) =>
     api.patch(`/admin/users/${userId}/status`, { status }),
+  deleteUser: (userId) => api.delete(`/admin/users/${userId}`),
 };

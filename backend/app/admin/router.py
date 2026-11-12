@@ -73,3 +73,12 @@ async def revoke_role(user_id: uuid.UUID, role: RoleName, actor: Actor, db: DB) 
 )
 async def update_status(user_id: uuid.UUID, body: StatusUpdate, actor: Actor, db: DB) -> UserRead:
     return UserRead.from_user(await service.set_status(db, actor, user_id, body.status))
+
+
+@router.delete(
+    "/users/{user_id}",
+    status_code=204,
+    summary="Permanently delete a user account",
+)
+async def delete_user(user_id: uuid.UUID, actor: Actor, db: DB) -> None:
+    await service.delete_user(db, actor, user_id)

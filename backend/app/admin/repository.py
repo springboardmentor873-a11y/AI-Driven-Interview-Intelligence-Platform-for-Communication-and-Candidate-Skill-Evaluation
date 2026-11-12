@@ -106,6 +106,12 @@ async def remove_user_role(db: AsyncSession, user_id: uuid.UUID, role_id: uuid.U
     )
 
 
+async def delete_user(db: AsyncSession, user_id: uuid.UUID) -> bool:
+    """Permanently delete a user row. Cascades to dependent records via foreign key constraints."""
+    result = await db.execute(delete(User).where(User.id == user_id))
+    return (result.rowcount or 0) > 0
+
+
 async def get_platform_stats(db: AsyncSession) -> dict:
     from datetime import timedelta
 

@@ -112,6 +112,24 @@ async def set_status(
     return await _reload(db, user_id)
 
 
+async def delete_user(
+    db: AsyncSession, actor: AuthContext, user_id: uuid.UUID
+) -> None:
+    """Permanently delete a user account and all associated sessions/records."""
+    if user_id == actor.user.id:
+        raise CannotModifySelfError
+    await repository.lock_admin_changes(db)
+    user = await _require_user(db, user_id)
+    if _holds(user, RoleName.ADMIN):
+        await _ensure_another_active_admin(db, user)
+    await auth_repo.revoke_user_sessions(
+        db, user.id, RevokeReason.ADMIN_SUSPENDED, utcnow()
+    )
+    await repository.delete_user(db, user.id)
+    await db.commit()
+    logger.info("User deleted target=%s actor=%s", user_id, actor.user.id)
+
+
 async def _reload(db: AsyncSession, user_id: uuid.UUID) -> User:
     user = await repository.get_user(db, user_id, reload=True)
     assert user is not None  # noqa: S101

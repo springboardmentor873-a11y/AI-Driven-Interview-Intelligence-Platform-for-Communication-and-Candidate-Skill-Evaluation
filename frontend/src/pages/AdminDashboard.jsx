@@ -19,6 +19,7 @@ import {
   Clock,
   Briefcase,
   UserPlus,
+  X,
 } from "lucide-react";
 import {
   PageHeading,
@@ -208,6 +209,29 @@ export default function AdminDashboard() {
       fetchStats();
     } catch (err) {
       setActionError(err.message || "Failed to update account status.");
+    } finally {
+      setActionBusy(false);
+    }
+  };
+
+  const handleDeleteUser = async (targetUser) => {
+    if (
+      !confirm(
+        `Are you sure you want to permanently delete user account ${targetUser.email} (${targetUser.full_name})?\n\nThis will permanently delete their account, resumes, and interview records. This action cannot be undone.`
+      )
+    ) {
+      return;
+    }
+    setActionBusy(true);
+    setActionError("");
+    setActionSuccess("");
+    try {
+      await adminApi.deleteUser(targetUser.id);
+      setActionSuccess(`User account ${targetUser.email} has been permanently deleted.`);
+      fetchUsers();
+      fetchStats();
+    } catch (err) {
+      setActionError(err.message || "Failed to delete user account.");
     } finally {
       setActionBusy(false);
     }
@@ -416,40 +440,44 @@ export default function AdminDashboard() {
                       </td>
                       <td>
                         <div className="flex flex-wrap items-center gap-1">
-                          {u.roles?.map((r) => (
-                            <span
-                              key={r}
-                              className="inline-flex items-center gap-1 group"
-                            >
-                              <Badge
-                                variant={
-                                  r === "admin"
-                                    ? "slate"
-                                    : r === "recruiter"
-                                    ? "purple"
-                                    : "blue"
-                                }
+                          {u.roles && u.roles.length > 0 ? (
+                            u.roles.map((r) => (
+                              <span
+                                key={r}
+                                className="inline-flex items-center gap-1 group"
                               >
-                                {r}
-                              </Badge>
-                              {/* Revoke button if not revoking own admin */}
-                              {!(isCurrent && r === "admin") && (
-                                <button
-                                  type="button"
-                                  title={`Revoke ${r}`}
-                                  onClick={() => handleRevokeRole(u, r)}
-                                  className="text-slate-400 hover:text-red-600 transition-colors"
+                                <Badge
+                                  variant={
+                                    r === "admin"
+                                      ? "slate"
+                                      : r === "recruiter"
+                                      ? "purple"
+                                      : "blue"
+                                  }
                                 >
-                                  <Trash2 size={11} />
-                                </button>
-                              )}
-                            </span>
-                          ))}
+                                  {r}
+                                </Badge>
+                                {/* Revoke button if not revoking own admin */}
+                                {!(isCurrent && r === "admin") && (
+                                  <button
+                                    type="button"
+                                    title={`Revoke ${r} role`}
+                                    onClick={() => handleRevokeRole(u, r)}
+                                    className="text-slate-400 hover:text-red-600 transition-colors p-0.5"
+                                  >
+                                    <X size={11} />
+                                  </button>
+                                )}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-[11px] text-slate-400 italic">No roles</span>
+                          )}
                           <button
                             type="button"
                             onClick={() => openGrantRoleModal(u)}
                             className="inline-flex items-center gap-0.5 text-[10px] text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-1.5 py-0.5 rounded"
-                            title="Assign other role"
+                            title="Assign role"
                           >
                             <Plus size={10} />
                             <span>Role</span>
@@ -508,6 +536,17 @@ export default function AdminDashboard() {
                                 }`}
                               >
                                 {u.status === "active" ? "Suspend" : "Activate"}
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteUser(u)}
+                                disabled={actionBusy}
+                                title="Permanently delete user account"
+                                className="btn-secondary text-[11px] py-1 px-2 text-red-600 hover:text-red-800 hover:bg-red-50 border-red-200 flex items-center gap-1"
+                              >
+                                <Trash2 size={11} />
+                                <span>Delete</span>
                               </button>
                             </>
                           )}
