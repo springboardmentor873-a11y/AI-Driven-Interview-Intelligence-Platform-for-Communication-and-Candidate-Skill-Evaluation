@@ -27,8 +27,8 @@ export default function Unauthorized() {
             <Home size={15} />
             <span>Return to Workspace</span>
           </Link>
-          <Link to="/profile" className="btn-secondary w-full sm:w-auto">
-            <span>View Account Profile</span>
+          <Link to="/workspace" className="btn-secondary w-full sm:w-auto">
+            <span>Switch Workspace</span>
           </Link>
         </div>
       </div>

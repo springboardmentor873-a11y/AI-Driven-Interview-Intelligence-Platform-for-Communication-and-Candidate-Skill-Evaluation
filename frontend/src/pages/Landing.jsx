@@ -33,17 +33,17 @@ export default function Landing() {
           </Link>
 
           <div className="hidden md:flex items-center gap-8 text-xs font-semibold text-slate-600">
+            <Link to="/" className="hover:text-slate-900 transition-colors">
+              Home
+            </Link>
             <a href="#features" className="hover:text-slate-900 transition-colors">
               Features
             </a>
             <a href="#tracks" className="hover:text-slate-900 transition-colors">
               Practice Tracks
             </a>
-            <a href="#architecture" className="hover:text-slate-900 transition-colors">
-              Architecture
-            </a>
-            <a href="#governance" className="hover:text-slate-900 transition-colors">
-              Governance
+            <a href="#about" className="hover:text-slate-900 transition-colors">
+              About
             </a>
           </div>
 
@@ -55,11 +55,11 @@ export default function Landing() {
               </Link>
             ) : (
               <>
-                <Link to="/login" className="btn-quiet text-xs">
+                <Link to="/workspace" className="btn-quiet text-xs">
                   Sign In
                 </Link>
-                <Link to="/register" className="btn-primary text-xs">
-                  <span>Get Started</span>
+                <Link to="/workspace" className="btn-primary text-xs">
+                  <span>Go to Workspace</span>
                   <ArrowRight size={14} />
                 </Link>
               </>
@@ -86,21 +86,21 @@ export default function Landing() {
           oversight across Candidates, Recruiters, and Administrators.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-sm mx-auto mb-16">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto mb-16">
           {user ? (
             <Link to={defaultDashboardPath} className="btn-primary w-full sm:w-auto h-11 px-6">
-              <span>Open Dashboard</span>
+              <span>Go to Workspace</span>
               <ArrowRight size={16} />
             </Link>
           ) : (
             <>
-              <Link to="/register" className="btn-brand w-full sm:w-auto h-11 px-6">
-                <span>Start Free Practice</span>
+              <Link to="/workspace" className="btn-brand w-full sm:w-auto h-11 px-6">
+                <span>Go to Workspace</span>
                 <ArrowRight size={16} />
               </Link>
-              <Link to="/login" className="btn-secondary w-full sm:w-auto h-11 px-6">
-                <span>Sign In with Google</span>
-              </Link>
+              <a href="#features" className="btn-secondary w-full sm:w-auto h-11 px-6">
+                <span>Explore Features</span>
+              </a>
             </>
           )}
         </div>
@@ -316,6 +316,62 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* About Section */}
+      <section id="about" className="py-20 bg-slate-50 border-t border-slate-200">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="max-w-3xl mx-auto text-center mb-12">
+            <span className="eyebrow block mb-2">ABOUT SMARTHIRE AI</span>
+            <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 mb-4">
+              Built for transparent, objective interview intelligence.
+            </h2>
+            <p className="text-sm text-slate-600 leading-relaxed">
+              SmartHire AI bridges the gap between candidate preparation and recruiter evaluation.
+              Candidates get realistic simulation environments across technical, behavioural, and leadership tracks.
+              Recruiting teams receive structured evaluation frameworks and verifiable talent records.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+            <div className="panel p-6 bg-white border border-slate-200">
+              <div className="h-10 w-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold mb-3 border border-indigo-100">
+                01
+              </div>
+              <h3 className="font-bold text-sm text-slate-900 mb-1">Authentic Practice</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Realistic, prompt-by-prompt session chambers that train candidates on STAR framework responses and architecture explanations without canned shortcuts.
+              </p>
+            </div>
+
+            <div className="panel p-6 bg-white border border-slate-200">
+              <div className="h-10 w-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center font-bold mb-3 border border-purple-100">
+                02
+              </div>
+              <h3 className="font-bold text-sm text-slate-900 mb-1">Verified Talent Records</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Recruiters review genuine performance transcripts, response timing, and resume alignments under strict data protection protocols.
+              </p>
+            </div>
+
+            <div className="panel p-6 bg-white border border-slate-200">
+              <div className="h-10 w-10 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center font-bold mb-3 border border-slate-200">
+                03
+              </div>
+              <h3 className="font-bold text-sm text-slate-900 mb-1">Enterprise Security</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                End-to-end role isolation, Argon2id password security, cryptographic JWT authentication, and advisory-locked role governance.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-12 text-center">
+            <Link to="/workspace" className="btn-brand px-6 py-2.5 text-xs inline-flex items-center gap-2">
+              <span>Choose your Workspace</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="py-12 border-t border-slate-200 bg-white text-xs text-slate-500">
         <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -327,11 +383,14 @@ export default function Landing() {
           </div>
 
           <div className="flex items-center gap-6">
-            <Link to="/login" className="hover:text-slate-900 transition-colors">
-              Sign In
+            <Link to="/workspace" className="hover:text-slate-900 transition-colors">
+              Workspaces
             </Link>
-            <Link to="/register" className="hover:text-slate-900 transition-colors">
-              Create Account
+            <Link to="/auth/candidate" className="hover:text-slate-900 transition-colors">
+              Candidate Portal
+            </Link>
+            <Link to="/auth/recruiter" className="hover:text-slate-900 transition-colors">
+              Recruiter Portal
             </Link>
             <a href="#features" className="hover:text-slate-900 transition-colors">
               Platform Features

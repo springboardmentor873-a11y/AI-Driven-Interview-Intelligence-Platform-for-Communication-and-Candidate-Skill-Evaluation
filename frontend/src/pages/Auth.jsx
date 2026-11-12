@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   ArrowRight,
   Eye,
@@ -12,14 +12,38 @@ import {
   CheckCircle2,
   HelpCircle,
   Loader2,
+  GraduationCap,
+  Briefcase,
+  ArrowLeft,
+  Clock,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { GoogleButton, Modal } from "../components/UI";
+import { Badge, GoogleButton, Modal } from "../components/UI";
 
-export default function Auth({ mode = "login" }) {
+export default function Auth({ mode: initialMode, workspace: initialWorkspace }) {
+  const { workspaceType } = useParams();
+  const [searchParams] = useSearchParams();
+
+  // Determine workspace ('candidate' or 'recruiter')
+  const workspace = initialWorkspace || workspaceType || searchParams.get("workspace") || "candidate";
+  const isRecruiterWorkspace = workspace === "recruiter";
+
+  // Tab mode: 'login' vs 'register'
+  const [mode, setMode] = useState(() => {
+    if (initialMode) return initialMode;
+    const tab = searchParams.get("tab");
+    return tab === "register" ? "register" : "login";
+  });
   const isRegister = mode === "register";
-  const { user, login, register, loginWithGoogle, requestPasswordReset, defaultDashboardPath, loading } =
-    useAuth();
+
+  const {
+    user,
+    login,
+    register,
+    loginWithGoogle,
+    requestPasswordReset,
+    defaultDashboardPath,
+  } = useAuth();
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
@@ -41,6 +65,31 @@ export default function Auth({ mode = "login" }) {
   const googleTargetRef = useRef(null);
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
+  // Post-authentication router: respects actual backend roles
+  const handlePostAuth = (profile) => {
+    const userRoles = profile?.roles || [];
+    if (userRoles.includes("admin")) {
+      navigate("/admin");
+      return;
+    }
+    if (userRoles.includes("recruiter")) {
+      navigate("/recruiter");
+      return;
+    }
+
+    // Account has Candidate role only
+    if (isRecruiterWorkspace) {
+      if (isRegister) {
+        navigate("/recruiter/pending-approval?new=1");
+      } else {
+        navigate("/recruiter/pending-approval?from=login");
+      }
+      return;
+    }
+
+    navigate("/app");
+  };
+
   // Render official Google button if Google Identity Services is available
   useEffect(() => {
     if (!googleClientId || typeof window === "undefined" || !window.google?.accounts?.id) {
@@ -55,8 +104,8 @@ export default function Auth({ mode = "login" }) {
             setSubmitting(true);
             setError("");
             try {
-              await loginWithGoogle(response.credential);
-              navigate(defaultDashboardPath);
+              const profile = await loginWithGoogle(response.credential);
+              handlePostAuth(profile);
             } catch (err) {
               setError(err.message || "Google authentication failed.");
             } finally {
@@ -80,7 +129,7 @@ export default function Auth({ mode = "login" }) {
     } catch (err) {
       console.warn("Google Identity Services setup:", err);
     }
-  }, [googleClientId, isRegister, defaultDashboardPath]);
+  }, [googleClientId, isRegister, isRecruiterWorkspace]);
 
   if (user) {
     return <Navigate to={defaultDashboardPath} replace />;
@@ -92,14 +141,15 @@ export default function Auth({ mode = "login" }) {
     setSubmitting(true);
 
     try {
+      let profile;
       if (isRegister) {
-        await register(name.trim(), email.trim(), password);
+        profile = await register(name.trim(), email.trim(), password);
       } else {
-        await login(email.trim(), password);
+        profile = await login(email.trim(), password);
       }
-      navigate(defaultDashboardPath);
+      handlePostAuth(profile);
     } catch (err) {
-      setError(err.message || "Authentication failed. Please check your details.");
+      setError(err.message || "Authentication failed. Please check your credentials.");
     } finally {
       setSubmitting(false);
     }
@@ -130,7 +180,7 @@ export default function Auth({ mode = "login" }) {
   };
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white">
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white selection:bg-indigo-500 selection:text-white">
       {/* Left Brand Column */}
       <div className="hidden lg:flex flex-col justify-between p-12 bg-slate-950 text-white border-r border-slate-900">
         <div>
@@ -143,28 +193,31 @@ export default function Auth({ mode = "login" }) {
             </span>
           </Link>
 
-          <div className="mt-24 max-w-md">
+          <div className="mt-20 max-w-md">
             <span className="text-[11px] font-bold text-indigo-400 tracking-wider uppercase block mb-3">
-              INTELLIGENT CANDIDATE ASSESSMENT
+              {isRecruiterWorkspace ? "RECRUITER WORKSPACE" : "CANDIDATE WORKSPACE"}
             </span>
             <h1 className="text-3xl font-extrabold tracking-tight leading-tight mb-4">
-              Structured preparation for serious candidate skill evaluation.
+              {isRecruiterWorkspace
+                ? "Objective talent discovery and technical assessment review."
+                : "Structured preparation for authentic candidate skill evaluation."}
             </h1>
             <p className="text-sm text-slate-400 leading-relaxed">
-              Access curated mock interview tracks, record structured responses,
-              and maintain your professional resume profile under genuine role-based access.
+              {isRecruiterWorkspace
+                ? "Review verified candidate skill profiles, evaluate mock interview recordings, and inspect structured performance analytics."
+                : "Access curated mock interview tracks, record structured responses, and maintain your professional resume profile under genuine role-based access."}
             </p>
           </div>
         </div>
 
         <div className="space-y-4 max-w-md pt-8 border-t border-slate-900 text-xs text-slate-400">
-          <div className="flex items-center gap-2">
-            <ShieldCheck size={16} className="text-emerald-400" />
-            <span>Cryptographically verified Argon2id and JWT authentication</span>
+          <div className="flex items-center gap-2.5">
+            <ShieldCheck size={16} className="text-emerald-400 shrink-0" />
+            <span>Cryptographically verified Argon2id & JWT authentication</span>
           </div>
-          <div className="flex items-center gap-2">
-            <ShieldCheck size={16} className="text-emerald-400" />
-            <span>Strict role-based isolation: Candidate, Recruiter, and Admin</span>
+          <div className="flex items-center gap-2.5">
+            <ShieldCheck size={16} className="text-emerald-400 shrink-0" />
+            <span>Strict role-based authorization across Candidate, Recruiter & Admin</span>
           </div>
         </div>
       </div>
@@ -172,31 +225,104 @@ export default function Auth({ mode = "login" }) {
       {/* Right Form Column */}
       <div className="flex items-center justify-center p-6 sm:p-12">
         <div className="w-full max-w-sm">
-          {/* Mobile brand header */}
-          <div className="lg:hidden mb-8">
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="h-7 w-7 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs">
-                SH
-              </div>
-              <span className="font-bold text-slate-900">SmartHire AI</span>
+          {/* Header Switcher */}
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+            <Link
+              to="/workspace"
+              className="text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1.5"
+            >
+              <ArrowLeft size={13} />
+              <span>Switch Workspace</span>
             </Link>
+
+            <Badge variant={isRecruiterWorkspace ? "purple" : "blue"}>
+              {isRecruiterWorkspace ? "Recruiter" : "Candidate"}
+            </Badge>
           </div>
 
+          {/* Heading */}
           <div className="mb-6">
-            <span className="eyebrow block mb-1">
-              {isRegister ? "Get Started" : "Welcome Back"}
-            </span>
+            <div className="flex items-center gap-2 mb-1.5">
+              <div
+                className={`h-7 w-7 rounded-lg flex items-center justify-center ${
+                  isRecruiterWorkspace
+                    ? "bg-purple-50 text-purple-600"
+                    : "bg-indigo-50 text-indigo-600"
+                }`}
+              >
+                {isRecruiterWorkspace ? <Briefcase size={15} /> : <GraduationCap size={16} />}
+              </div>
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                {isRecruiterWorkspace ? "Talent Acquisition" : "Interview Preparation"}
+              </span>
+            </div>
+
             <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
-              {isRegister ? "Create your account" : "Sign in to your account"}
+              {isRegister
+                ? isRecruiterWorkspace
+                  ? "Create your Recruiter Account"
+                  : "Create your Candidate Account"
+                : isRecruiterWorkspace
+                ? "Sign in to your Recruiter Workspace"
+                : "Sign in to your Candidate Workspace"}
             </h2>
             <p className="text-xs text-slate-500 mt-1">
               {isRegister
-                ? "Enter your details to initialize your candidate workspace"
-                : "Enter your registered credentials to access your dashboard"}
+                ? isRecruiterWorkspace
+                  ? "Register for recruiter review access to evaluate candidate assessments."
+                  : "Enter your details to initialize your candidate interview environment."
+                : isRecruiterWorkspace
+                ? "Enter your credentials to access the talent pipeline console."
+                : "Enter your registered credentials to access your mock interview dashboard."}
             </p>
           </div>
 
-          {/* Google Sign-In */}
+          {/* Tab Switcher: Sign In vs Create Account */}
+          <div className="grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-lg mb-6">
+            <button
+              type="button"
+              onClick={() => {
+                setMode("login");
+                setError("");
+              }}
+              className={`py-1.5 text-xs font-bold rounded-md transition-all ${
+                !isRegister
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMode("register");
+                setError("");
+              }}
+              className={`py-1.5 text-xs font-bold rounded-md transition-all ${
+                isRegister
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              Create Account
+            </button>
+          </div>
+
+          {/* Recruiter Registration Notice */}
+          {isRegister && isRecruiterWorkspace && (
+            <div className="mb-5 p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 space-y-1">
+              <div className="flex items-center gap-1.5 font-bold">
+                <Clock size={13} className="text-amber-700" />
+                <span>Approval Workflow Notice</span>
+              </div>
+              <p className="text-[11px] text-amber-800 leading-relaxed">
+                Recruiter registration submits an access request for administrator verification. Candidate practice features remain accessible immediately while approval is pending.
+              </p>
+            </div>
+          )}
+
+          {/* Google Authentication */}
           <div className="mb-5">
             {googleClientId ? (
               <div ref={googleTargetRef} className="flex justify-center w-full" />
@@ -223,7 +349,7 @@ export default function Auth({ mode = "login" }) {
             </div>
           )}
 
-          {/* Form */}
+          {/* Main Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {isRegister && (
               <div>
@@ -296,27 +422,37 @@ export default function Auth({ mode = "login" }) {
             <button
               type="submit"
               disabled={submitting}
-              className="btn-primary w-full justify-center mt-2 h-10"
+              className={`${
+                isRecruiterWorkspace ? "btn-primary" : "btn-brand"
+              } w-full justify-center mt-2 h-10`}
             >
               {submitting ? (
                 <Loader2 size={16} className="animate-spin" />
               ) : (
                 <>
-                  <span>{isRegister ? "Create Account" : "Sign In"}</span>
+                  <span>
+                    {isRegister
+                      ? isRecruiterWorkspace
+                        ? "Register as Recruiter"
+                        : "Create Candidate Account"
+                      : "Sign In"}
+                  </span>
                   <ArrowRight size={15} />
                 </>
               )}
             </button>
           </form>
 
-          {/* Switch mode */}
-          <div className="text-center text-xs text-slate-500 mt-6">
-            {isRegister ? "Already registered?" : "Don't have an account yet?"}{" "}
+          {/* Switch mode footer */}
+          <div className="text-center text-xs text-slate-500 mt-6 pt-5 border-t border-slate-100 flex items-center justify-between">
+            <span className="text-slate-400">
+              {isRecruiterWorkspace ? "Recruiter Portal" : "Candidate Portal"}
+            </span>
             <Link
-              to={isRegister ? "/login" : "/register"}
-              className="font-bold text-slate-900 hover:underline"
+              to="/workspace"
+              className="font-semibold text-indigo-600 hover:text-indigo-700"
             >
-              {isRegister ? "Sign In" : "Create an Account"}
+              Switch Workspace &rarr;
             </Link>
           </div>
         </div>
@@ -351,43 +487,40 @@ export default function Auth({ mode = "login" }) {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+          <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"
               onClick={() => setForgotOpen(false)}
-              className="btn-secondary text-xs"
+              className="btn-secondary"
             >
               Close
             </button>
             <button
               type="submit"
               disabled={forgotBusy}
-              className="btn-primary text-xs"
+              className="btn-primary"
             >
-              {forgotBusy ? "Submitting..." : "Send Reset Notice"}
+              {forgotBusy ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : (
+                "Send Reset Instructions"
+              )}
             </button>
           </div>
         </form>
       </Modal>
 
-      {/* Google Setup Information Modal */}
+      {/* Google Config Info Modal */}
       <Modal
         isOpen={googleInfoOpen}
         onClose={() => setGoogleInfoOpen(false)}
-        title="Google Authentication Configuration"
-        description="Setup required in Google Cloud Console"
+        title="Google Authentication Setup"
+        description="Google Sign-In requires an active Google Client ID configuration."
       >
-        <div className="space-y-3 text-xs text-slate-600 leading-relaxed">
+        <div className="text-xs text-slate-600 space-y-3">
           <p>
-            To activate live Google Sign-In, configure an OAuth 2.0 Client ID in Google Cloud Console:
+            Google OAuth requires a valid <code className="text-indigo-600 bg-slate-100 px-1 py-0.5 rounded">VITE_GOOGLE_CLIENT_ID</code> in <code className="bg-slate-100 px-1 py-0.5 rounded">frontend/.env</code> and matching backend authorization.
           </p>
-          <ol className="list-decimal list-inside space-y-1.5 p-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700">
-            <li>Visit <strong>Google Cloud Console &rarr; APIs & Services &rarr; Credentials</strong>.</li>
-            <li>Create an <strong>OAuth 2.0 Web Application Client ID</strong>.</li>
-            <li>Add Authorized JavaScript Origin: <code className="bg-white px-1 py-0.5 rounded border border-slate-200">http://localhost:5173</code>.</li>
-            <li>Set in <code className="bg-white px-1 py-0.5 rounded border border-slate-200">frontend/.env</code>: <code className="bg-white px-1 py-0.5 rounded border border-slate-200">VITE_GOOGLE_CLIENT_ID=&lt;your_client_id&gt;</code>.</li>
-            <li>Set in <code className="bg-white px-1 py-0.5 rounded border border-slate-200">backend/.env</code>: <code className="bg-white px-1 py-0.5 rounded border border-slate-200">GOOGLE_CLIENT_ID=&lt;your_client_id&gt;</code>.</li>
-          </ol>
           <div className="flex justify-end pt-2">
             <button
               type="button"

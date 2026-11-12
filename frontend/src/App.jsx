@@ -2,7 +2,9 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Layout from "./components/Layout";
 import Landing from "./pages/Landing";
+import WorkspaceSelect from "./pages/WorkspaceSelect";
 import Auth from "./pages/Auth";
+import RecruiterApproval from "./pages/RecruiterApproval";
 import Dashboard from "./pages/Dashboard";
 import Resume from "./pages/Resume";
 import Interview from "./pages/Interview";
@@ -27,13 +29,13 @@ function ProtectedRoute({ children }) {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/workspace" replace />;
   }
 
   return children;
 }
 
-function RoleGuard({ allowedRoles, children }) {
+function RoleGuard({ allowedRoles, fallbackPath, children }) {
   const { user, roles, loading } = useAuth();
 
   if (loading) {
@@ -45,11 +47,14 @@ function RoleGuard({ allowedRoles, children }) {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/workspace" replace />;
   }
 
   const hasPermission = allowedRoles.some((r) => roles.includes(r));
   if (!hasPermission) {
+    if (fallbackPath) {
+      return <Navigate to={fallbackPath} replace />;
+    }
     return <Navigate to="/unauthorized" replace />;
   }
 
@@ -61,9 +66,27 @@ export default function App() {
     <Routes>
       {/* Public Pages */}
       <Route path="/" element={<Landing />} />
-      <Route path="/login" element={<Auth mode="login" />} />
-      <Route path="/register" element={<Auth mode="register" />} />
+      <Route path="/workspace" element={<WorkspaceSelect />} />
+
+      {/* Role-Specific Authentication Routes */}
+      <Route path="/auth/candidate" element={<Auth workspace="candidate" />} />
+      <Route path="/auth/recruiter" element={<Auth workspace="recruiter" />} />
+      <Route path="/auth/:workspaceType" element={<Auth />} />
+
+      {/* Legacy Auth Redirects */}
+      <Route path="/login" element={<Navigate to="/workspace" replace />} />
+      <Route path="/register" element={<Navigate to="/workspace" replace />} />
+
+      {/* Access Restriction & Status Pages */}
       <Route path="/unauthorized" element={<Unauthorized />} />
+      <Route
+        path="/recruiter/pending-approval"
+        element={
+          <ProtectedRoute>
+            <RecruiterApproval />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Candidate Area */}
       <Route
@@ -89,7 +112,10 @@ export default function App() {
         path="/recruiter"
         element={
           <ProtectedRoute>
-            <RoleGuard allowedRoles={["recruiter", "admin"]}>
+            <RoleGuard
+              allowedRoles={["recruiter", "admin"]}
+              fallbackPath="/recruiter/pending-approval"
+            >
               <Layout />
             </RoleGuard>
           </ProtectedRoute>

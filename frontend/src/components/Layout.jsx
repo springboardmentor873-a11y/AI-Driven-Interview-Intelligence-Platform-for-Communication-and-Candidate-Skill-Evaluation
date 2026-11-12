@@ -67,7 +67,7 @@ export default function Layout() {
 
   const handleLogout = async () => {
     await logout();
-    navigate("/login");
+    navigate("/workspace");
   };
 
   const getRoleTone = (role) => {
