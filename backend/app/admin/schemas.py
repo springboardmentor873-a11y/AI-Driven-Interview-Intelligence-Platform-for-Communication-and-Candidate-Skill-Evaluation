@@ -23,3 +23,13 @@ class UserPage(BaseModel):
     total: int
     limit: int
     offset: int
+
+
+class AdminStats(BaseModel):
+    total_users: int
+    candidates_count: int
+    recruiters_count: int
+    admins_count: int
+    active_users: int
+    suspended_users: int
+    recent_signups_count: int

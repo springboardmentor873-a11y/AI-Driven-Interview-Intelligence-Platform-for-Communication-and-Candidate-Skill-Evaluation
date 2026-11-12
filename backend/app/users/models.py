@@ -77,6 +77,13 @@ class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     email: Mapped[str] = mapped_column(String(320), unique=True)
     password_hash: Mapped[str | None] = mapped_column(Text)  # NULL for OAuth-only accounts
     full_name: Mapped[str] = mapped_column(String(255))
+    google_id: Mapped[str | None] = mapped_column(
+        String(100), unique=True, index=True, nullable=True
+    )
+    auth_provider: Mapped[str] = mapped_column(
+        String(30), default="local", server_default="local"
+    )
+    avatar_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     status: Mapped[str] = mapped_column(
         String(20), default=UserStatus.ACTIVE.value, server_default=UserStatus.ACTIVE.value
     )

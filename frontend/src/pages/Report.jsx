@@ -1,6 +1,321 @@
-import { Link } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Award, CheckCircle2, Download, Lightbulb, MessageSquareText, Sparkles, Target, TrendingUp } from "lucide-react";
-import { PageHeading, Progress, SectionTitle, Tag } from "../components/UI";
-export default function Report(){const score=Number(localStorage.getItem("smarthire_last_score")||82);const answers=JSON.parse(localStorage.getItem("smarthire_last_answers")||"[]");const download=()=>{const body=`SmartHire AI — Practice Summary\nOverall sample score: ${score}/100\nResponses captured: ${answers.length}\n\nThis is a demonstration report. AI scoring and speech analysis are not connected in this frontend build.`;const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([body],{type:"text/plain"}));a.download="smarthire-practice-summary.txt";a.click();URL.revokeObjectURL(a.href)};
-return <><PageHeading eyebrow="SESSION INSIGHTS" title="Your practice summary" description="A snapshot of your session with suggested next steps." action={<button className="btn-secondary" onClick={download}><Download size={16}/> Export summary</button>}/><div className="report-hero"><div><Tag tone="green">SESSION COMPLETED</Tag><h2 className="text-2xl font-extrabold mt-4">Good work. Keep building on it.</h2><p className="text-sm text-slate-500 mt-2">This is a sample report for the frontend demonstration. Live AI evaluation is not connected yet.</p></div><div className="report-score"><strong>{score}</strong><span>Overall score</span></div></div><div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5"><Score label="Communication" value={88}/><Score label="Answer relevance" value={82}/><Score label="Confidence" value={76}/></div><div className="grid grid-cols-1 xl:grid-cols-2 gap-5 mt-5"><div className="panel"><SectionTitle title="What went well" subtitle="Positive habits to continue"/><div className="insight-line"><CheckCircle2 className="text-emerald-600"/><div><b>Clear response structure</b><p>Your answers can be organised into a beginning, key point and conclusion.</p></div></div><div className="insight-line"><CheckCircle2 className="text-emerald-600"/><div><b>Relevant examples</b><p>Use specific project examples to make your responses more convincing.</p></div></div></div><div className="panel"><SectionTitle title="Opportunities to improve" subtitle="Small changes for your next session"/><div className="insight-line"><Target className="text-brand"/><div><b>Add measurable outcomes</b><p>Explain what changed because of your contribution wherever possible.</p></div></div><div className="insight-line"><Lightbulb className="text-amber-500"/><div><b>Practise concise delivery</b><p>Aim for focused answers that directly address the question.</p></div></div></div></div><div className="panel mt-5"><SectionTitle title="Your captured responses" subtitle={`${answers.length} response(s) saved in this browser session`}/>{answers.length?answers.map((a,i)=><div className="py-3 border-t border-slate-100 text-sm" key={i}><b>Response {i+1}</b><p className="text-muted mt-1">{a}</p></div>):<p className="text-sm text-muted">No text responses were captured. The report preview is using sample assessment indicators.</p>}</div><div className="flex justify-between mt-5"><Link to="/app/history" className="btn-quiet"><ArrowLeft size={16}/> Interview history</Link><Link to="/app/interview" className="btn-primary">Practise again <ArrowRight size={16}/></Link></div></>}
-function Score({label,value}){return <div className="panel"><div className="flex justify-between text-sm font-bold"><span>{label}</span><span>{value}%</span></div><div className="mt-4"><Progress value={value}/></div><div className="text-xs text-muted mt-2">{value>=85?"Strong performance":value>=75?"Good progress":"Room to improve"}</div></div>}
+import { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import {
+  Download,
+  CheckCircle2,
+  Clock,
+  BookOpen,
+  ArrowRight,
+  ArrowLeft,
+  FileText,
+  Award,
+  AlertCircle,
+  HelpCircle,
+  Share2,
+  Printer,
+} from "lucide-react";
+import { PageHeading, Badge, SectionTitle, ProgressBar, EmptyState } from "../components/UI";
+import { candidateApi } from "../lib/api";
+
+export default function Report() {
+  const [searchParams] = useSearchParams();
+  const sessionId = searchParams.get("id");
+
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (sessionId) {
+      if (sessionId.startsWith("local-")) {
+        const raw = localStorage.getItem(`smarthire_session_${sessionId}`);
+        if (raw) {
+          try {
+            setSession(JSON.parse(raw));
+          } catch {
+            setSession(null);
+          }
+        }
+        setLoading(false);
+      } else {
+        candidateApi
+          .getInterview(sessionId)
+          .then((res) => {
+            setSession(res.data);
+          })
+          .catch(() => {
+            setSession(null);
+          })
+          .finally(() => {
+            setLoading(false);
+          });
+      }
+    } else {
+      // Load latest interview if no specific id
+      candidateApi
+        .getInterviews(1, 0)
+        .then((res) => {
+          if (res.data?.[0]) {
+            setSession(res.data[0]);
+          }
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+  }, [sessionId]);
+
+  const handleExportText = () => {
+    if (!session) return;
+    const body = `SmartHire AI — Candidate Mock Interview Assessment Summary
+========================================================================
+Session ID: ${session.id}
+Track: ${session.category} Track (${session.difficulty})
+Questions: ${session.question_count}
+Duration: ${Math.floor(session.duration_seconds / 60)} min ${session.duration_seconds % 60} sec
+Date: ${new Date(session.created_at).toLocaleString()}
+Status: ${session.status}
+
+Captured Responses:
+${session.responses
+  ?.map(
+    (r, i) => `\n[Question ${i + 1}]: ${r.question}\n[Answer]: ${r.answer || "(No response recorded)"}\n[Duration]: ${r.duration_seconds || 0}s\n`
+  )
+  .join("\n")}
+========================================================================
+Report generated by SmartHire AI Platform.`;
+
+    const blob = new Blob([body], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `smarthire-assessment-${session.id.slice(0, 8)}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  if (loading) {
+    return (
+      <div className="py-20 text-center text-xs text-slate-500">
+        Loading session assessment report...
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="max-w-xl mx-auto py-12">
+        <EmptyState
+          icon={BookOpen}
+          title="No assessment report found"
+          description="You haven't completed an interview session yet, or the specified session identifier could not be retrieved."
+          action={
+            <Link to="/app/interview" className="btn-primary text-xs">
+              <span>Start an Interview</span>
+              <ArrowRight size={14} />
+            </Link>
+          }
+        />
+      </div>
+    );
+  }
+
+  const responses = session.responses || [];
+  const totalWords = responses.reduce((acc, r) => {
+    return acc + (r.answer ? r.answer.trim().split(/\s+/).filter(Boolean).length : 0);
+  }, 0);
+  const avgWordsPerAnswer = responses.length > 0 ? Math.round(totalWords / responses.length) : 0;
+
+  return (
+    <div className="max-w-4xl">
+      <PageHeading
+        eyebrow="ASSESSMENT SUMMARY"
+        title="Interview Performance Report"
+        description={`Record for completed ${session.category} mock session (${session.difficulty}). Review your responses and delivery metrics.`}
+        action={
+          <div className="flex items-center gap-2">
+            <button onClick={handlePrint} className="btn-secondary text-xs">
+              <Printer size={14} />
+              <span>Print</span>
+            </button>
+            <button onClick={handleExportText} className="btn-primary text-xs">
+              <Download size={14} />
+              <span>Export Summary</span>
+            </button>
+          </div>
+        }
+      />
+
+      {/* Summary Header Card */}
+      <div className="panel mb-7 p-6 border-slate-200 bg-white">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <Badge variant="blue">{session.category} Track</Badge>
+              <Badge variant="slate">{session.difficulty}</Badge>
+              <Badge variant="green" icon={CheckCircle2}>
+                Completed
+              </Badge>
+            </div>
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+              Session {session.id.slice(0, 8)}
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Conducted on {new Date(session.created_at).toLocaleString()}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-6 text-right">
+            <div>
+              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+                Duration
+              </span>
+              <span className="text-lg font-bold text-slate-900 font-mono">
+                {Math.floor(session.duration_seconds / 60)}m {session.duration_seconds % 60}s
+              </span>
+            </div>
+            <div>
+              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+                Prompts
+              </span>
+              <span className="text-lg font-bold text-slate-900">
+                {session.question_count} answered
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Real Performance Metrics */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-5">
+          <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+            <span className="text-xs text-slate-500 font-medium block mb-1">
+              Total Captured Words
+            </span>
+            <div className="text-xl font-bold text-slate-900">{totalWords}</div>
+            <span className="text-[11px] text-slate-500">
+              Avg. {avgWordsPerAnswer} words per response
+            </span>
+          </div>
+
+          <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+            <span className="text-xs text-slate-500 font-medium block mb-1">
+              Pacing & Delivery
+            </span>
+            <div className="text-xl font-bold text-slate-900">
+              {responses.length > 0
+                ? `${Math.round(session.duration_seconds / responses.length)}s`
+                : "0s"}
+            </div>
+            <span className="text-[11px] text-slate-500">
+              Average time spent per question prompt
+            </span>
+          </div>
+
+          <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+            <span className="text-xs text-slate-500 font-medium block mb-1">
+              Evaluation Scoring
+            </span>
+            <div className="text-xl font-bold text-slate-900">
+              {session.score !== null ? `${session.score}%` : "Recorded"}
+            </div>
+            <span className="text-[11px] text-slate-500">
+              {session.score !== null
+                ? "Scored assessment"
+                : "Full transcript saved in history"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Captured Question Responses */}
+      <div className="panel mb-7">
+        <SectionTitle
+          title="Recorded Question Responses"
+          subtitle={`${responses.length} response(s) logged in this interview session`}
+        />
+
+        {responses.length > 0 ? (
+          <div className="space-y-4">
+            {responses.map((r, idx) => (
+              <div
+                key={idx}
+                className="p-4 border border-slate-200 rounded-xl bg-slate-50/40"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    Question {idx + 1}
+                  </span>
+                  {r.duration_seconds ? (
+                    <span className="text-[11px] font-mono text-slate-500 flex items-center gap-1">
+                      <Clock size={12} />
+                      <span>{r.duration_seconds}s</span>
+                    </span>
+                  ) : null}
+                </div>
+                <h3 className="font-bold text-sm text-slate-900 mb-2 leading-snug">
+                  {r.question}
+                </h3>
+                <div className="p-3 bg-white rounded-lg border border-slate-200/80 text-xs text-slate-800 leading-relaxed whitespace-pre-wrap">
+                  {r.answer ? (
+                    r.answer
+                  ) : (
+                    <span className="text-slate-400 italic">
+                      No response text was entered for this question.
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-slate-500 italic">
+            No responses were recorded for this session.
+          </p>
+        )}
+      </div>
+
+      {/* Structured Evaluation Guidelines */}
+      <div className="panel mb-7">
+        <SectionTitle
+          title="Recommended Next Steps for Preparation"
+          subtitle="Key communication criteria to keep in mind for your next attempt"
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+          <div className="p-4 border border-slate-200 rounded-xl bg-slate-50/50">
+            <h4 className="font-bold text-xs text-slate-900 mb-1">
+              1. Concrete Evidence & Metrics
+            </h4>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              When explaining a project or system, quantify the impact where possible (e.g., latency dropped from 300ms to 45ms, memory consumption cut by 25%).
+            </p>
+          </div>
+
+          <div className="p-4 border border-slate-200 rounded-xl bg-slate-50/50">
+            <h4 className="font-bold text-xs text-slate-900 mb-1">
+              2. Structured Delivery (STAR Framework)
+            </h4>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Structure technical and behavioural answers clearly into Context, Problem/Challenge, Specific Actions Taken, and Final Outcome.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer Navigation */}
+      <div className="flex items-center justify-between">
+        <Link to="/app/history" className="btn-secondary text-xs">
+          <ArrowLeft size={14} />
+          <span>Return to History</span>
+        </Link>
+        <Link to="/app/interview" className="btn-primary text-xs">
+          <span>Practice Another Track</span>
+          <ArrowRight size={14} />
+        </Link>
+      </div>
+    </div>
+  );
+}

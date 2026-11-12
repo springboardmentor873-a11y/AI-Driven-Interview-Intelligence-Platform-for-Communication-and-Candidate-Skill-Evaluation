@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.admin import repository, service
-from app.admin.schemas import RoleAssignment, StatusUpdate, UserPage
+from app.admin.schemas import AdminStats, RoleAssignment, StatusUpdate, UserPage
 from app.auth.dependencies import AuthContext, require_admin
 from app.core.exceptions import NotFoundError
 from app.db.session import get_session
@@ -25,6 +25,12 @@ router = APIRouter(
 
 DB = Annotated[AsyncSession, Depends(get_session)]
 Actor = Annotated[AuthContext, Depends(require_admin)]  # same object as above: resolved once
+
+
+@router.get("/stats", response_model=AdminStats, summary="Platform statistics")
+async def platform_stats(db: DB) -> AdminStats:
+    stats = await repository.get_platform_stats(db)
+    return AdminStats(**stats)
 
 
 @router.get("/users", response_model=UserPage, summary="List users")

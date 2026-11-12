@@ -104,3 +104,49 @@ async def remove_user_role(db: AsyncSession, user_id: uuid.UUID, role_id: uuid.U
     await db.execute(
         delete(user_roles).where(user_roles.c.user_id == user_id, user_roles.c.role_id == role_id)
     )
+
+
+async def get_platform_stats(db: AsyncSession) -> dict:
+    from datetime import timedelta
+
+    from app.core.clock import utcnow
+
+    now = utcnow()
+    seven_days_ago = now - timedelta(days=7)
+
+    total_users = (await db.execute(select(func.count()).select_from(User))).scalar_one()
+    active_users = (
+        await db.execute(
+            select(func.count()).select_from(User).where(User.status == UserStatus.ACTIVE.value)
+        )
+    ).scalar_one()
+    suspended_users = total_users - active_users
+
+    recent_signups = (
+        await db.execute(
+            select(func.count()).select_from(User).where(User.created_at >= seven_days_ago)
+        )
+    ).scalar_one()
+
+    async def _count_role(role_name: str) -> int:
+        stmt = (
+            select(func.count())
+            .select_from(user_roles)
+            .join(Role, Role.id == user_roles.c.role_id)
+            .where(Role.name == role_name)
+        )
+        return (await db.execute(stmt)).scalar_one()
+
+    candidates_count = await _count_role(RoleName.CANDIDATE.value)
+    recruiters_count = await _count_role(RoleName.RECRUITER.value)
+    admins_count = await _count_role(RoleName.ADMIN.value)
+
+    return {
+        "total_users": total_users,
+        "candidates_count": candidates_count,
+        "recruiters_count": recruiters_count,
+        "admins_count": admins_count,
+        "active_users": active_users,
+        "suspended_users": suspended_users,
+        "recent_signups_count": recent_signups,
+    }

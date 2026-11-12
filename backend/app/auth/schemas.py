@@ -1,6 +1,14 @@
 from typing import Annotated, Literal
 
-from pydantic import AfterValidator, BaseModel, ConfigDict, EmailStr, Field, StringConstraints
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    Field,
+    StringConstraints,
+    model_validator,
+)
 
 from app.users.schemas import UserRead
 
@@ -31,6 +39,20 @@ class RegisterRequest(_Strict):
 class LoginRequest(_Strict):
     email: Email
     password: Annotated[str, Field(min_length=1, max_length=128)]
+
+
+class GoogleAuthRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    credential: str | None = Field(default=None, max_length=4096)
+    id_token: str | None = Field(default=None, max_length=4096)
+
+    @model_validator(mode="after")
+    def validate_token_present(self) -> "GoogleAuthRequest":
+        token = self.credential or self.id_token
+        if not token or len(token) < 10:
+            raise ValueError("A valid Google credential or id_token is required.")
+        self.credential = token
+        return self
 
 
 class PasswordChangeRequest(_Strict):

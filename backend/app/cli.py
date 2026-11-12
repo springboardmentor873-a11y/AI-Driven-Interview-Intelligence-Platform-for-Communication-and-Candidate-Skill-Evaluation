@@ -76,7 +76,7 @@ async def _run(args: argparse.Namespace) -> int:
                 )
 
             if existing is None:
-                password = _prompt_password()
+                password = args.password if getattr(args, "password", None) else _prompt_password()
 
                 if password is None:
                     return _fail("passwords do not match")
@@ -127,6 +127,7 @@ def main(argv: list[str] | None = None) -> int:
 
     admin.add_argument("--email", required=True)
     admin.add_argument("--full-name", default="Platform Admin")
+    admin.add_argument("--password", help="admin password (if omitted, prompts interactively)")
     admin.add_argument(
         "--promote-existing",
         action="store_true",

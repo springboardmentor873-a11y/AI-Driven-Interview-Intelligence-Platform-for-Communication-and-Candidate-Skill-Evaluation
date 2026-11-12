@@ -1,12 +1,342 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, ArrowUpRight, Award, BrainCircuit, CalendarDays, CheckCircle2, Clock3, Flame, Mic2, Play, Sparkles, Target, TrendingUp } from "lucide-react";
-import { PageHeading, Progress, SectionTitle, StatCard, Tag } from "../components/UI";
-import { sessions } from "../data/demo";
+import {
+  PlayCircle,
+  FileText,
+  Clock,
+  Award,
+  CheckCircle2,
+  ArrowRight,
+  BookOpen,
+  ChevronRight,
+  ShieldAlert,
+  Sparkles,
+} from "lucide-react";
+import { PageHeading, StatCard, SectionTitle, Badge, EmptyState } from "../components/UI";
 import { useAuth } from "../context/AuthContext";
-export default function Dashboard(){const {user}=useAuth();return <><PageHeading eyebrow="YOUR INTERVIEW WORKSPACE" title={`Good ${new Date().getHours()<12?"morning":new Date().getHours()<17?"afternoon":"evening"}, ${(user?.full_name||"there").split(" ")[0]} 👋`} description="A little practice today can make a big difference tomorrow." action={<Link to="/app/interview" className="btn-primary"><Play size={16}/> Start an interview</Link>}/>
-<div className="hero-banner"><div className="relative z-10 max-w-xl"><div className="flex items-center gap-2 text-violet-200 text-xs font-bold tracking-widest"><Sparkles size={14}/> YOUR NEXT STEP</div><h2 className="text-2xl sm:text-3xl font-extrabold text-white mt-3">Ready to make your next answer your best one?</h2><p className="text-indigo-100/80 text-sm mt-2 leading-6">Choose a practice track, answer with confidence and learn from every session.</p><Link to="/app/interview" className="inline-flex items-center gap-2 bg-white text-indigo-700 font-bold text-sm px-4 py-2.5 rounded-xl mt-5">Start practising <ArrowRight size={16}/></Link></div><div className="banner-art"><div className="banner-circle"><BrainCircuit size={65}/></div><div className="banner-spark">✦</div></div></div>
-<div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-6"><StatCard label="Interviews completed" value="12" change="+3 this week" icon={CheckCircle2}/><StatCard label="Average score" value="82%" change="+6.4%" icon={Award} tone="green"/><StatCard label="Practice time" value="4.8h" icon={Clock3} tone="blue"/><StatCard label="Current streak" value="4 days" change="Keep it up" icon={Flame} tone="orange"/></div>
-<div className="grid grid-cols-1 xl:grid-cols-3 gap-5 mt-7"><div className="panel xl:col-span-2"><SectionTitle title="Recent interviews" subtitle="Your latest practice sessions" action={<Link to="/app/history" className="text-xs font-bold text-brand">View all <ArrowUpRight size={14} className="inline"/></Link>}/><div className="divide-y divide-slate-100">{sessions.slice(0,3).map(s=><div className="session-row" key={s.id}><div className="session-icon"><Mic2/></div><div className="min-w-0 flex-1"><div className="font-bold text-sm truncate">{s.title}</div><div className="text-xs text-muted mt-1">{s.date} · {s.duration}</div></div><Tag tone="green">{s.type}</Tag><div className="text-right min-w-12"><div className="font-extrabold">{s.score}</div><div className="text-[10px] text-muted">Score</div></div></div>)}</div></div>
-<div className="panel"><SectionTitle title="Skill snapshot" subtitle="Your current strengths"/><Skill name="Communication" value={88}/><Skill name="Answer relevance" value={82}/><Skill name="Confidence" value={76}/><Skill name="Technical clarity" value={80}/><div className="mt-5 rounded-xl bg-violet-50 p-3 text-xs text-violet-800 leading-5"><Sparkles size={15} className="inline mr-1"/> Tip: Try explaining technical concepts in a simple, structured way.</div></div></div>
-<div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5"><div className="panel"><SectionTitle title="Your weekly goal" subtitle="You're building a consistent habit"/><div className="flex items-center gap-4"><div className="goal-number">4<span>/5</span></div><div className="flex-1"><Progress value={80}/><p className="text-xs text-muted mt-2">One more practice session to reach your weekly goal.</p></div></div></div><div className="panel flex items-center gap-4"><div className="stat-icon blue"><CalendarDays/></div><div className="flex-1"><b className="text-sm">Make time for one more practice</b><p className="text-xs text-muted mt-1">Consistency is more valuable than cramming.</p></div><Link to="/app/interview" className="icon-button"><ArrowRight/></Link></div></div></>}
-function Skill({name,value}){return <div className="mb-4"><div className="flex justify-between text-xs mb-2"><span className="font-semibold">{name}</span><span className="text-muted">{value}%</span></div><Progress value={value}/></div>}
+import { candidateApi } from "../lib/api";
+
+export default function CandidateDashboard() {
+  const { user } = useAuth();
+  const [stats, setStats] = useState(null);
+  const [recentInterviews, setRecentInterviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      candidateApi.getStats().catch(() => ({
+        data: {
+          interviews_completed: 0,
+          resumes_uploaded: 0,
+          total_practice_time_seconds: 0,
+          average_score: null,
+          latest_interview: null,
+        },
+      })),
+      candidateApi.getInterviews(5, 0).catch(() => ({ data: [] })),
+    ])
+      .then(([statsRes, interviewsRes]) => {
+        setStats(statsRes.data);
+        setRecentInterviews(interviewsRes.data || []);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
+  const interviewsCompleted = stats?.interviews_completed ?? 0;
+  const resumesUploaded = stats?.resumes_uploaded ?? 0;
+  const totalPracticeTimeSeconds = stats?.total_practice_time_seconds ?? 0;
+  const averageScore = stats?.average_score;
+
+  const formatDuration = (seconds) => {
+    if (!seconds) return "0 min";
+    const mins = Math.floor(seconds / 60);
+    return mins > 60 ? `${(mins / 60).toFixed(1)} hrs` : `${mins} min`;
+  };
+
+  const isNewCandidate = interviewsCompleted === 0 && resumesUploaded === 0;
+
+  return (
+    <div>
+      <PageHeading
+        eyebrow="CANDIDATE WORKSPACE"
+        title={`Welcome, ${(user?.full_name || "Candidate").split(" ")[0]}`}
+        description="Your structured interview preparation environment. Practice questions, track progress, and build interview confidence."
+        action={
+          <Link to="/app/interview" className="btn-brand text-xs">
+            <PlayCircle size={15} />
+            <span>Start Practice Session</span>
+          </Link>
+        }
+      />
+
+      {/* First-Time Onboarding Experience for New Users */}
+      {isNewCandidate && !loading && (
+        <div className="panel mb-7 border-indigo-200 bg-gradient-to-r from-indigo-50/50 via-white to-slate-50 p-6">
+          <div className="flex items-center gap-2 text-indigo-700 text-xs font-bold uppercase tracking-wider mb-2">
+            <Sparkles size={14} />
+            <span>Getting Started Checklist</span>
+          </div>
+          <h2 className="text-lg font-bold text-slate-900 tracking-tight mb-1">
+            Complete your preparation foundation
+          </h2>
+          <p className="text-xs text-slate-500 max-w-xl leading-relaxed mb-6">
+            Take these initial steps to set up your profile, submit your resume,
+            and begin your first mock interview practice.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 bg-white border border-slate-200 rounded-xl">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-slate-400">Step 1</span>
+                <Badge variant="green" icon={CheckCircle2}>
+                  Active
+                </Badge>
+              </div>
+              <h3 className="font-bold text-sm text-slate-900 mb-1">
+                Account Registration
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed mb-3">
+                Your profile is active as {user?.email}.
+              </p>
+            </div>
+
+            <div className="p-4 bg-white border border-slate-200 rounded-xl flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-slate-400">Step 2</span>
+                  <Badge variant="amber">Recommended</Badge>
+                </div>
+                <h3 className="font-bold text-sm text-slate-900 mb-1">
+                  Upload Resume
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed mb-3">
+                  Upload your PDF resume to identify relevant interview skills.
+                </p>
+              </div>
+              <Link to="/app/resume" className="btn-secondary text-xs w-full justify-between">
+                <span>Upload Resume</span>
+                <ArrowRight size={13} />
+              </Link>
+            </div>
+
+            <div className="p-4 bg-white border border-slate-200 rounded-xl flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-slate-400">Step 3</span>
+                  <Badge variant="blue">Core</Badge>
+                </div>
+                <h3 className="font-bold text-sm text-slate-900 mb-1">
+                  First Mock Interview
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed mb-3">
+                  Select a category (Technical, Behavioural, HR) and practice responses.
+                </p>
+              </div>
+              <Link to="/app/interview" className="btn-primary text-xs w-full justify-between">
+                <span>Begin Practice</span>
+                <PlayCircle size={14} />
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Real Metric Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-7">
+        <StatCard
+          label="Interviews Completed"
+          value={loading ? "..." : interviewsCompleted}
+          helper={
+            interviewsCompleted > 0
+              ? "Completed mock practice sessions"
+              : "No sessions recorded yet"
+          }
+          icon={PlayCircle}
+          tone="purple"
+        />
+        <StatCard
+          label="Total Practice Time"
+          value={loading ? "..." : formatDuration(totalPracticeTimeSeconds)}
+          helper="Time spent answering questions"
+          icon={Clock}
+          tone="blue"
+        />
+        <StatCard
+          label="Resumes Uploaded"
+          value={loading ? "..." : resumesUploaded}
+          helper={resumesUploaded > 0 ? "Saved in profile" : "PDF resume pending"}
+          icon={FileText}
+          tone="slate"
+        />
+        <StatCard
+          label="Average Score"
+          value={
+            loading
+              ? "..."
+              : averageScore !== null
+              ? `${averageScore}%`
+              : "—"
+          }
+          helper={
+            averageScore !== null
+              ? "Across completed assessments"
+              : "Calculated upon assessment"
+          }
+          icon={Award}
+          tone="green"
+        />
+      </div>
+
+      {/* Recent Interviews or Empty State */}
+      <div className="panel mb-7">
+        <SectionTitle
+          title="Recent Interview Sessions"
+          subtitle={
+            interviewsCompleted > 0
+              ? "Your latest mock interview recordings and summaries"
+              : "Your assessment history will appear here once you complete a practice session"
+          }
+          action={
+            interviewsCompleted > 0 && (
+              <Link
+                to="/app/history"
+                className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
+              >
+                <span>View all history</span>
+                <ChevronRight size={14} />
+              </Link>
+            )
+          }
+        />
+
+        {loading ? (
+          <div className="py-12 text-center text-xs text-slate-500">
+            Loading session records...
+          </div>
+        ) : recentInterviews.length > 0 ? (
+          <div className="data-table-container">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Session Track</th>
+                  <th>Difficulty</th>
+                  <th>Questions</th>
+                  <th>Duration</th>
+                  <th>Score</th>
+                  <th>Date</th>
+                  <th className="text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentInterviews.map((iv) => (
+                  <tr key={iv.id}>
+                    <td>
+                      <div className="font-semibold text-slate-900">
+                        {iv.category} Track
+                      </div>
+                      <div className="text-[11px] text-slate-500 font-mono">
+                        {iv.id.slice(0, 8)}
+                      </div>
+                    </td>
+                    <td>
+                      <Badge variant="slate">{iv.difficulty}</Badge>
+                    </td>
+                    <td>{iv.question_count} questions</td>
+                    <td>{formatDuration(iv.duration_seconds)}</td>
+                    <td>
+                      {iv.score !== null ? (
+                        <span className="font-bold text-slate-900">{iv.score}%</span>
+                      ) : (
+                        <span className="text-slate-400 text-xs">Unscored</span>
+                      )}
+                    </td>
+                    <td className="text-xs text-slate-500">
+                      {new Date(iv.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="text-right">
+                      <Link
+                        to={`/app/report?id=${iv.id}`}
+                        className="btn-secondary text-xs py-1 px-3"
+                      >
+                        View Report
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <EmptyState
+            icon={BookOpen}
+            title="You haven't completed an interview yet"
+            description="Start your first mock interview session to practice role-relevant questions, record structured responses, and view your summary report."
+            action={
+              <Link to="/app/interview" className="btn-primary text-xs">
+                <PlayCircle size={15} />
+                <span>Start Your First Interview</span>
+              </Link>
+            }
+          />
+        )}
+      </div>
+
+      {/* Practice Tracks Overview */}
+      <div className="panel">
+        <SectionTitle
+          title="Available Practice Tracks"
+          subtitle="Curated question tracks designed for structured candidate preparation"
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <div className="p-4 border border-slate-200 rounded-xl bg-slate-50/50">
+            <Badge variant="blue" className="mb-2">
+              Engineering
+            </Badge>
+            <h4 className="font-bold text-sm text-slate-900 mb-1">
+              Technical Architecture
+            </h4>
+            <p className="text-xs text-slate-500 leading-relaxed mb-3">
+              Algorithms, distributed systems, REST APIs, caching, and database query optimization.
+            </p>
+            <Link to="/app/interview?track=Technical" className="text-xs font-semibold text-indigo-600 hover:underline">
+              Practice Technical &rarr;
+            </Link>
+          </div>
+
+          <div className="p-4 border border-slate-200 rounded-xl bg-slate-50/50">
+            <Badge variant="purple" className="mb-2">
+              Soft Skills
+            </Badge>
+            <h4 className="font-bold text-sm text-slate-900 mb-1">
+              Behavioural & STAR
+            </h4>
+            <p className="text-xs text-slate-500 leading-relaxed mb-3">
+              Team collaboration, conflict resolution, technical ownership, and project deliverables.
+            </p>
+            <Link to="/app/interview?track=Behavioural" className="text-xs font-semibold text-indigo-600 hover:underline">
+              Practice Behavioural &rarr;
+            </Link>
+          </div>
+
+          <div className="p-4 border border-slate-200 rounded-xl bg-slate-50/50">
+            <Badge variant="slate" className="mb-2">
+              Culture
+            </Badge>
+            <h4 className="font-bold text-sm text-slate-900 mb-1">
+              HR & Career Alignment
+            </h4>
+            <p className="text-xs text-slate-500 leading-relaxed mb-3">
+              Professional motivations, strengths, career trajectory, and situational communication.
+            </p>
+            <Link to="/app/interview?track=HR" className="text-xs font-semibold text-indigo-600 hover:underline">
+              Practice HR &rarr;
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

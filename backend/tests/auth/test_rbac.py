@@ -248,6 +248,7 @@ PUBLIC = {
     ("GET", "/api/v1/health/ready"),
     ("POST", "/api/v1/auth/register"),
     ("POST", "/api/v1/auth/login"),
+    ("POST", "/api/v1/auth/google"),
     ("POST", "/api/v1/auth/refresh"),  # authenticated by the refresh cookie, not a bearer token
     ("POST", "/api/v1/auth/logout"),  # idempotent; acts only on the presented cookie
     ("POST", "/api/v1/auth/password/forgot"),

@@ -15,6 +15,8 @@ class UserRead(BaseModel):
     status: str
     email_verified: bool
     roles: list[str]
+    auth_provider: str = "local"
+    avatar_url: str | None = None
     created_at: datetime
 
     @classmethod
@@ -26,5 +28,7 @@ class UserRead(BaseModel):
             status=user.status,
             email_verified=user.email_verified_at is not None,
             roles=sorted(r.name for r in user.roles),
+            auth_provider=getattr(user, "auth_provider", "local") or "local",
+            avatar_url=getattr(user, "avatar_url", None),
             created_at=user.created_at,
         )

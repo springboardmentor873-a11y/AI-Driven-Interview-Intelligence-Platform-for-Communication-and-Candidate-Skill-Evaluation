@@ -18,8 +18,14 @@ if not _test_url.split("?")[0].endswith("_test"):
         2,
     )
 
+if "JWT_SECRET_KEY" in _env:
+    os.environ.setdefault("JWT_SECRET_KEY", str(_env["JWT_SECRET_KEY"]))
+if "GOOGLE_CLIENT_ID" in _env:
+    os.environ.setdefault("GOOGLE_CLIENT_ID", str(_env["GOOGLE_CLIENT_ID"]))
+
 os.environ["DATABASE_URL"] = _test_url
 os.environ["ENVIRONMENT"] = "test"
+os.environ["COOKIE_SECURE"] = "false"
 
 from alembic import command  # noqa: E402
 from alembic.config import Config  # noqa: E402

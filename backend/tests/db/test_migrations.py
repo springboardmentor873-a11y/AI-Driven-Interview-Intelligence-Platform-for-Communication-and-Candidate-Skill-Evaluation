@@ -6,7 +6,15 @@ from sqlalchemy import CheckConstraint, inspect, text
 from app.db.base import Base
 from app.users.models import RoleName
 
-EXPECTED_TABLES = {"users", "roles", "user_roles", "refresh_sessions", "one_time_tokens"}
+EXPECTED_TABLES = {
+    "users",
+    "roles",
+    "user_roles",
+    "refresh_sessions",
+    "one_time_tokens",
+    "resumes",
+    "interview_sessions",
+}
 
 
 async def _tables(engine) -> set[str]:

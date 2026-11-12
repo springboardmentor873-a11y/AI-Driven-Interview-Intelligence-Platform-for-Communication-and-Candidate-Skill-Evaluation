@@ -1,58 +1,196 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { api } from "../lib/api";
+import { authApi } from "../lib/api";
 
 const AuthContext = createContext(null);
-const demoUser = { id: "demo-candidate", full_name: "Alex Morgan", email: "alex@demo.com", role: "candidate" };
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("smarthire_user")) || null; } catch { return null; }
+    try {
+      const saved = localStorage.getItem("smarthire_user");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
   });
-  const [loading, setLoading] = useState(false);
-  const realAuth = import.meta.env.VITE_USE_REAL_AUTH === "true";
+  const [loading, setLoading] = useState(true);
 
+  // Synchronize authenticated user with backend on startup
   useEffect(() => {
-    if (!realAuth) return;
     const token = localStorage.getItem("smarthire_access_token");
-    if (token) api.get("/users/me").then(r => setUser(r.data)).catch(() => {
-      localStorage.removeItem("smarthire_access_token"); localStorage.removeItem("smarthire_user"); setUser(null);
-    });
-  }, [realAuth]);
+    if (!token) {
+      setLoading(false);
+      return;
+    }
 
-  const persist = (next, token) => {
-    setUser(next); localStorage.setItem("smarthire_user", JSON.stringify(next));
-    if (token) localStorage.setItem("smarthire_access_token", token);
+    authApi
+      .getMe()
+      .then((res) => {
+        setUser(res.data);
+        localStorage.setItem("smarthire_user", JSON.stringify(res.data));
+      })
+      .catch(() => {
+        // Token expired or invalid; attempt refresh
+        authApi
+          .refresh()
+          .then((refreshRes) => {
+            const newToken = refreshRes.data.access_token;
+            localStorage.setItem("smarthire_access_token", newToken);
+            return authApi.getMe();
+          })
+          .then((profileRes) => {
+            setUser(profileRes.data);
+            localStorage.setItem(
+              "smarthire_user",
+              JSON.stringify(profileRes.data)
+            );
+          })
+          .catch(() => {
+            localStorage.removeItem("smarthire_access_token");
+            localStorage.removeItem("smarthire_user");
+            setUser(null);
+          });
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
+  const persistAuth = (userData, token) => {
+    setUser(userData);
+    localStorage.setItem("smarthire_user", JSON.stringify(userData));
+    if (token) {
+      localStorage.setItem("smarthire_access_token", token);
+    }
   };
+
   const login = async (email, password) => {
     setLoading(true);
     try {
-      if (realAuth) {
-        const { data } = await api.post("/auth/login", { email, password });
-        const token = data.access_token || data.accessToken;
-        const profile = data.user || await api.get("/users/me", { headers: token ? { Authorization: `Bearer ${token}` } : {} }).then(r => r.data);
-        persist(profile, token); return profile;
-      }
-      await new Promise(r => setTimeout(r, 450));
-      persist({ ...demoUser, email, full_name: email.split("@")[0].replace(/[._-]/g, " ").replace(/\b\w/g, c => c.toUpperCase()) });
-      return demoUser;
-    } finally { setLoading(false); }
+      const { data } = await authApi.login({ email, password });
+      const token = data.access_token;
+      const profile = data.user;
+      persistAuth(profile, token);
+      return profile;
+    } finally {
+      setLoading(false);
+    }
   };
+
   const register = async (full_name, email, password) => {
     setLoading(true);
     try {
-      if (realAuth) {
-        await api.post("/auth/register", { full_name, email, password });
-        return await login(email, password);
-      }
-      await new Promise(r => setTimeout(r, 450));
-      const next = { ...demoUser, full_name, email }; persist(next); return next;
-    } finally { setLoading(false); }
+      await authApi.register({ full_name, email, password });
+      return await login(email, password);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const loginWithGoogle = async (credential) => {
+    setLoading(true);
+    try {
+      const { data } = await authApi.googleAuth(credential);
+      const token = data.access_token;
+      const profile = data.user;
+      persistAuth(profile, token);
+      return profile;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = async () => {
-    try { if (realAuth) await api.post("/auth/logout"); } catch { /* clear local state regardless */ }
-    localStorage.removeItem("smarthire_access_token"); localStorage.removeItem("smarthire_user"); setUser(null);
+    try {
+      await authApi.logout();
+    } catch {
+      // Local state is cleared regardless of network outcome
+    } finally {
+      localStorage.removeItem("smarthire_access_token");
+      localStorage.removeItem("smarthire_user");
+      setUser(null);
+    }
   };
-  const value = useMemo(() => ({ user, loading, login, register, logout, realAuth }), [user, loading, realAuth]);
+
+  const changePassword = async (current_password, new_password) => {
+    await authApi.changePassword({ current_password, new_password });
+  };
+
+  const requestPasswordReset = async (email) => {
+    const { data } = await authApi.forgotPassword(email);
+    return data;
+  };
+
+  const resetPassword = async (token, new_password) => {
+    await authApi.resetPassword({ token, new_password });
+  };
+
+  const refreshUser = async () => {
+    try {
+      const { data } = await authApi.getMe();
+      setUser(data);
+      localStorage.setItem("smarthire_user", JSON.stringify(data));
+      return data;
+    } catch (err) {
+      return null;
+    }
+  };
+
+  const roles = user?.roles || [];
+  const isCandidate = roles.includes("candidate");
+  const isRecruiter = roles.includes("recruiter");
+  const isAdmin = roles.includes("admin");
+
+  const primaryRole = useMemo(() => {
+    if (isAdmin) return "admin";
+    if (isRecruiter) return "recruiter";
+    if (isCandidate) return "candidate";
+    return "candidate";
+  }, [isAdmin, isRecruiter, isCandidate]);
+
+  const defaultDashboardPath = useMemo(() => {
+    if (isAdmin) return "/admin";
+    if (isRecruiter) return "/recruiter";
+    return "/app";
+  }, [isAdmin, isRecruiter]);
+
+  const value = useMemo(
+    () => ({
+      user,
+      loading,
+      roles,
+      isCandidate,
+      isRecruiter,
+      isAdmin,
+      primaryRole,
+      defaultDashboardPath,
+      login,
+      register,
+      loginWithGoogle,
+      logout,
+      changePassword,
+      requestPasswordReset,
+      resetPassword,
+      refreshUser,
+    }),
+    [
+      user,
+      loading,
+      roles,
+      isCandidate,
+      isRecruiter,
+      isAdmin,
+      primaryRole,
+      defaultDashboardPath,
+    ]
+  );
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
-export const useAuth = () => useContext(AuthContext);
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};

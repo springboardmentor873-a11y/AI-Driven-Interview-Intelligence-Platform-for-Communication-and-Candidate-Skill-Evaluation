@@ -1,12 +1,346 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, BrainCircuit, ChartNoAxesCombined, Check, Mic2, Play, ShieldCheck, Sparkles, Target, Video } from "lucide-react";
-export default function Landing(){return <div className="landing"><nav className="landing-nav"><Link to="/" className="flex items-center gap-3"><div className="brand-mark"><Sparkles size={20}/></div><b className="text-lg">SmartHire<span className="text-brand"> AI</span></b></Link><div className="hidden md:flex gap-8 text-sm text-slate-600"><a href="#features">Features</a><a href="#how">How it works</a><a href="#about">About</a></div><div className="flex gap-3"><Link to="/login" className="btn-quiet">Sign in</Link><Link to="/register" className="btn-primary">Get started <ArrowRight size={16}/></Link></div></nav>
-<section className="hero"><div className="hero-copy"><div className="eyebrow"><span className="pulse-dot"/> AI-POWERED INTERVIEW PREPARATION</div><h1>Confidence is built.<br/><span>One interview at a time.</span></h1><p>Practice with purpose. SmartHire AI helps you prepare for interviews, understand your communication and turn feedback into measurable growth.</p><div className="flex flex-wrap gap-3 mt-8"><Link to="/register" className="btn-primary px-6 py-3">Start practising <ArrowRight size={17}/></Link><a href="#how" className="btn-quiet px-6 py-3"><Play size={16}/> Explore platform</a></div><div className="hero-proof"><div className="flex -space-x-2"><span className="mini-avatar">A</span><span className="mini-avatar bg-cyan-100 text-cyan-700">J</span><span className="mini-avatar bg-amber-100 text-amber-700">M</span></div><span>Designed for focused, consistent preparation</span></div></div>
-<div className="hero-visual"><div className="visual-glow"/><div className="mock-window"><div className="flex items-center justify-between"><div><div className="text-xs text-muted">YOUR PERFORMANCE</div><div className="font-extrabold text-xl mt-1">Practice overview</div></div><span className="tag tag-green">This week</span></div><div className="score-orbit"><div className="score-ring"><div><strong>86</strong><small>Overall score</small></div></div></div><div className="grid grid-cols-2 gap-3"><div className="mini-metric"><Mic2/><b>Strong</b><small>Communication</small></div><div className="mini-metric"><Target/><b>On track</b><small>Answer relevance</small></div></div><div className="mt-5"><div className="flex justify-between text-xs font-semibold mb-2"><span>Weekly consistency</span><span>4 / 5 days</span></div><div className="progress-track"><div className="progress-fill" style={{width:"80%"}}/></div></div></div><div className="float-card float-one"><div className="float-icon"><BrainCircuit/></div><div><b>AI-powered insights</b><small>Feedback that guides you</small></div></div><div className="float-card float-two"><div className="float-icon green"><ShieldCheck/></div><div><b>Practice securely</b><small>Your progress, your pace</small></div></div></div></section>
-<section id="features" className="landing-section"><div className="section-center"><div className="eyebrow">A BETTER WAY TO PREPARE</div><h2>Everything you need to <span>show your best.</span></h2><p>One workspace for structured practice, useful feedback and visible progress.</p></div><div className="feature-grid"><Feature icon={FileTextIcon} title="Resume-aware preparation" desc="Bring your resume into the workflow and identify skills to focus on."/><Feature icon={Video} title="Mock interview room" desc="Practise answering questions in a guided interview-style experience."/><Feature icon={BrainCircuit} title="Communication insights" desc="Explore speech, confidence and answer-quality indicators."/><Feature icon={ChartNoAxesCombined} title="Progress analytics" desc="Review your practice history and identify improvement areas."/></div></section>
-<section id="how" className="how-section"><div className="section-center"><div className="eyebrow">SIMPLE, STRUCTURED, REPEATABLE</div><h2>Make every practice session count.</h2></div><div className="steps"><Step n="01" title="Set your focus" desc="Choose an interview category and the skills you want to practise."/><Step n="02" title="Take the interview" desc="Respond to guided questions in a focused mock interview room."/><Step n="03" title="Learn and improve" desc="Review feedback, track your history and plan your next attempt."/></div></section>
-<footer id="about" className="landing-footer"><div className="flex items-center gap-3"><div className="brand-mark"><Sparkles size={18}/></div><b>SmartHire AI</b></div><span>AI-powered mock interview and candidate assessment platform.</span><span>© 2026 SmartHire AI</span></footer></div>}
-import { FileText } from "lucide-react";
-const FileTextIcon=FileText;
-function Feature({icon:Icon,title,desc}){return <div className="feature-card"><div className="feature-icon"><Icon/></div><h3>{title}</h3><p>{desc}</p></div>}
-function Step({n,title,desc}){return <div className="step-card"><div className="step-number">{n}</div><h3>{title}</h3><p>{desc}</p></div>}
+import {
+  ArrowRight,
+  PlayCircle,
+  FileText,
+  ShieldCheck,
+  CheckCircle2,
+  Users,
+  Award,
+  Layers,
+  Terminal,
+  Clock,
+  Sparkles,
+} from "lucide-react";
+import { Badge } from "../components/UI";
+import { useAuth } from "../context/AuthContext";
+
+export default function Landing() {
+  const { user, defaultDashboardPath } = useAuth();
+
+  return (
+    <div className="min-h-screen bg-white text-slate-900 selection:bg-indigo-500 selection:text-white">
+      {/* Top Navbar */}
+      <nav className="h-16 border-b border-slate-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-30">
+        <div className="max-w-6xl mx-auto px-6 h-full flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-sm shadow-subtle">
+              SH
+            </div>
+            <span className="font-bold text-sm tracking-tight text-slate-900">
+              SmartHire AI
+            </span>
+          </Link>
+
+          <div className="hidden md:flex items-center gap-8 text-xs font-semibold text-slate-600">
+            <a href="#features" className="hover:text-slate-900 transition-colors">
+              Features
+            </a>
+            <a href="#tracks" className="hover:text-slate-900 transition-colors">
+              Practice Tracks
+            </a>
+            <a href="#architecture" className="hover:text-slate-900 transition-colors">
+              Architecture
+            </a>
+            <a href="#governance" className="hover:text-slate-900 transition-colors">
+              Governance
+            </a>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {user ? (
+              <Link to={defaultDashboardPath} className="btn-primary text-xs">
+                <span>Go to Workspace</span>
+                <ArrowRight size={14} />
+              </Link>
+            ) : (
+              <>
+                <Link to="/login" className="btn-quiet text-xs">
+                  Sign In
+                </Link>
+                <Link to="/register" className="btn-primary text-xs">
+                  <span>Get Started</span>
+                  <ArrowRight size={14} />
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="py-20 md:py-28 px-6 max-w-6xl mx-auto text-center">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-700 mb-6">
+          <span className="h-2 w-2 rounded-full bg-emerald-500" />
+          <span>Production-Ready Mock Interview & Skill Evaluation Platform</span>
+        </div>
+
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-slate-900 max-w-4xl mx-auto leading-[1.12] mb-6">
+          Structured interview intelligence designed for{" "}
+          <span className="text-indigo-600">authentic skill evaluation.</span>
+        </h1>
+
+        <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed mb-8">
+          Practice technical engineering, behavioural STAR scenarios, and leadership prompts.
+          Record structured responses, manage candidate resumes, and maintain rigorous role-based
+          oversight across Candidates, Recruiters, and Administrators.
+        </p>
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-sm mx-auto mb-16">
+          {user ? (
+            <Link to={defaultDashboardPath} className="btn-primary w-full sm:w-auto h-11 px-6">
+              <span>Open Dashboard</span>
+              <ArrowRight size={16} />
+            </Link>
+          ) : (
+            <>
+              <Link to="/register" className="btn-brand w-full sm:w-auto h-11 px-6">
+                <span>Start Free Practice</span>
+                <ArrowRight size={16} />
+              </Link>
+              <Link to="/login" className="btn-secondary w-full sm:w-auto h-11 px-6">
+                <span>Sign In with Google</span>
+              </Link>
+            </>
+          )}
+        </div>
+
+        {/* Hero Visual Mockup Preview */}
+        <div className="border border-slate-200 rounded-2xl p-4 bg-slate-50/50 shadow-elevated max-w-5xl mx-auto text-left">
+          <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-200 px-2">
+            <div className="flex items-center gap-2">
+              <span className="h-3 w-3 rounded-full bg-slate-300" />
+              <span className="h-3 w-3 rounded-full bg-slate-300" />
+              <span className="h-3 w-3 rounded-full bg-slate-300" />
+              <span className="ml-2 font-mono text-xs text-slate-500">
+                app.smarthire.internal / candidate-chamber
+              </span>
+            </div>
+            <Badge variant="green" icon={CheckCircle2}>
+              Live Session Environment
+            </Badge>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-2">
+            <div className="p-4 bg-white rounded-xl border border-slate-200">
+              <span className="eyebrow block mb-1">Track Selection</span>
+              <h3 className="font-bold text-sm text-slate-900 mb-1">
+                Technical Architecture Track
+              </h3>
+              <p className="text-xs text-slate-500">
+                Distributed systems, database caching, asynchronous concurrency & API fault tolerance.
+              </p>
+            </div>
+
+            <div className="p-4 bg-white rounded-xl border border-slate-200">
+              <span className="eyebrow block mb-1">Response Capture</span>
+              <h3 className="font-bold text-sm text-slate-900 mb-1">
+                STAR-Method Framework
+              </h3>
+              <p className="text-xs text-slate-500">
+                Candidate answers captured with per-prompt durations and full transcript archiving.
+              </p>
+            </div>
+
+            <div className="p-4 bg-white rounded-xl border border-slate-200">
+              <span className="eyebrow block mb-1">Security Isolation</span>
+              <h3 className="font-bold text-sm text-slate-900 mb-1">
+                Strict RBAC Protection
+              </h3>
+              <p className="text-xs text-slate-500">
+                Backend-guarded endpoints ensuring candidates, recruiters, and admins remain isolated.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Platform Features Section */}
+      <section id="features" className="py-20 bg-slate-50/60 border-t border-slate-200">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="eyebrow">Enterprise Core Capabilities</span>
+            <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 mt-2 mb-4">
+              Everything required for authentic evaluation
+            </h2>
+            <p className="text-sm text-slate-600 leading-relaxed">
+              No simulated demo statistics or fabricated AI scores. SmartHire AI focuses on
+              practical, verifiable workflows backed by robust data persistence.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="panel p-6">
+              <div className="h-10 w-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center mb-4 border border-indigo-100">
+                <PlayCircle size={20} />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 mb-2">
+                Mock Interview Chamber
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Structured prompt runner with camera/mic device testing, question timers,
+                progress pacing, and immediate session transcript generation.
+              </p>
+            </div>
+
+            <div className="panel p-6">
+              <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-4 border border-emerald-100">
+                <FileText size={20} />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 mb-2">
+                Resume & Profile Storage
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Upload verified PDF resumes. Transparent status reporting showing raw document
+                availability for authorized recruiter evaluation.
+              </p>
+            </div>
+
+            <div className="panel p-6">
+              <div className="h-10 w-10 rounded-xl bg-slate-900 text-white flex items-center justify-center mb-4">
+                <ShieldCheck size={20} />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 mb-2">
+                Three-Tier Role Security
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Distinct workflows for Candidates (practice), Recruiters (pipeline discovery),
+                and Administrators (governance and role assignment).
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Practice Tracks Section */}
+      <section id="tracks" className="py-20 border-t border-slate-200">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="eyebrow">Structured Curriculum</span>
+            <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 mt-2 mb-4">
+              Practice tracks tailored to role requirements
+            </h2>
+            <p className="text-sm text-slate-600 leading-relaxed">
+              Targeted prompts addressing key competencies in software engineering and professional communication.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-5 border border-slate-200 rounded-xl bg-white hover:border-slate-300 transition-colors">
+              <Badge variant="blue" className="mb-3">
+                Software Engineering
+              </Badge>
+              <h3 className="font-bold text-sm text-slate-900 mb-1">Technical Architecture</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Microservices, event loop execution, database query tuning, caching, and REST resiliency.
+              </p>
+            </div>
+
+            <div className="p-5 border border-slate-200 rounded-xl bg-white hover:border-slate-300 transition-colors">
+              <Badge variant="purple" className="mb-3">
+                Leadership & Teamwork
+              </Badge>
+              <h3 className="font-bold text-sm text-slate-900 mb-1">Behavioural & STAR</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Stakeholder conflict resolution, requirements ambiguity, constructive feedback, and mentoring.
+              </p>
+            </div>
+
+            <div className="p-5 border border-slate-200 rounded-xl bg-white hover:border-slate-300 transition-colors">
+              <Badge variant="green" className="mb-3">
+                Culture & Alignment
+              </Badge>
+              <h3 className="font-bold text-sm text-slate-900 mb-1">HR & Culture</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Career motivations, engineering values, self-improvement domains, and pressure management.
+              </p>
+            </div>
+
+            <div className="p-5 border border-slate-200 rounded-xl bg-white hover:border-slate-300 transition-colors">
+              <Badge variant="amber" className="mb-3">
+                Problem Solving
+              </Badge>
+              <h3 className="font-bold text-sm text-slate-900 mb-1">Analytical Reasoning</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Capacity planning, latency degradation troubleshooting, throughput scaling, and index cost analysis.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Architecture & Security Section */}
+      <section id="architecture" className="py-20 bg-slate-950 text-white border-t border-slate-900">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <span className="text-[11px] font-bold text-indigo-400 tracking-wider uppercase block mb-2">
+                SECURITY ARCHITECTURE
+              </span>
+              <h2 className="text-3xl font-extrabold tracking-tight mb-4">
+                Engineered for security, privacy, and compliance.
+              </h2>
+              <p className="text-sm text-slate-400 leading-relaxed mb-6">
+                Built on FastAPI and PostgreSQL with asynchronous SQLAlchemy 2.0. Passwords are
+                hashed using Argon2id with memory-cost constraints. Sessions use short-lived HS256 JWTs
+                and cryptographically rotated refresh cookies.
+              </p>
+
+              <div className="space-y-3 text-xs text-slate-300">
+                <div className="flex items-center gap-2.5">
+                  <CheckCircle2 size={16} className="text-emerald-400" />
+                  <span>Google Identity Services with backend cryptographic tokeninfo verification</span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <CheckCircle2 size={16} className="text-emerald-400" />
+                  <span>HttpOnly, SameSite=Lax refresh session cookies with replay protection</span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <CheckCircle2 size={16} className="text-emerald-400" />
+                  <span>Advisory-locked transactional role modifications preventing admin race conditions</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 bg-slate-900 rounded-2xl border border-slate-800 font-mono text-xs text-slate-300 space-y-3">
+              <div className="text-slate-500">// Backend Verification Flow</div>
+              <div className="text-emerald-400">POST /api/v1/auth/google {"{"} credential {"}"}</div>
+              <div className="text-slate-400 pl-4">&rarr; Google OAuth 2.0 tokeninfo verification</div>
+              <div className="text-slate-400 pl-4">&rarr; Ensure email_verified == True</div>
+              <div className="text-slate-400 pl-4">&rarr; Check existing user by email or google_id</div>
+              <div className="text-slate-400 pl-4">&rarr; Auto-assign 'candidate' default role</div>
+              <div className="text-slate-400 pl-4">&rarr; Issue short-lived JWT + Rotate refresh session</div>
+              <div className="text-emerald-400">&larr; HTTP 200 OK {"{"} access_token, user {"}"}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-12 border-t border-slate-200 bg-white text-xs text-slate-500">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2 font-bold text-slate-900">
+            <div className="h-6 w-6 rounded-md bg-slate-900 text-white flex items-center justify-center text-xs">
+              SH
+            </div>
+            <span>SmartHire AI</span>
+          </div>
+
+          <div className="flex items-center gap-6">
+            <Link to="/login" className="hover:text-slate-900 transition-colors">
+              Sign In
+            </Link>
+            <Link to="/register" className="hover:text-slate-900 transition-colors">
+              Create Account
+            </Link>
+            <a href="#features" className="hover:text-slate-900 transition-colors">
+              Platform Features
+            </a>
+          </div>
+
+          <span>&copy; {new Date().getFullYear()} SmartHire AI. All rights reserved.</span>
+        </div>
+      </footer>
+    </div>
+  );
+}

@@ -1,34 +1,259 @@
-import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Activity, Bell, BookOpen, BriefcaseBusiness, ChartNoAxesCombined, CircleHelp, FileText, LayoutDashboard, LogOut, Menu, Mic2, Settings, ShieldCheck, Sparkles, UserRound, X } from "lucide-react";
 import { useState } from "react";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import {
+  BookOpen,
+  FileText,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Mic2,
+  TrendingUp,
+  UserCheck,
+  Users,
+  Shield,
+  X,
+  UserRound,
+  ShieldCheck,
+  Briefcase,
+  PlayCircle,
+  ExternalLink,
+} from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { Badge } from "./UI";
 
-const links = [
-  { to: "/app", label: "Overview", icon: LayoutDashboard, end: true },
-  { to: "/app/resume", label: "Resume & skills", icon: FileText },
-  { to: "/app/interview", label: "Mock interview", icon: Mic2 },
-  { to: "/app/history", label: "Interview history", icon: BookOpen },
-  { to: "/app/analytics", label: "Performance", icon: ChartNoAxesCombined }
-];
 export default function Layout() {
   const [open, setOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, isCandidate, isRecruiter, isAdmin, primaryRole } = useAuth();
   const location = useLocation();
-  const title = links.find(x => x.to === location.pathname)?.label || "SmartHire AI";
-  return <div className="min-h-screen bg-canvas">
-    <aside className={`sidebar ${open ? "sidebar-open" : ""}`}>
-      <div className="flex items-center gap-3 px-6 py-7"><div className="brand-mark"><Sparkles size={21}/></div><div><div className="font-extrabold tracking-tight text-lg">SmartHire<span className="text-brand"> AI</span></div><div className="text-[10px] text-muted tracking-[.18em] uppercase">Interview intelligence</div></div><button className="ml-auto lg:hidden" onClick={() => setOpen(false)}><X/></button></div>
-      <div className="px-5 mb-3 text-[10px] font-bold tracking-[.18em] uppercase text-slate-400">Workspace</div>
-      <nav className="px-3 space-y-1">{links.map(({to,label,icon:Icon,end}) => <NavLink key={to} to={to} end={end} onClick={() => setOpen(false)} className={({isActive}) => `nav-link ${isActive ? "nav-active" : ""}`}><Icon size={18}/><span>{label}</span></NavLink>)}</nav>
-      <div className="mx-5 my-7 border-t border-slate-100"/>
-      <div className="px-5 mb-3 text-[10px] font-bold tracking-[.18em] uppercase text-slate-400">Support</div>
-      <nav className="px-3 space-y-1"><a className="nav-link" href="mailto:support@smarthire.demo"><CircleHelp size={18}/>Help centre</a><a className="nav-link" href="#about"><Settings size={18}/>Settings</a></nav>
-      <div className="sidebar-bottom"><div className="upgrade-card"><div className="flex gap-2 items-center text-brand font-bold"><ShieldCheck size={17}/> Your progress matters</div><p className="text-xs text-slate-500 mt-2 leading-5">Practice consistently and turn every attempt into progress.</p><div className="mt-3 h-1.5 rounded-full bg-violet-100"><div className="h-full w-3/4 rounded-full bg-brand"/></div></div>
-        <div className="flex items-center gap-3 px-3 py-4"><div className="avatar">{(user?.full_name || "A").charAt(0).toUpperCase()}</div><div className="min-w-0 flex-1"><div className="text-sm font-bold truncate">{user?.full_name || "Candidate"}</div><div className="text-xs text-muted truncate">{user?.email}</div></div><button title="Sign out" onClick={logout} className="icon-button"><LogOut size={17}/></button></div>
+  const navigate = useNavigate();
+
+  // Role-specific navigation definitions
+  const candidateLinks = [
+    { to: "/app", label: "Dashboard", icon: LayoutDashboard, end: true },
+    { to: "/app/interview", label: "Mock Interview", icon: PlayCircle },
+    { to: "/app/resume", label: "Resume & Skills", icon: FileText },
+    { to: "/app/history", label: "Interview History", icon: BookOpen },
+    { to: "/app/analytics", label: "Performance", icon: TrendingUp },
+  ];
+
+  const recruiterLinks = [
+    { to: "/recruiter", label: "Recruiter Overview", icon: LayoutDashboard, end: true },
+    { to: "/recruiter/candidates", label: "Candidate Directory", icon: Users },
+  ];
+
+  const adminLinks = [
+    { to: "/admin", label: "Admin Dashboard", icon: Shield, end: true },
+    { to: "/admin/users", label: "User Management", icon: UserCheck },
+  ];
+
+  const isCurrentRecruiterSection = location.pathname.startsWith("/recruiter");
+  const isCurrentAdminSection = location.pathname.startsWith("/admin");
+
+  let activeLinks = candidateLinks;
+  let workspaceSection = "Candidate Workspace";
+
+  if (isCurrentAdminSection && isAdmin) {
+    activeLinks = adminLinks;
+    workspaceSection = "Administrative Console";
+  } else if (isCurrentRecruiterSection && (isRecruiter || isAdmin)) {
+    activeLinks = recruiterLinks;
+    workspaceSection = "Recruiter Workspace";
+  }
+
+  const activeTitle =
+    activeLinks.find((x) =>
+      x.end ? location.pathname === x.to : location.pathname.startsWith(x.to)
+    )?.label || "Workspace";
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
+
+  const getRoleTone = (role) => {
+    switch (role) {
+      case "admin":
+        return "slate";
+      case "recruiter":
+        return "purple";
+      default:
+        return "blue";
+    }
+  };
+
+  return (
+    <div className="app-shell">
+      {/* Sidebar */}
+      <aside className={`app-sidebar ${open ? "open" : ""}`}>
+        {/* Brand */}
+        <div className="flex items-center justify-between px-6 h-16 border-b border-slate-200">
+          <Link to="/" className="flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+              SH
+            </div>
+            <div>
+              <span className="font-bold text-sm text-slate-900 tracking-tight block">
+                SmartHire AI
+              </span>
+              <span className="text-[10px] text-slate-500 font-medium tracking-wider uppercase block">
+                Enterprise
+              </span>
+            </div>
+          </Link>
+          <button
+            className="lg:hidden icon-btn -mr-2"
+            onClick={() => setOpen(false)}
+            aria-label="Close sidebar"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Role Workspace indicator */}
+        <div className="px-5 pt-5 pb-2">
+          <div className="flex items-center justify-between mb-2">
+            <span className="eyebrow">{workspaceSection}</span>
+            <Badge variant={getRoleTone(primaryRole)}>
+              {primaryRole.charAt(0).toUpperCase() + primaryRole.slice(1)}
+            </Badge>
+          </div>
+        </div>
+
+        {/* Main Navigation */}
+        <nav className="px-3 space-y-1 flex-1 overflow-y-auto">
+          {activeLinks.map(({ to, label, icon: Icon, end }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={end}
+              onClick={() => setOpen(false)}
+              className={({ isActive }) =>
+                `nav-item ${isActive ? "nav-item-active" : ""}`
+              }
+            >
+              <Icon size={16} />
+              <span>{label}</span>
+            </NavLink>
+          ))}
+
+          {/* Quick role-switch for multi-role accounts (e.g. Admin or Recruiter) */}
+          {(isAdmin || isRecruiter) && (
+            <div className="pt-5 mt-4 border-t border-slate-200">
+              <span className="eyebrow px-3 mb-2 block">Switch View</span>
+              {isAdmin && !isCurrentAdminSection && (
+                <NavLink
+                  to="/admin"
+                  onClick={() => setOpen(false)}
+                  className="nav-item text-slate-600 hover:text-slate-900"
+                >
+                  <Shield size={16} />
+                  <span>Go to Admin View</span>
+                </NavLink>
+              )}
+              {(isRecruiter || isAdmin) && !isCurrentRecruiterSection && (
+                <NavLink
+                  to="/recruiter"
+                  onClick={() => setOpen(false)}
+                  className="nav-item text-slate-600 hover:text-slate-900"
+                >
+                  <Briefcase size={16} />
+                  <span>Go to Recruiter View</span>
+                </NavLink>
+              )}
+              {(isCurrentAdminSection || isCurrentRecruiterSection) && (
+                <NavLink
+                  to="/app"
+                  onClick={() => setOpen(false)}
+                  className="nav-item text-slate-600 hover:text-slate-900"
+                >
+                  <PlayCircle size={16} />
+                  <span>Candidate Practice</span>
+                </NavLink>
+              )}
+            </div>
+          )}
+        </nav>
+
+        {/* User Card at bottom */}
+        <div className="p-3 border-t border-slate-200 bg-slate-50/50">
+          <div className="flex items-center gap-3 p-2 rounded-lg bg-white border border-slate-200/80 shadow-subtle">
+            {user?.avatar_url ? (
+              <img
+                src={user.avatar_url}
+                alt={user.full_name}
+                className="h-8 w-8 rounded-full object-cover border border-slate-200"
+              />
+            ) : (
+              <div className="h-8 w-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs">
+                {(user?.full_name || "U").charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <Link
+                to="/profile"
+                className="text-xs font-semibold text-slate-900 hover:underline truncate block"
+                title="Account Settings"
+              >
+                {user?.full_name || "User"}
+              </Link>
+              <div className="text-[11px] text-slate-500 truncate">
+                {user?.email}
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="icon-btn text-slate-400 hover:text-red-600 hover:bg-red-50"
+              title="Sign out"
+            >
+              <LogOut size={16} />
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Mobile scrim */}
+      {open && (
+        <div
+          className="fixed inset-0 bg-slate-900/30 backdrop-blur-xs z-25 lg:hidden"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      {/* Main Content Area */}
+      <div className="app-main">
+        {/* Top Header */}
+        <header className="app-topbar">
+          <div className="flex items-center gap-3">
+            <button
+              className="lg:hidden icon-btn"
+              onClick={() => setOpen(true)}
+              aria-label="Open sidebar"
+            >
+              <Menu size={18} />
+            </button>
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <span>{workspaceSection}</span>
+              <span>/</span>
+              <span className="font-semibold text-slate-800">{activeTitle}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Link
+              to="/profile"
+              className="btn-secondary text-xs py-1.5 px-3"
+            >
+              <UserRound size={14} />
+              <span>Profile & Settings</span>
+            </Link>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="app-content">
+          <Outlet />
+        </main>
       </div>
-    </aside>
-    {open && <button className="mobile-scrim" onClick={() => setOpen(false)} aria-label="Close menu"/>}
-    <main className="main-area"><header className="topbar"><button className="lg:hidden icon-button" onClick={() => setOpen(true)}><Menu/></button><div><div className="text-xs text-muted">Workspace / <span className="text-slate-700">{title}</span></div><div className="font-bold text-lg mt-1">{title}</div></div><div className="ml-auto flex items-center gap-3"><span className="demo-chip"><span className="pulse-dot"/>{import.meta.env.VITE_USE_REAL_AUTH === "true" ? "Connected mode" : "Interactive demo"}</span><button className="icon-button relative"><Bell size={18}/><span className="notification-dot"/></button><div className="avatar hidden sm:flex">{(user?.full_name || "A").charAt(0).toUpperCase()}</div></div></header><motion.div key={location.pathname} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{duration:.25}} className="page-content"><Outlet/></motion.div></main>
-  </div>;
+    </div>
+  );
 }

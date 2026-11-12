@@ -10,6 +10,7 @@ from app.auth.dependencies import AuthContext, get_auth_context, verify_origin
 from app.auth.schemas import (
     AccessTokenResponse,
     ForgotPasswordRequest,
+    GoogleAuthRequest,
     LoginRequest,
     LoginResponse,
     MessageResponse,
@@ -59,6 +60,26 @@ async def login(
 ) -> LoginResponse:
     result = await service.login(
         db, settings, email=body.email, password=body.password, client=_client_info(request)
+    )
+    set_refresh_cookie(response, result.refresh_token, settings)
+    return LoginResponse(
+        access_token=result.access_token,
+        expires_in=result.expires_in,
+        user=UserRead.from_user(result.user),
+    )
+
+
+@router.post(
+    "/google",
+    response_model=LoginResponse,
+    dependencies=[Depends(rate_limit("login"))],
+    summary="Authenticate or register using Google identity token",
+)
+async def login_with_google(
+    body: GoogleAuthRequest, request: Request, response: Response, db: DB, settings: AppSettings
+) -> LoginResponse:
+    result = await service.login_google(
+        db, settings, credential=body.credential, client=_client_info(request)
     )
     set_refresh_cookie(response, result.refresh_token, settings)
     return LoginResponse(

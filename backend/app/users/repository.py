@@ -14,6 +14,12 @@ async def get_by_email(db: AsyncSession, email: str) -> User | None:
     return (await db.execute(stmt)).scalar_one_or_none()
 
 
+async def get_by_google_id(db: AsyncSession, google_id: str) -> User | None:
+    """Fetch a user by their Google OAuth subject identifier."""
+    stmt = select(User).where(User.google_id == google_id).options(selectinload(User.roles))
+    return (await db.execute(stmt)).scalar_one_or_none()
+
+
 async def get_by_email_for_update(db: AsyncSession, email: str) -> User | None:
     """Fetch a user while locking the row until the current transaction ends."""
     stmt = (

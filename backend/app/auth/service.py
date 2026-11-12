@@ -3,6 +3,7 @@ import uuid
 from dataclasses import dataclass
 from datetime import timedelta
 
+import httpx
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -135,6 +136,111 @@ async def login(
         user.password_hash = await hash_password(password)
     user.failed_login_attempts = 0
     user.locked_until = None
+    user.last_login_at = now
+    session, raw_refresh = await _create_session(db, settings, user.id, client)
+    await db.commit()
+    access, expires_in = create_access_token(
+        user_id=user.id, session_id=session.id, settings=settings, now=now
+    )
+    return LoginResult(user, access, expires_in, raw_refresh)
+
+
+# ----------------------------------------------------------------------------- google oauth
+
+
+async def verify_google_credential(credential: str, expected_client_id: str) -> dict:
+    """Verify a Google identity token using Google's tokeninfo API."""
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(
+                "https://oauth2.googleapis.com/tokeninfo",
+                params={"id_token": credential},
+            )
+            if resp.status_code != 200:
+                logger.warning("Google token verification failed with status %d", resp.status_code)
+                raise InvalidCredentialsError
+            payload = resp.json()
+    except httpx.HTTPError as exc:
+        logger.error("Failed to connect to Google tokeninfo service: %s", exc)
+        raise InvalidCredentialsError from exc
+
+    iss = payload.get("iss", "")
+    if iss not in ("accounts.google.com", "https://accounts.google.com"):
+        logger.warning("Invalid Google token issuer: %s", iss)
+        raise InvalidCredentialsError
+
+    if expected_client_id and payload.get("aud") != expected_client_id:
+        logger.warning(
+            "Google token aud mismatch: %s != %s", payload.get("aud"), expected_client_id
+        )
+        raise InvalidCredentialsError
+
+    email = payload.get("email")
+    email_verified = payload.get("email_verified")
+    sub = payload.get("sub")
+    if not email or str(email_verified).lower() not in ("true", "1") or not sub:
+        logger.warning("Google token missing email, sub, or unverified: %s", email)
+        raise InvalidCredentialsError
+
+    return {
+        "email": email.strip().lower(),
+        "sub": sub,
+        "name": payload.get("name") or email.split("@")[0],
+        "picture": payload.get("picture"),
+    }
+
+
+async def login_google(
+    db: AsyncSession, settings: Settings, *, credential: str, client: ClientInfo
+) -> LoginResult:
+    """Authenticate or register a user using a verified Google OAuth identity token."""
+    now = utcnow()
+    google_data = await verify_google_credential(credential, settings.google_client_id)
+    email = google_data["email"]
+    sub = google_data["sub"]
+
+    user = await users_repo.get_by_email(db, email)
+    if user is None:
+        user = await users_repo.get_by_google_id(db, sub)
+
+    if user is None:
+        # First-time Google user: auto-create candidate account
+        candidate_role = await users_repo.get_role_by_name(db, RoleName.CANDIDATE.value)
+        if candidate_role is None:
+            raise RuntimeError("Role 'candidate' is missing; run `alembic upgrade head`.")
+
+        user = User(
+            email=email,
+            full_name=google_data["name"][:255],
+            google_id=sub,
+            auth_provider="google",
+            avatar_url=google_data.get("picture"),
+            email_verified_at=now,
+        )
+        user.roles = [candidate_role]  # Default role is Candidate
+        db.add(user)
+        try:
+            await db.flush()
+        except IntegrityError as exc:
+            await db.rollback()
+            raise EmailTakenError from exc
+    else:
+        if user.status != UserStatus.ACTIVE.value:
+            raise AccountSuspendedError
+
+        # Securely link Google identity to existing account
+        if not user.google_id:
+            user.google_id = sub
+            if user.auth_provider == "local":
+                user.auth_provider = "google+local"
+        if user.email_verified_at is None:
+            user.email_verified_at = now
+        if not user.avatar_url and google_data.get("picture"):
+            user.avatar_url = google_data["picture"]
+
+        user.failed_login_attempts = 0
+        user.locked_until = None
+
     user.last_login_at = now
     session, raw_refresh = await _create_session(db, settings, user.id, client)
     await db.commit()

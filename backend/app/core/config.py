@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     cors_origins: str = ""
     frontend_url: str = "http://localhost:5173"
 
+    # --- Google OAuth ---
+    google_client_id: str = ""
+
     # --- JWT access tokens (algorithm is fixed to HS256 in code, never configurable) ---
     jwt_secret_key: SecretStr
     jwt_issuer: str = "smarthire-ai"

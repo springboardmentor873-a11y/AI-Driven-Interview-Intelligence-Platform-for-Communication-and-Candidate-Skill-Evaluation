@@ -9,19 +9,125 @@ import Interview from "./pages/Interview";
 import Report from "./pages/Report";
 import History from "./pages/History";
 import Analytics from "./pages/Analytics";
+import RecruiterDashboard from "./pages/RecruiterDashboard";
+import CandidateDirectory from "./pages/CandidateDirectory";
+import AdminDashboard from "./pages/AdminDashboard";
+import Profile from "./pages/Profile";
+import Unauthorized from "./pages/Unauthorized";
 
-function Protected({children}) { const {user}=useAuth(); return user?children:<Navigate to="/login" replace/>; }
-export default function App(){return <Routes>
-  <Route path="/" element={<Landing/>}/>
-  <Route path="/login" element={<Auth/>}/>
-  <Route path="/register" element={<Auth mode="register"/>}/>
-  <Route path="/app" element={<Protected><Layout/></Protected>}>
-    <Route index element={<Dashboard/>}/>
-    <Route path="resume" element={<Resume/>}/>
-    <Route path="interview" element={<Interview/>}/>
-    <Route path="report" element={<Report/>}/>
-    <Route path="history" element={<History/>}/>
-    <Route path="analytics" element={<Analytics/>}/>
-  </Route>
-  <Route path="*" element={<Navigate to="/" replace/>}/>
-</Routes>}
+function ProtectedRoute({ children }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-500 text-xs">
+        Checking authentication...
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
+
+function RoleGuard({ allowedRoles, children }) {
+  const { user, roles, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-500 text-xs">
+        Verifying role authorization...
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const hasPermission = allowedRoles.some((r) => roles.includes(r));
+  if (!hasPermission) {
+    return <Navigate to="/unauthorized" replace />;
+  }
+
+  return children;
+}
+
+export default function App() {
+  return (
+    <Routes>
+      {/* Public Pages */}
+      <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<Auth mode="login" />} />
+      <Route path="/register" element={<Auth mode="register" />} />
+      <Route path="/unauthorized" element={<Unauthorized />} />
+
+      {/* Candidate Area */}
+      <Route
+        path="/app"
+        element={
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["candidate", "admin"]}>
+              <Layout />
+            </RoleGuard>
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Dashboard />} />
+        <Route path="resume" element={<Resume />} />
+        <Route path="interview" element={<Interview />} />
+        <Route path="report" element={<Report />} />
+        <Route path="history" element={<History />} />
+        <Route path="analytics" element={<Analytics />} />
+      </Route>
+
+      {/* Recruiter Area */}
+      <Route
+        path="/recruiter"
+        element={
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["recruiter", "admin"]}>
+              <Layout />
+            </RoleGuard>
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<RecruiterDashboard />} />
+        <Route path="candidates" element={<CandidateDirectory />} />
+      </Route>
+
+      {/* Admin Area */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["admin"]}>
+              <Layout />
+            </RoleGuard>
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<AdminDashboard />} />
+        <Route path="users" element={<AdminDashboard />} />
+      </Route>
+
+      {/* Shared Account Profile */}
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Profile />} />
+      </Route>
+
+      {/* Catch-all */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
