@@ -9,7 +9,16 @@ from app.users.models import Role, User
 
 
 async def get_by_email(db: AsyncSession, email: str) -> User | None:
+    """Fetch a user by email without locking the database row."""
     stmt = select(User).where(User.email == email).options(selectinload(User.roles))
+    return (await db.execute(stmt)).scalar_one_or_none()
+
+
+async def get_by_email_for_update(db: AsyncSession, email: str) -> User | None:
+    """Fetch a user while locking the row until the current transaction ends."""
+    stmt = (
+        select(User).where(User.email == email).options(selectinload(User.roles)).with_for_update()
+    )
     return (await db.execute(stmt)).scalar_one_or_none()
 
 

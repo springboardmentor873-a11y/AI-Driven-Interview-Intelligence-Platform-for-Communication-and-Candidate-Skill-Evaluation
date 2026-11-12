@@ -145,7 +145,27 @@ async def test_create_admin_user_is_idempotent(session):
     assert (await session.execute(select(func.count()).select_from(user_roles))).scalar_one() == 1
     assert (await session.execute(select(func.count()).select_from(User))).scalar_one() == 1
 
+async def test_existing_admin_does_not_require_promotion_confirmation(session):
+    first = await create_admin_user(
+        session,
+        email="boss@example.com",
+        full_name="Boss",
+        password=PASSWORD,
+    )
 
+    second = await create_admin_user(
+        session,
+        email="boss@example.com",
+        full_name="Boss",
+        password=None,
+    )
+
+    assert second.user.id == first.user.id
+    assert not second.created
+    assert not second.granted
+    assert await role_names(session, first.user.id) == ["admin"]
+
+    
 async def test_new_account_requires_a_password(session):
     with pytest.raises(ValueError):
         await create_admin_user(session, email="boss@example.com", full_name="B", password=None)

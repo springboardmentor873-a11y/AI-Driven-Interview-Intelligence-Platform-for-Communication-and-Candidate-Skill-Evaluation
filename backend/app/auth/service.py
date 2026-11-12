@@ -259,7 +259,7 @@ async def request_password_reset(
     """
     try:
         async with session_factory() as db:
-            user = await users_repo.get_by_email(db, email)
+            user = await users_repo.get_by_email_for_update(db, email)
             if user is None or user.status != UserStatus.ACTIVE.value:
                 return
             raw, token_hash = new_opaque_token()
