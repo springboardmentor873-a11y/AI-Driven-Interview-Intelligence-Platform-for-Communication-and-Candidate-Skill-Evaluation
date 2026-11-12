@@ -296,10 +296,10 @@ export default function CandidateDashboard() {
               Engineering
             </Badge>
             <h4 className="font-bold text-sm text-slate-900 mb-1">
-              Technical Architecture
+              Technical Engineering
             </h4>
             <p className="text-xs text-slate-500 leading-relaxed mb-3">
-              Algorithms, distributed systems, REST APIs, caching, and database query optimization.
+              Core software engineering, architecture tradeoffs, query optimization, and resilient API design.
             </p>
             <Link to="/app/interview?track=Technical" className="text-xs font-semibold text-indigo-600 hover:underline">
               Practice Technical &rarr;
@@ -311,7 +311,7 @@ export default function CandidateDashboard() {
               Soft Skills
             </Badge>
             <h4 className="font-bold text-sm text-slate-900 mb-1">
-              Behavioural & STAR
+              Behavioural & Leadership
             </h4>
             <p className="text-xs text-slate-500 leading-relaxed mb-3">
               Team collaboration, conflict resolution, technical ownership, and project deliverables.
@@ -326,10 +326,10 @@ export default function CandidateDashboard() {
               Culture
             </Badge>
             <h4 className="font-bold text-sm text-slate-900 mb-1">
-              HR & Career Alignment
+              HR & Culture Alignment
             </h4>
             <p className="text-xs text-slate-500 leading-relaxed mb-3">
-              Professional motivations, strengths, career trajectory, and situational communication.
+              Professional background, career motivations, strengths, and situational communication.
             </p>
             <Link to="/app/interview?track=HR" className="text-xs font-semibold text-indigo-600 hover:underline">
               Practice HR &rarr;

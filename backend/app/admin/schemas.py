@@ -33,3 +33,5 @@ class AdminStats(BaseModel):
     active_users: int
     suspended_users: int
     recent_signups_count: int
+    total_interviews: int = 0
+    total_resumes: int = 0

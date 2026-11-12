@@ -22,6 +22,8 @@ class InterviewCreateRequest(BaseModel):
 
 
 class InterviewRead(BaseModel):
+    model_config = {"from_attributes": True}
+
     id: uuid.UUID
     user_id: uuid.UUID
     category: str
@@ -42,6 +44,8 @@ class ResumeUploadRequest(BaseModel):
 
 
 class ResumeRead(BaseModel):
+    model_config = {"from_attributes": True}
+
     id: uuid.UUID
     user_id: uuid.UUID
     filename: str

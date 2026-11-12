@@ -109,6 +109,7 @@ async def remove_user_role(db: AsyncSession, user_id: uuid.UUID, role_id: uuid.U
 async def get_platform_stats(db: AsyncSession) -> dict:
     from datetime import timedelta
 
+    from app.candidate.models import InterviewSession, Resume
     from app.core.clock import utcnow
 
     now = utcnow()
@@ -126,6 +127,13 @@ async def get_platform_stats(db: AsyncSession) -> dict:
         await db.execute(
             select(func.count()).select_from(User).where(User.created_at >= seven_days_ago)
         )
+    ).scalar_one()
+
+    total_interviews = (
+        await db.execute(select(func.count()).select_from(InterviewSession))
+    ).scalar_one()
+    total_resumes = (
+        await db.execute(select(func.count()).select_from(Resume))
     ).scalar_one()
 
     async def _count_role(role_name: str) -> int:
@@ -149,4 +157,6 @@ async def get_platform_stats(db: AsyncSession) -> dict:
         "active_users": active_users,
         "suspended_users": suspended_users,
         "recent_signups_count": recent_signups,
+        "total_interviews": total_interviews,
+        "total_resumes": total_resumes,
     }

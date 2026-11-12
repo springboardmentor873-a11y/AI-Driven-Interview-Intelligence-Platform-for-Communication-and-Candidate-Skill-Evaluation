@@ -15,6 +15,10 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldCheck,
+  FileText,
+  Clock,
+  Briefcase,
+  UserPlus,
 } from "lucide-react";
 import {
   PageHeading,
@@ -129,6 +133,39 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleQuickApproveRecruiter = async (targetUser) => {
+    setActionBusy(true);
+    setActionError("");
+    setActionSuccess("");
+    try {
+      await adminApi.grantRole(targetUser.id, "recruiter");
+      setActionSuccess(`Recruiter privileges approved for ${targetUser.email}.`);
+      fetchUsers();
+      fetchStats();
+    } catch (err) {
+      setActionError(err.message || "Failed to approve recruiter role.");
+    } finally {
+      setActionBusy(false);
+    }
+  };
+
+  const handleQuickRevokeRecruiter = async (targetUser) => {
+    if (!confirm(`Revoke recruiter privileges from ${targetUser.email}?`)) return;
+    setActionBusy(true);
+    setActionError("");
+    setActionSuccess("");
+    try {
+      await adminApi.revokeRole(targetUser.id, "recruiter");
+      setActionSuccess(`Recruiter privileges revoked from ${targetUser.email}.`);
+      fetchUsers();
+      fetchStats();
+    } catch (err) {
+      setActionError(err.message || "Failed to revoke recruiter role.");
+    } finally {
+      setActionBusy(false);
+    }
+  };
+
   const handleRevokeRole = async (targetUser, roleName) => {
     if (
       !confirm(
@@ -233,42 +270,52 @@ export default function AdminDashboard() {
       )}
 
       {/* Real Platform Statistics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-7">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5 mb-7">
         <StatCard
-          label="Total Registered Users"
+          label="Total Users"
           value={statsLoading ? "..." : stats?.total_users ?? 0}
-          helper="Verified in PostgreSQL database"
+          helper="PostgreSQL accounts"
           icon={Users}
           tone="slate"
         />
         <StatCard
           label="Candidates"
           value={statsLoading ? "..." : stats?.candidates_count ?? 0}
-          helper="Candidate role holders"
+          helper="Active candidate pool"
           icon={UserCheck}
           tone="blue"
         />
         <StatCard
-          label="Recruiters & Admins"
-          value={
-            statsLoading
-              ? "..."
-              : `${stats?.recruiters_count ?? 0} rec / ${stats?.admins_count ?? 0} adm`
-          }
-          helper="Elevated platform roles"
-          icon={Shield}
+          label="Recruiters"
+          value={statsLoading ? "..." : stats?.recruiters_count ?? 0}
+          helper="Approved recruiters"
+          icon={Briefcase}
           tone="purple"
         />
         <StatCard
-          label="Active vs Suspended"
+          label="Interviews"
+          value={statsLoading ? "..." : stats?.total_interviews ?? 0}
+          helper="Completed sessions"
+          icon={Clock}
+          tone="green"
+        />
+        <StatCard
+          label="Resumes"
+          value={statsLoading ? "..." : stats?.total_resumes ?? 0}
+          helper="Parsed documents"
+          icon={FileText}
+          tone="amber"
+        />
+        <StatCard
+          label="Active Accounts"
           value={
             statsLoading
               ? "..."
-              : `${stats?.active_users ?? 0} / ${stats?.suspended_users ?? 0}`
+              : `${stats?.active_users ?? 0}`
           }
-          helper={`${stats?.recent_signups_count ?? 0} signups past 7 days`}
+          helper={`${stats?.recent_signups_count ?? 0} signups this week`}
           icon={ShieldCheck}
-          tone="green"
+          tone="slate"
         />
       </div>
 
@@ -344,12 +391,13 @@ export default function AdminDashboard() {
                   <th>Provider</th>
                   <th>Status</th>
                   <th>Registered</th>
-                  <th className="text-right">Manage</th>
+                  <th className="text-right">Actions & Permissions</th>
                 </tr>
               </thead>
               <tbody>
                 {users.map((u) => {
                   const isCurrent = u.id === currentAdmin?.id;
+                  const isRecruiter = u.roles?.includes("recruiter");
 
                   return (
                     <tr key={u.id}>
@@ -367,7 +415,7 @@ export default function AdminDashboard() {
                         </div>
                       </td>
                       <td>
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap items-center gap-1">
                           {u.roles?.map((r) => (
                             <span
                               key={r}
@@ -401,10 +449,10 @@ export default function AdminDashboard() {
                             type="button"
                             onClick={() => openGrantRoleModal(u)}
                             className="inline-flex items-center gap-0.5 text-[10px] text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-1.5 py-0.5 rounded"
-                            title="Grant a role"
+                            title="Assign other role"
                           >
                             <Plus size={10} />
-                            <span>Add</span>
+                            <span>Role</span>
                           </button>
                         </div>
                       </td>
@@ -424,19 +472,46 @@ export default function AdminDashboard() {
                         </span>
                       </td>
                       <td className="text-right">
-                        {!isCurrent && (
-                          <button
-                            onClick={() => handleToggleStatus(u)}
-                            disabled={actionBusy}
-                            className={`btn-secondary text-xs py-1 px-2.5 ${
-                              u.status === "active"
-                                ? "text-amber-700 hover:text-amber-900 hover:bg-amber-50"
-                                : "text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50"
-                            }`}
-                          >
-                            {u.status === "active" ? "Suspend" : "Reactivate"}
-                          </button>
-                        )}
+                        <div className="flex items-center justify-end gap-1.5">
+                          {/* Recruiter Quick Approval / Revocation Button */}
+                          {!isCurrent && (
+                            <>
+                              {!isRecruiter ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleQuickApproveRecruiter(u)}
+                                  disabled={actionBusy}
+                                  title="Approve recruiter privileges"
+                                  className="btn-secondary text-[11px] py-1 px-2 text-indigo-700 hover:text-indigo-900 hover:bg-indigo-50 border-indigo-200"
+                                >
+                                  Approve Recruiter
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleQuickRevokeRecruiter(u)}
+                                  disabled={actionBusy}
+                                  title="Revoke recruiter privileges"
+                                  className="btn-secondary text-[11px] py-1 px-2 text-purple-700 hover:text-purple-900 hover:bg-purple-50 border-purple-200"
+                                >
+                                  Revoke Recruiter
+                                </button>
+                              )}
+
+                              <button
+                                onClick={() => handleToggleStatus(u)}
+                                disabled={actionBusy}
+                                className={`btn-secondary text-[11px] py-1 px-2 ${
+                                  u.status === "active"
+                                    ? "text-amber-700 hover:text-amber-900 hover:bg-amber-50"
+                                    : "text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50"
+                                }`}
+                              >
+                                {u.status === "active" ? "Suspend" : "Activate"}
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );

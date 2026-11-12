@@ -4,6 +4,7 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.candidate.models import InterviewSession, Resume
+from app.candidate.schemas import InterviewRead
 
 
 async def list_interviews(
@@ -106,6 +107,8 @@ async def get_candidate_stats(db: AsyncSession, user_id: uuid.UUID) -> dict:
         "resumes_uploaded": resumes_count,
         "total_practice_time_seconds": total_time,
         "average_score": avg_score,
-        "latest_interview": interviews[0] if interviews else None,
+        "latest_interview": (
+            InterviewRead.model_validate(interviews[0]) if interviews else None
+        ),
     }
 
