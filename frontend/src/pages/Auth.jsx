@@ -7,32 +7,36 @@ import {
   Lock,
   Mail,
   User,
-  ShieldCheck,
   AlertCircle,
   CheckCircle2,
-  HelpCircle,
   Loader2,
   GraduationCap,
   Briefcase,
   ArrowLeft,
-  Clock,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { Badge, GoogleButton, Modal } from "../components/UI";
+import { GoogleButton, Modal } from "../components/UI";
 
 export default function Auth({ mode: initialMode, workspace: initialWorkspace }) {
   const { workspaceType } = useParams();
   const [searchParams] = useSearchParams();
 
   // Determine workspace ('candidate' or 'recruiter')
-  const workspace = initialWorkspace || workspaceType || searchParams.get("workspace") || "candidate";
+  const [workspace, setWorkspace] = useState(() => {
+    if (initialWorkspace) return initialWorkspace;
+    const urlWs = searchParams.get("workspace");
+    if (urlWs) return urlWs;
+    if (workspaceType === "recruiter") return "recruiter";
+    return "candidate";
+  });
   const isRecruiterWorkspace = workspace === "recruiter";
 
   // Tab mode: 'login' vs 'register'
   const [mode, setMode] = useState(() => {
     if (initialMode) return initialMode;
     const tab = searchParams.get("tab");
-    return tab === "register" ? "register" : "login";
+    if (tab === "register" || workspaceType === "register") return "register";
+    return "login";
   });
   const isRegister = mode === "register";
 
@@ -77,20 +81,16 @@ export default function Auth({ mode: initialMode, workspace: initialWorkspace })
       return;
     }
 
-    // Account has Candidate role only
-    if (isRecruiterWorkspace) {
-      if (isRegister) {
-        navigate("/recruiter/pending-approval?new=1");
-      } else {
-        navigate("/recruiter/pending-approval?from=login");
-      }
+    // Candidate role
+    if (isRecruiterWorkspace && isRegister) {
+      navigate("/recruiter/pending-approval?new=1");
       return;
     }
 
     navigate("/app");
   };
 
-  // Render official Google button if Google Identity Services is available
+  // Google Identity Services button mount
   useEffect(() => {
     if (!googleClientId || typeof window === "undefined" || !window.google?.accounts?.id) {
       return;
@@ -117,10 +117,14 @@ export default function Auth({ mode: initialMode, workspace: initialWorkspace })
 
       if (googleTargetRef.current) {
         googleTargetRef.current.innerHTML = "";
+        const targetWidth = Math.min(
+          320,
+          Math.max(240, (googleTargetRef.current.offsetWidth || 300) - 20)
+        );
         window.google.accounts.id.renderButton(googleTargetRef.current, {
           theme: "outline",
           size: "large",
-          width: 380,
+          width: targetWidth,
           text: isRegister ? "signup_with" : "signin_with",
           shape: "rectangular",
           logo_alignment: "left",
@@ -173,289 +177,231 @@ export default function Auth({ mode: initialMode, workspace: initialWorkspace })
       const res = await requestPasswordReset(forgotEmail.trim());
       setForgotStatus(res.message || "Password reset request recorded.");
     } catch (err) {
-      setForgotStatus("If an account exists with this email, a reset notice has been generated.");
+      setForgotStatus("If an account exists with this email, a reset notice has been sent.");
     } finally {
       setForgotBusy(false);
     }
   };
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white selection:bg-indigo-500 selection:text-white">
-      {/* Left Brand Column */}
-      <div className="hidden lg:flex flex-col justify-between p-12 bg-slate-950 text-white border-r border-slate-900">
-        <div>
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-white text-slate-950 flex items-center justify-center font-bold text-sm">
-              SH
-            </div>
-            <span className="font-bold text-base tracking-tight text-white">
-              SmartHire AI
-            </span>
-          </Link>
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center py-12 px-4 sm:px-6 overflow-x-hidden selection:bg-slate-900 selection:text-white">
+      {/* Brand Header */}
+      <div className="mb-8 text-center">
+        <Link to="/" className="inline-flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded bg-slate-900 text-white flex items-center justify-center font-bold text-xs tracking-wider">
+            SH
+          </div>
+          <span className="font-bold text-base tracking-tight text-slate-900">
+            SmartHire AI
+          </span>
+        </Link>
+      </div>
 
-          <div className="mt-20 max-w-md">
-            <span className="text-[11px] font-bold text-indigo-400 tracking-wider uppercase block mb-3">
-              {isRecruiterWorkspace ? "RECRUITER WORKSPACE" : "CANDIDATE WORKSPACE"}
-            </span>
-            <h1 className="text-3xl font-extrabold tracking-tight leading-tight mb-4">
-              {isRecruiterWorkspace
-                ? "Objective talent discovery and technical assessment review."
-                : "Structured preparation for authentic candidate skill evaluation."}
-            </h1>
-            <p className="text-sm text-slate-400 leading-relaxed">
-              {isRecruiterWorkspace
-                ? "Review verified candidate skill profiles, evaluate mock interview recordings, and inspect structured performance analytics."
-                : "Access curated mock interview tracks, record structured responses, and maintain your professional resume profile under genuine role-based access."}
-            </p>
+      {/* Centered Authentication Card */}
+      <div className="w-full max-w-[420px] min-w-0 bg-white border border-slate-200/90 rounded-2xl shadow-card p-6 sm:p-8">
+        {/* Title & Subtitle */}
+        <div className="mb-6 text-center">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            {isRegister ? "Create an account" : "Welcome back"}
+          </h1>
+          <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+            {isRegister
+              ? "Sign up to start practicing or evaluating interviews."
+              : "Sign in to continue to SmartHire AI."}
+          </p>
+        </div>
+
+        {/* Role Selection for Registration */}
+        {isRegister && (
+          <div className="mb-5">
+            <label className="field-label text-center mb-1.5 text-slate-500">
+              I want to use SmartHire AI as:
+            </label>
+            <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-lg">
+              <button
+                type="button"
+                onClick={() => setWorkspace("candidate")}
+                className={`py-2 px-3 text-xs font-semibold rounded-md flex items-center justify-center gap-1.5 transition-all ${
+                  !isRecruiterWorkspace
+                    ? "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <GraduationCap size={14} />
+                <span>Candidate</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setWorkspace("recruiter")}
+                className={`py-2 px-3 text-xs font-semibold rounded-md flex items-center justify-center gap-1.5 transition-all ${
+                  isRecruiterWorkspace
+                    ? "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <Briefcase size={14} />
+                <span>Recruiter</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Google Authentication */}
+        <div className="mb-5 overflow-hidden">
+          <div ref={googleTargetRef} className="w-full flex justify-center overflow-hidden">
+            <GoogleButton
+              onClick={handleCustomGoogleClick}
+              label={isRegister ? "Sign up with Google" : "Sign in with Google"}
+            />
           </div>
         </div>
 
-        <div className="space-y-4 max-w-md pt-8 border-t border-slate-900 text-xs text-slate-400">
-          <div className="flex items-center gap-2.5">
-            <ShieldCheck size={16} className="text-emerald-400 shrink-0" />
-            <span>Cryptographically verified Argon2id & JWT authentication</span>
+        {/* Centered Divider */}
+        <div className="relative flex items-center justify-center my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-slate-200" />
           </div>
-          <div className="flex items-center gap-2.5">
-            <ShieldCheck size={16} className="text-emerald-400 shrink-0" />
-            <span>Strict role-based authorization across Candidate, Recruiter & Admin</span>
+          <div className="relative bg-white px-3 text-[11px] font-medium text-slate-400 uppercase tracking-wider">
+            or continue with email
           </div>
+        </div>
+
+        {/* Error Alert */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg flex items-start gap-2">
+            <AlertCircle size={15} className="flex-shrink-0 mt-0.5" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {/* Credentials Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {isRegister && (
+            <div>
+              <label className="field-label">Full Name</label>
+              <div className="field-wrap">
+                <User size={15} />
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Jane Doe"
+                />
+              </div>
+            </div>
+          )}
+
+          <div>
+            <label className="field-label">Email address</label>
+            <div className="field-wrap">
+              <Mail size={15} />
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@example.com"
+                autoComplete="email"
+              />
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="field-label mb-0">Password</label>
+              {!isRegister && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setForgotEmail(email);
+                    setForgotStatus("");
+                    setForgotOpen(true);
+                  }}
+                  className="text-xs text-slate-600 hover:text-slate-900 underline font-medium"
+                >
+                  Forgot password?
+                </button>
+              )}
+            </div>
+            <div className="field-wrap">
+              <Lock size={15} />
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                minLength={isRegister ? 10 : 1}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={isRegister ? "Minimum 10 characters" : "Enter your password"}
+                autoComplete={isRegister ? "new-password" : "current-password"}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="text-slate-400 hover:text-slate-600 focus:outline-none"
+                aria-label="Toggle password visibility"
+              >
+                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={submitting}
+            className="btn-primary w-full justify-center mt-2 h-11 text-sm font-semibold shadow-sm"
+          >
+            {submitting ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <span>{isRegister ? "Create Account" : "Sign In"}</span>
+            )}
+          </button>
+        </form>
+
+        {/* Switch Mode Footer */}
+        <div className="mt-6 pt-5 border-t border-slate-100 text-center text-xs text-slate-500">
+          {isRegister ? (
+            <span>
+              Already have an account?{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("login");
+                  setError("");
+                }}
+                className="font-semibold text-slate-900 hover:underline"
+              >
+                Sign in
+              </button>
+            </span>
+          ) : (
+            <span>
+              Don't have an account?{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("register");
+                  setError("");
+                }}
+                className="font-semibold text-slate-900 hover:underline"
+              >
+                Create one
+              </button>
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Right Form Column */}
-      <div className="flex items-center justify-center p-6 sm:p-12">
-        <div className="w-full max-w-sm">
-          {/* Header Switcher */}
-          <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
-            <Link
-              to="/workspace"
-              className="text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1.5"
-            >
-              <ArrowLeft size={13} />
-              <span>Switch Workspace</span>
-            </Link>
-
-            <Badge variant={isRecruiterWorkspace ? "purple" : "blue"}>
-              {isRecruiterWorkspace ? "Recruiter" : "Candidate"}
-            </Badge>
-          </div>
-
-          {/* Heading */}
-          <div className="mb-6">
-            <div className="flex items-center gap-2 mb-1.5">
-              <div
-                className={`h-7 w-7 rounded-lg flex items-center justify-center ${
-                  isRecruiterWorkspace
-                    ? "bg-purple-50 text-purple-600"
-                    : "bg-indigo-50 text-indigo-600"
-                }`}
-              >
-                {isRecruiterWorkspace ? <Briefcase size={15} /> : <GraduationCap size={16} />}
-              </div>
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                {isRecruiterWorkspace ? "Talent Acquisition" : "Interview Preparation"}
-              </span>
-            </div>
-
-            <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
-              {isRegister
-                ? isRecruiterWorkspace
-                  ? "Create your Recruiter Account"
-                  : "Create your Candidate Account"
-                : isRecruiterWorkspace
-                ? "Sign in to your Recruiter Workspace"
-                : "Sign in to your Candidate Workspace"}
-            </h2>
-            <p className="text-xs text-slate-500 mt-1">
-              {isRegister
-                ? isRecruiterWorkspace
-                  ? "Register for recruiter review access to evaluate candidate assessments."
-                  : "Enter your details to initialize your candidate interview environment."
-                : isRecruiterWorkspace
-                ? "Enter your credentials to access the talent pipeline console."
-                : "Enter your registered credentials to access your mock interview dashboard."}
-            </p>
-          </div>
-
-          {/* Tab Switcher: Sign In vs Create Account */}
-          <div className="grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-lg mb-6">
-            <button
-              type="button"
-              onClick={() => {
-                setMode("login");
-                setError("");
-              }}
-              className={`py-1.5 text-xs font-bold rounded-md transition-all ${
-                !isRegister
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-500 hover:text-slate-800"
-              }`}
-            >
-              Sign In
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMode("register");
-                setError("");
-              }}
-              className={`py-1.5 text-xs font-bold rounded-md transition-all ${
-                isRegister
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-500 hover:text-slate-800"
-              }`}
-            >
-              Create Account
-            </button>
-          </div>
-
-          {/* Recruiter Registration Notice */}
-          {isRegister && isRecruiterWorkspace && (
-            <div className="mb-5 p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 space-y-1">
-              <div className="flex items-center gap-1.5 font-bold">
-                <Clock size={13} className="text-amber-700" />
-                <span>Approval Workflow Notice</span>
-              </div>
-              <p className="text-[11px] text-amber-800 leading-relaxed">
-                Recruiter registration submits an access request for administrator verification. Candidate practice features remain accessible immediately while approval is pending.
-              </p>
-            </div>
-          )}
-
-          {/* Google Authentication */}
-          <div className="mb-5">
-            {googleClientId ? (
-              <div ref={googleTargetRef} className="flex justify-center w-full" />
-            ) : (
-              <GoogleButton
-                onClick={handleCustomGoogleClick}
-                label={isRegister ? "Sign up with Google" : "Continue with Google"}
-              />
-            )}
-          </div>
-
-          <div className="relative flex items-center justify-center my-6">
-            <div className="border-t border-slate-200 w-full" />
-            <span className="bg-white px-3 text-xs text-slate-400 font-medium uppercase tracking-wider relative">
-              or continue with email
-            </span>
-          </div>
-
-          {/* Error Banner */}
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg flex items-start gap-2">
-              <AlertCircle size={15} className="flex-shrink-0 mt-0.5" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          {/* Main Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {isRegister && (
-              <div>
-                <label className="field-label">Full Name</label>
-                <div className="field-wrap">
-                  <User size={15} />
-                  <input
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Jane Doe"
-                  />
-                </div>
-              </div>
-            )}
-
-            <div>
-              <label className="field-label">Email Address</label>
-              <div className="field-wrap">
-                <Mail size={15} />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@example.com"
-                />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="field-label mb-0">Password</label>
-                {!isRegister && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setForgotEmail(email);
-                      setForgotStatus("");
-                      setForgotOpen(true);
-                    }}
-                    className="text-xs text-indigo-600 hover:underline font-medium"
-                  >
-                    Forgot password?
-                  </button>
-                )}
-              </div>
-              <div className="field-wrap">
-                <Lock size={15} />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  required
-                  minLength={isRegister ? 10 : 1}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={isRegister ? "Minimum 10 characters" : "Enter your password"}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="text-slate-400 hover:text-slate-600 focus:outline-none"
-                  aria-label="Toggle password visibility"
-                >
-                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={submitting}
-              className={`${
-                isRecruiterWorkspace ? "btn-primary" : "btn-brand"
-              } w-full justify-center mt-2 h-10`}
-            >
-              {submitting ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                <>
-                  <span>
-                    {isRegister
-                      ? isRecruiterWorkspace
-                        ? "Register as Recruiter"
-                        : "Create Candidate Account"
-                      : "Sign In"}
-                  </span>
-                  <ArrowRight size={15} />
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* Switch mode footer */}
-          <div className="text-center text-xs text-slate-500 mt-6 pt-5 border-t border-slate-100 flex items-center justify-between">
-            <span className="text-slate-400">
-              {isRecruiterWorkspace ? "Recruiter Portal" : "Candidate Portal"}
-            </span>
-            <Link
-              to="/workspace"
-              className="font-semibold text-indigo-600 hover:text-indigo-700"
-            >
-              Switch Workspace &rarr;
-            </Link>
-          </div>
-        </div>
+      {/* Back to Home Link */}
+      <div className="mt-6">
+        <Link
+          to="/"
+          className="text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1.5 transition-colors"
+        >
+          <ArrowLeft size={13} />
+          <span>Back to SmartHire AI</span>
+        </Link>
       </div>
 
       {/* Forgot Password Modal */}
@@ -519,7 +465,7 @@ export default function Auth({ mode: initialMode, workspace: initialWorkspace })
       >
         <div className="text-xs text-slate-600 space-y-3">
           <p>
-            Google OAuth requires a valid <code className="text-indigo-600 bg-slate-100 px-1 py-0.5 rounded">VITE_GOOGLE_CLIENT_ID</code> in <code className="bg-slate-100 px-1 py-0.5 rounded">frontend/.env</code> and matching backend authorization.
+            Google OAuth requires a valid <code className="text-slate-900 bg-slate-100 px-1 py-0.5 rounded font-mono">VITE_GOOGLE_CLIENT_ID</code> in <code className="bg-slate-100 px-1 py-0.5 rounded font-mono">frontend/.env</code> and matching backend authorization.
           </p>
           <div className="flex justify-end pt-2">
             <button

@@ -68,7 +68,9 @@ export default function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/workspace" element={<WorkspaceSelect />} />
 
-      {/* Role-Specific Authentication Routes */}
+      {/* Role-Specific and Standalone Authentication Routes */}
+      <Route path="/auth/login" element={<Auth mode="login" />} />
+      <Route path="/auth/register" element={<Auth mode="register" />} />
       <Route path="/auth/candidate" element={<Auth workspace="candidate" />} />
       <Route path="/auth/recruiter" element={<Auth workspace="recruiter" />} />
       <Route path="/auth/:workspaceType" element={<Auth />} />

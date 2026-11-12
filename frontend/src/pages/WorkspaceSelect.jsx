@@ -130,7 +130,7 @@ export default function WorkspaceSelect() {
 
             <Link
               to="/auth/candidate"
-              className="btn-brand w-full h-11 text-sm justify-center group-hover:bg-indigo-700 transition-colors"
+              className="btn-primary w-full h-11 text-sm justify-center transition-colors"
             >
               <span>Continue as Candidate</span>
               <ArrowRight size={15} />
@@ -179,11 +179,11 @@ export default function WorkspaceSelect() {
           </div>
         </div>
 
-        {/* Security / RBAC Note */}
+        {/* Workspace Guidance Note */}
         <div className="mt-12 text-center text-xs text-slate-500 max-w-lg mx-auto flex items-center justify-center gap-2">
           <ShieldCheck size={16} className="text-slate-400 shrink-0" />
           <span>
-            Workspace selection directs your onboarding journey. Actual platform permissions are governed by verified backend role assignments.
+            Candidate and recruiter accounts maintain dedicated dashboards and tools tailored to your goals.
           </span>
         </div>
       </main>
