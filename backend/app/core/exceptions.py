@@ -116,6 +116,45 @@ class OriginNotAllowedError(AppException):
     default_message = "This request origin is not allowed."
 
 
+# Stage 4: RBAC and administrator exceptions
+
+
+class ForbiddenError(AppException):
+    status_code = 403
+    code = "forbidden"
+    default_message = "You do not have permission to perform this action."
+
+
+class NotFoundError(AppException):
+    status_code = 404
+    code = "not_found"
+    default_message = "Resource not found."
+
+
+class RoleAlreadyAssignedError(AppException):
+    status_code = 409
+    code = "role_already_assigned"
+    default_message = "The user already has this role."
+
+
+class RoleNotAssignedError(AppException):
+    status_code = 404
+    code = "role_not_assigned"
+    default_message = "The user does not have this role."
+
+
+class CannotModifySelfError(AppException):
+    status_code = 400
+    code = "cannot_modify_self"
+    default_message = "You cannot remove your own admin role or suspend your own account."
+
+
+class LastAdminError(AppException):
+    status_code = 400
+    code = "last_admin"
+    default_message = "This change would leave the platform without an active admin."
+
+
 async def app_exception_handler(
     request: Request,
     exc: AppException,
