@@ -1,12 +1,22 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import api from '../api/client'
-import Navbar from '../components/Navbar'
+import { useAuth } from '../context/AuthContext'
+import Shell from '../components/Shell'
+import StatCard from '../components/StatCard'
+
+const greeting = () => {
+  const h = new Date().getHours()
+  return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
+}
 
 export default function CandidateDashboard() {
+  const { user } = useAuth()
   const [stats, setStats] = useState(null)
   const [resumes, setResumes] = useState([])
-  const [file, setFile] = useState(null)
-  const [message, setMessage] = useState('')
+  const [message, setMessage] = useState(null)
+  const [dragging, setDragging] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const inputRef = useRef(null)
 
   const load = async () => {
     const [d, r] = await Promise.all([api.get('/dashboard/'), api.get('/resumes/')])
@@ -18,69 +28,107 @@ export default function CandidateDashboard() {
     load()
   }, [])
 
- const upload = async (e) => {
-  e.preventDefault()
-  if (!file) {
-    setMessage('Please choose a PDF file first.')
-    return
-  }
-  const form = e.target
-  const body = new FormData()
-  body.append('file', file)
-  try {
-    await api.post('/resumes/', body)
-    setMessage('Resume uploaded.')
-    setFile(null)
-    form.reset()
-    load()
-  } catch (err) {
-    console.error('Upload error:', err)
-    if (!err.response) {
-      setMessage('Cannot reach the server. Check that Django is running and CORS / VITE_API_BASE_URL are correct.')
-    } else {
-      const d = err.response.data
-      setMessage(`Error ${err.response.status}: ` + (d?.file?.[0] || d?.detail || 'Upload failed.'))
+  const uploadFile = async (file) => {
+    if (!file) return
+    setBusy(true)
+    setMessage(null)
+    const body = new FormData()
+    body.append('file', file)
+    try {
+      await api.post('/resumes/', body)
+      setMessage({ type: 'ok', text: 'Resume uploaded successfully.' })
+      load()
+    } catch (err) {
+      if (!err.response) {
+        setMessage({ type: 'error', text: 'Cannot reach the server. Is the backend running?' })
+      } else {
+        const d = err.response.data
+        setMessage({ type: 'error', text: d?.file?.[0] || d?.detail || 'Upload failed.' })
+      }
+    } finally {
+      setBusy(false)
+      if (inputRef.current) inputRef.current.value = ''
     }
   }
-}
-  const Card = ({ label, value }) => (
-    <div className='rounded-xl bg-white p-5 shadow'>
-      <p className='text-sm text-slate-500'>{label}</p>
-      <p className='text-3xl font-bold text-slate-900'>{value ?? '-'}</p>
-    </div>
-  )
+
+  const onDrop = (e) => {
+    e.preventDefault()
+    setDragging(false)
+    uploadFile(e.dataTransfer.files[0])
+  }
 
   return (
-    <div className='min-h-screen bg-slate-100'>
-      <Navbar />
-      <main className='mx-auto max-w-5xl px-4 py-8'>
-        <h2 className='mb-4 text-xl font-semibold text-slate-900'>Candidate Dashboard</h2>
+    <Shell
+      title={`${greeting()}, ${user?.username}`}
+      subtitle='Upload your resume and get ready for your first practice interview.'
+    >
+      <div className='mb-8 grid gap-4 sm:grid-cols-3'>
+        <StatCard label='Resumes uploaded' value={stats?.resumes} tone='sand' />
+        <StatCard label='Practice interviews' value={stats?.interviews} tone='moss' />
+        <StatCard label='Assessments' value={stats?.assessments} tone='saffron' />
+      </div>
 
-        <div className='mb-8 grid gap-4 sm:grid-cols-3'>
-          <Card label='Resumes' value={stats?.resumes} />
-          <Card label='Interviews' value={stats?.interviews} />
-          <Card label='Assessments' value={stats?.assessments} />
-        </div>
+      <div className='grid gap-6 lg:grid-cols-3'>
+        <section className='lg:col-span-2'>
+          <div
+            onDragOver={(e) => {
+              e.preventDefault()
+              setDragging(true)
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={onDrop}
+            onClick={() => inputRef.current?.click()}
+            className={`cursor-pointer rounded-3xl border-2 border-dashed p-10 text-center transition ${
+              dragging ? 'border-moss bg-moss/5' : 'border-ink/20 bg-white/60 hover:border-moss'
+            }`}
+          >
+            <input
+              ref={inputRef}
+              type='file'
+              accept='application/pdf'
+              className='hidden'
+              onChange={(e) => uploadFile(e.target.files[0])}
+            />
+            <p className='font-display text-2xl font-semibold'>{busy ? 'Uploading...' : 'Drop your resume here'}</p>
+            <p className='mt-1 text-sm text-ink/60'>or click to browse. PDF only, up to 5 MB.</p>
+          </div>
 
-        <section className='rounded-xl bg-white p-6 shadow'>
-          <h3 className='mb-3 font-semibold text-slate-900'>Upload resume (PDF, max 5 MB)</h3>
-          <form onSubmit={upload} className='flex flex-wrap items-center gap-3'>
-            <input type='file' accept='application/pdf' onChange={(e) => setFile(e.target.files[0])} />
-            <button className='rounded bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-500'>Upload</button>
-          </form>
-          {message && <p className='mt-3 text-sm text-slate-600'>{message}</p>}
+          {message && (
+            <p
+              className={`mt-4 rounded-xl px-4 py-3 text-sm ${
+                message.type === 'ok' ? 'bg-moss/10 text-moss' : 'bg-clay/10 text-clay'
+              }`}
+            >
+              {message.text}
+            </p>
+          )}
 
-          <ul className='mt-5 divide-y'>
-            {resumes.length === 0 && <li className='py-2 text-sm text-slate-500'>No resumes yet.</li>}
+          <h2 className='mb-3 mt-8 font-display text-2xl font-semibold'>Your resumes</h2>
+          <ul className='space-y-3'>
+            {resumes.length === 0 && (
+              <li className='rounded-2xl bg-sand/60 px-5 py-4 text-sm text-ink/60'>Nothing here yet. Upload your first one above.</li>
+            )}
             {resumes.map((r) => (
-              <li key={r.id} className='flex justify-between py-2 text-sm'>
-                <span>{r.original_name}</span>
-                <span className='text-slate-500'>{r.status} - {new Date(r.created_at).toLocaleString()}</span>
+              <li key={r.id} className='flex items-center gap-4 rounded-2xl bg-white/70 px-5 py-4'>
+                <span className='grid h-11 w-11 place-items-center rounded-xl bg-clay text-xs font-bold text-paper'>PDF</span>
+                <div className='min-w-0 flex-1'>
+                  <p className='truncate font-semibold'>{r.original_name}</p>
+                  <p className='text-xs text-ink/55'>{new Date(r.created_at).toLocaleString()}</p>
+                </div>
+                <span className='rounded-full bg-moss/10 px-3 py-1 text-xs font-semibold capitalize text-moss'>{r.status}</span>
               </li>
             ))}
           </ul>
         </section>
-      </main>
-    </div>
+
+        <aside className='h-fit rounded-3xl bg-ink p-7 text-paper'>
+          <span className='rounded-full bg-saffron px-3 py-1 text-xs font-bold text-ink'>Coming next</span>
+          <h3 className='mt-4 font-display text-2xl font-semibold'>Your interview room</h3>
+          <p className='mt-2 text-sm text-paper/70'>
+            AI questions based on your resume, voice answers and detailed feedback are being built in the next milestones.
+          </p>
+        </aside>
+      </div>
+    </Shell>
   )
 }
