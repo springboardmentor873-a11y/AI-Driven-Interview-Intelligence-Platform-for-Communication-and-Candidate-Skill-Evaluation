@@ -1,0 +1,6 @@
+import { motion } from "framer-motion";
+export function PageHeading({eyebrow,title,description,action}) { return <div className="page-heading"><div><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{description}</p></div>{action}</div>; }
+export function StatCard({label,value,change,icon:Icon,tone="violet"}) { return <div className="stat-card"><div className={`stat-icon ${tone}`}><Icon size={19}/></div><div className="text-sm text-muted mt-4">{label}</div><div className="flex items-end gap-2 mt-1"><div className="text-3xl font-extrabold tracking-tight">{value}</div>{change && <span className="text-xs font-bold text-emerald-600 mb-1">{change}</span>}</div></div>; }
+export function SectionTitle({title,subtitle,action}) { return <div className="flex items-center justify-between gap-4 mb-4"><div><h2 className="text-base font-extrabold">{title}</h2>{subtitle && <p className="text-xs text-muted mt-1">{subtitle}</p>}</div>{action}</div>; }
+export function Progress({value,color="brand"}) { return <div className="progress-track"><motion.div initial={{width:0}} animate={{width:`${value}%`}} transition={{duration:.7}} className={`progress-fill ${color}`}/></div>; }
+export function Tag({children,tone="purple"}) { return <span className={`tag tag-${tone}`}>{children}</span>; }
