@@ -1,0 +1,72 @@
+/* A quiet workspace: one primary action, a short workflow, and real history. */
+.app-layout { background: #171622; }
+.sidebar { background: #1c1a29; }
+.sidebar-bottom { margin-top: auto; padding-top: 30px; }
+.app-header { background: #171622; }
+.main-content { max-width: 1280px; margin-inline: auto; width: 100%; }
+.overview { display: grid; gap: 28px; }
+.overview .page-heading { margin-bottom: 0; align-items: center; }
+.overview .page-heading h1 { font-size: clamp(25px, 2.4vw, 32px); font-weight: 600; letter-spacing: -.8px; }
+.overview .page-heading p { font-size: 13px; line-height: 1.7; }
+.overview .small-eyebrow { font-size: 9px; letter-spacing: 1.8px; }
+.practice-intro { display: grid; grid-template-columns: 1.2fr 1fr; align-items: center; gap: 20px; padding: 30px 36px; border: 1px solid #40394f; border-radius: 16px; background: #252033; overflow: hidden; }
+.practice-copy { max-width: 400px; }
+.feature-status { color: #b9a5dd; font-size: 9px; letter-spacing: 1.4px; font-weight: 600; }
+.practice-intro h2 { font-size: clamp(25px, 2.6vw, 35px); line-height: 1.2; letter-spacing: -1px; font-weight: 600; margin: 17px 0 14px; }
+.practice-intro p { font-size: 13px; line-height: 1.8; color: #b9b1c8; margin-bottom: 23px; max-width: 350px; }
+.practice-intro .button { background: #9163df; box-shadow: none; font-size: 12px; min-height: 44px; border: 0; }
+.practice-intro img { display: block; width: 100%; max-width: 360px; height: auto; justify-self: center; }
+.overview-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.overview-section-heading h2 { font-size: 16px; font-weight: 550; letter-spacing: -.25px; }
+.overview-section-heading > span { font-size: 11px; color: #a49caf; }
+.preparation-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.preparation-step { display: flex; flex-direction: column; padding: 22px; background: #211e2e; border: 1px solid #363141; border-radius: 12px; transition: transform 200ms ease, border-color 200ms ease, background 200ms ease; }
+.step-top { display: flex; justify-content: space-between; align-items: center; color: #bba0eb; margin-bottom: 22px; }
+.step-top span { color: #777080; font-size: 12px; font-variant-numeric: tabular-nums; }
+.preparation-step h3 { font-size: 14px; font-weight: 550; margin-bottom: 9px; }
+.preparation-step p { font-size: 12px; line-height: 1.8; color: #aaa2b7; margin-bottom: 24px; }
+.step-link { margin-top: auto; display: flex; justify-content: space-between; gap: 8px; font-size: 11px; color: #ccbaec; }
+.step-link svg, .subtle-link svg, .button svg { transition: transform 180ms ease; }
+.recent-sessions { padding-bottom: 10px; }
+.session-empty { border: 1px dashed #40394f; border-radius: 12px; display: flex; align-items: center; gap: 18px; padding: 25px; }
+.session-icon { display: grid; place-items: center; width: 45px; height: 45px; flex-shrink: 0; border-radius: 12px; background: #272233; color: #a896c2; }
+.session-empty h3 { font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+.session-empty p { font-size: 12px; color: #a49caf; line-height: 1.7; }
+.workspace-page { animation: workspace-enter 320ms cubic-bezier(.2,.7,.3,1) both; }
+.overview > section { animation: workspace-enter 400ms cubic-bezier(.2,.7,.3,1) both; }
+.overview > section:nth-of-type(2) { animation-delay: 60ms; }
+.overview > section:nth-of-type(3) { animation-delay: 110ms; }
+.nav-link { transition: background 180ms ease, color 180ms ease; }
+.nav-link.active { background: #30273f; box-shadow: inset 3px 0 #b18be9; }
+@keyframes workspace-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@media (hover: hover) {
+  .preparation-step:hover { transform: translateY(-3px); border-color: #79618f; background: #272233; }
+  .preparation-step:hover .step-link svg, .subtle-link:hover svg, .button:hover svg:last-child { transform: translateX(3px); }
+}
+@media (max-width: 1000px) {
+  .practice-intro { padding: 26px; grid-template-columns: 1.3fr 1fr; }
+  .preparation-grid { gap: 10px; }
+  .preparation-step { padding: 17px; }
+}
+@media (max-width: 800px) {
+  .practice-intro { grid-template-columns: 1fr; }
+  .practice-intro img { display: none; }
+  .practice-copy { max-width: none; }
+  .preparation-grid { grid-template-columns: 1fr; }
+  .step-top { margin-bottom: 15px; }
+  .preparation-step p { margin-bottom: 16px; }
+}
+@media (max-width: 680px) {
+  .overview { gap: 25px; }
+  .practice-intro { padding: 25px; }
+  .overview-section-heading { align-items: baseline; }
+  .overview-section-heading h2 { font-size: 14px; }
+  .overview-section-heading > span { font-size: 10px; }
+  .session-empty { padding: 20px; align-items: flex-start; }
+  .sidebar { transition: transform 280ms cubic-bezier(.2,.7,.3,1), visibility 280ms; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workspace-page, .overview > section { animation: none; }
+  .preparation-step, .step-link svg, .subtle-link svg, .button svg, .nav-link { transition: none; }
+  .preparation-step:hover, .preparation-step:hover .step-link svg, .subtle-link:hover svg, .button:hover svg:last-child { transform: none; }
+}
