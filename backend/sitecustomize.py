@@ -11,3 +11,4 @@ if "_multiprocessing" not in sys.modules:
         _shim.send = lambda h, b: len(b)
         _shim.recv = lambda h, s: b""
         sys.modules["_multiprocessing"] = _shim
+

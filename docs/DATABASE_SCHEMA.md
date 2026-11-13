@@ -182,3 +182,4 @@ Global platform configuration and scoring rubric weights.
 - `value` (JSON, Not Null)
 - `description` (TEXT, Nullable)
 - `updated_at` (TIMESTAMP, UTC Default)
+

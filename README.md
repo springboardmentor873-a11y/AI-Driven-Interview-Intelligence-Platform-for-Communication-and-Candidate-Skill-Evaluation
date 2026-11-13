@@ -84,3 +84,4 @@ docker-compose up --build
 - Frontend UI: `http://localhost:5173`
 - Backend API: `http://localhost:8000`
 - PostgreSQL: `localhost:5432`
+

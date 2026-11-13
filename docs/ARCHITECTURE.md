@@ -93,3 +93,4 @@
 ### Workflow 4: Scoring Rubric Formula (Milestone 3 & 4 Preview)
 Candidate evaluation follows the weighted scoring rubric:
 $$\text{Overall Score} = (\text{Communication} \times 30\%) + (\text{Confidence} \times 25\%) + (\text{Technical} \times 30\%) + (\text{Professionalism} \times 15\%)$$
+

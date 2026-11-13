@@ -60,3 +60,4 @@ The SmartHire AI backend exposes RESTful endpoints with interactive OpenAPI Swag
 | `GET` | `/admin/metrics` | Platform overview statistics (users, resumes, sessions, audits) | Admin |
 | `GET` | `/admin/audit-logs` | Retrieve system activity logs & security audit trail | Admin |
 | `GET` | `/admin/settings` | Retrieve active scoring rubric weights and AI configurations | Admin |
+

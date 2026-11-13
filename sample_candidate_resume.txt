@@ -1,0 +1,32 @@
+Alex Rivera - Full Stack & AI Engineer
+Email: alex.rivera@example.com | Phone: +1 (555) 382-9481 | Location: San Francisco, CA
+LinkedIn: linkedin.com/in/alexrivera-dev | GitHub: github.com/alexrivera
+
+PROFESSIONAL SUMMARY:
+Results-driven Full Stack Engineer with 4 years of experience architecting high-throughput distributed systems, RESTful microservices, and modern web applications. Proficient in Python, FastAPI, React, TypeScript, and PostgreSQL. Experienced with Docker, Kubernetes, AWS cloud infrastructure, CI/CD pipelines, and integrating machine learning workflows.
+
+CORE TECHNICAL SKILLS:
+- Programming Languages: Python, JavaScript, TypeScript, SQL, HTML, CSS, C++
+- Frontend Development: React, Vite, Tailwind CSS, Redux, Next.js
+- Backend & Microservices: FastAPI, Django, Node.js, Express.js, REST APIs
+- Databases & Storage: PostgreSQL, Redis, MongoDB, SQLite
+- Cloud & DevOps: Docker, Kubernetes, AWS, CI/CD, GitHub Actions, Linux
+- AI & Data Science: Machine Learning, PyTorch, Scikit-Learn, Whisper, OpenCV, NLP
+- Methodologies: Agile, Scrum, Git, System Design, Problem Solving
+
+PROFESSIONAL EXPERIENCE:
+Senior Software Engineer | Apex Cloud Solutions (2022 - Present)
+- Designed and maintained scalable RESTful microservices using FastAPI, Python, and PostgreSQL, reducing latency by 35%.
+- Built responsive client dashboards with React, TypeScript, and Tailwind CSS serving 50,000+ monthly active users.
+- Automated testing and continuous delivery workflows using GitHub Actions and Docker container orchestration.
+- Integrated AI speech transcription and NLP summarization services into production pipelines.
+
+Software Engineer | NextGen Technologies (2020 - 2022)
+- Developed backend data processing modules with Python, Redis, and relational database systems.
+- Implemented JWT-based authentication and role-based access control (RBAC) mechanisms.
+- Collaborated across cross-functional engineering teams utilizing Agile sprints and Git version control.
+
+EDUCATION:
+Bachelor of Technology in Computer Science & Engineering (2016 - 2020)
+State University of Technology - Honors Graduate
+
