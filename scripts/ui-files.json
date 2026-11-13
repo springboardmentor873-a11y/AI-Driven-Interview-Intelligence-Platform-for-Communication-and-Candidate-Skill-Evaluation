@@ -1,0 +1,43 @@
+{
+  "baselineTag": "module1-ui-original",
+  "baselineCommit": "0bffdad0ace77251b1d96f1ea4f216c44e5c8d74",
+  "protectedFiles": [
+    ".env",
+    ".env.local",
+    ".env.example",
+    ".firebaserc",
+    "firebase.json",
+    "firestore.indexes.json",
+    "firestore.rules",
+    "storage.rules",
+    "src/lib/firebase.js",
+    "src/context/AuthContext.jsx",
+    "src/services/authService.js",
+    "src/services/userService.js",
+    "scripts/createAdmin.js"
+  ],
+  "uiFiles": [
+    "index.html",
+    "src/index.css",
+    "src/App.jsx",
+    "src/main.jsx",
+    "src/layout/AuthLayout.jsx",
+    "src/layout/DashboardLayout.jsx",
+    "src/components/common/Button.jsx",
+    "src/components/common/Header.jsx",
+    "src/components/common/Input.jsx",
+    "src/components/common/Loading.jsx",
+    "src/components/common/ProtectedRoute.jsx",
+    "src/components/common/RoleRoute.jsx",
+    "src/components/common/Sidebar.jsx",
+    "src/pages/NotFound.jsx",
+    "src/pages/Unauthorized.jsx",
+    "src/pages/admin/AdminDashboard.jsx",
+    "src/pages/auth/ForgotPassword.jsx",
+    "src/pages/auth/Login.jsx",
+    "src/pages/auth/Register.jsx",
+    "src/pages/candidate/CandidateDashboard.jsx",
+    "src/pages/recruiter/RecruiterDashboard.jsx"
+  ]
+}
+
