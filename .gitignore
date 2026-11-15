@@ -17,3 +17,11 @@ dist/
 .vscode/
 .idea/
 *.log
+# SmartHire AI database backups and uploaded files
+*.dump
+backend/uploads/
+
+# Temporary backup/reference files
+backend/app/api/resume_backup.py
+frontend/App-css.txt
+frontend/auth-js.txt

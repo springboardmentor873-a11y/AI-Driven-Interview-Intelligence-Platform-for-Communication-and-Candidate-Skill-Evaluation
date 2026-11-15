@@ -3,6 +3,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.auth import router as auth_router
+from app.api.admin import router as admin_router
+from app.api.profiles import router as profiles_router
+from app.api.resume import router as resume_router
+from app.api.recruiter import router as recruiter_router
+from app.api.interview_templates import router as interview_templates_router
+
 
 app = FastAPI(
     title="SmartHire AI",
@@ -10,6 +16,8 @@ app = FastAPI(
     version="1.0.0"
 )
 
+
+# CORS CONFIGURATION
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -21,8 +29,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth_router)
 
+# REGISTER API ROUTERS
+app.include_router(auth_router)
+app.include_router(admin_router)
+app.include_router(profiles_router)
+app.include_router(resume_router)
+app.include_router(recruiter_router)
+app.include_router(interview_templates_router)
 
 @app.get("/")
 def home():
