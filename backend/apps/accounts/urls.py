@@ -4,7 +4,13 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from .views import ProfileView, RegisterView
+from .views import (
+    ProfileView,
+    RegisterView,
+    ResumeDetailView,
+    ResumeDownloadView,
+    ResumeListCreateView,
+)
 
 
 urlpatterns = [
@@ -27,5 +33,20 @@ urlpatterns = [
         "profile/",
         ProfileView.as_view(),
         name="profile",
+    ),
+    path(
+        "resumes/",
+        ResumeListCreateView.as_view(),
+        name="resume-list-create",
+    ),
+    path(
+        "resumes/<int:pk>/download/",
+        ResumeDownloadView.as_view(),
+        name="resume-download",
+    ),
+    path(
+        "resumes/<int:pk>/",
+        ResumeDetailView.as_view(),
+        name="resume-detail",
     ),
 ]

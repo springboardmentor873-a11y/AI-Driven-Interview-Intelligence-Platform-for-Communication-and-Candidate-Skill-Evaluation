@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+from .models import Resume
+
 User = get_user_model()
 
 
@@ -18,21 +20,15 @@ class RegisterSerializer(serializers.ModelSerializer):
             "password",
             "first_name",
             "last_name",
-            "role",
         ]
-
-        extra_kwargs = {
-            "role": {"required": False},
-        }
 
     def create(self, validated_data):
         password = validated_data.pop("password")
 
-        user = User(**validated_data)
-        user.set_password(password)
-        user.save()
-
-        return user
+        return User.objects.create_user(
+            password=password,
+            **validated_data,
+        )
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -48,3 +44,27 @@ class UserProfileSerializer(serializers.ModelSerializer):
         ]
 
         read_only_fields = ["id", "username", "email", "role"]
+
+
+class ResumeSerializer(serializers.ModelSerializer):
+    max_file_size = 10 * 1024 * 1024
+
+    class Meta:
+        model = Resume
+        fields = ["id", "file", "uploaded_at"]
+        read_only_fields = ["id", "uploaded_at"]
+
+    def validate_file(self, value):
+        if value.size > self.max_file_size:
+            raise serializers.ValidationError(
+                "Resume files must be 10 MB or smaller."
+            )
+
+        header = value.read(1024)
+        value.seek(0)
+        if b"%PDF-" not in header:
+            raise serializers.ValidationError(
+                "The uploaded file must be a valid PDF."
+            )
+
+        return value

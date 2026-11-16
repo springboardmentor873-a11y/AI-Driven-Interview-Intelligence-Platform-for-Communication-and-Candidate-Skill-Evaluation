@@ -1,5 +1,7 @@
-from rest_framework import generics, permissions
+from rest_framework import generics
 from rest_framework.exceptions import ValidationError
+
+from apps.accounts.permissions import IsCandidate
 
 from .models import Answer, Interview, Question
 from .serializers import (
@@ -11,7 +13,7 @@ from .serializers import (
 
 class InterviewListCreateView(generics.ListCreateAPIView):
     serializer_class = InterviewSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsCandidate]
 
     def get_queryset(self):
         return Interview.objects.filter(
@@ -24,7 +26,7 @@ class InterviewListCreateView(generics.ListCreateAPIView):
 
 class InterviewDetailView(generics.RetrieveAPIView):
     serializer_class = InterviewSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsCandidate]
 
     def get_queryset(self):
         return Interview.objects.filter(
@@ -34,7 +36,7 @@ class InterviewDetailView(generics.RetrieveAPIView):
 
 class QuestionListCreateView(generics.ListCreateAPIView):
     serializer_class = QuestionSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsCandidate]
 
     def get_interview(self):
         return generics.get_object_or_404(
@@ -57,7 +59,7 @@ class QuestionListCreateView(generics.ListCreateAPIView):
 
 class AnswerCreateView(generics.CreateAPIView):
     serializer_class = AnswerSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsCandidate]
 
     def get_question(self):
         return generics.get_object_or_404(
@@ -75,7 +77,7 @@ class AnswerCreateView(generics.CreateAPIView):
                 "for this question."
             )
 
-        answer = serializer.save(question=question)
+        serializer.save(question=question)
 
         interview = question.interview
 
