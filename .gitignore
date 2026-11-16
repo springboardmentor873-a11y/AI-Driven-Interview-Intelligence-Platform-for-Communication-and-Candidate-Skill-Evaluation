@@ -1,0 +1,79 @@
+
+# ==============================
+# ENVIRONMENT VARIABLES / SECRETS
+# ==============================
+.env
+.env.*
+!.env.example
+
+# ==============================
+# PYTHON / FASTAPI BACKEND
+# ==============================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+ENV/
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ==============================
+# UPLOADS / USER DATA
+# ==============================
+backend/uploads/
+uploads/
+*.pdf
+*.docx
+
+# ==============================
+# NODE / REACT FRONTEND
+# ==============================
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+dist/
+.next/
+.vite/
+
+# ==============================
+# LOGS
+# ==============================
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# ==============================
+# IDE / EDITORS
+# ==============================
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# ==============================
+# OPERATING SYSTEM
+# ==============================
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ==============================
+# TEMPORARY FILES
+# ==============================
+*.tmp
+*.bak
+*.cache
