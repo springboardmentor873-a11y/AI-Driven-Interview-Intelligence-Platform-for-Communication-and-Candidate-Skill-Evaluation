@@ -1,12 +1,22 @@
 import { Link, useNavigate } from 'react-router-dom';
+import api from '../api';
 
 export default function Navbar({ user }) {
   const nav = useNavigate();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const refresh = localStorage.getItem('refresh');
+    if (refresh) {
+      try {
+        await api.post('/auth/logout/', { refresh });
+      } catch (err) {
+        // Continue clearing local state even if token is already expired/invalid
+        console.warn('Backend logout failed or token already blacklisted:', err);
+      }
+    }
     localStorage.removeItem('access');
     localStorage.removeItem('refresh');
-    nav('/');
+    nav('/login');
   };
 
   return (
@@ -31,12 +41,14 @@ export default function Navbar({ user }) {
             >
               Dashboard
             </Link>
-            <Link
-              to="/resumes"
-              className="text-sm font-medium text-slate-700 hover:text-blue-600 transition"
-            >
-              Resumes
-            </Link>
+            {user?.role === 'candidate' && (
+              <Link
+                to="/resumes"
+                className="text-sm font-medium text-slate-700 hover:text-blue-600 transition"
+              >
+                Resumes
+              </Link>
+            )}
 
             {user && (
               <div className="flex items-center pl-3 border-l border-slate-200 space-x-3">
@@ -50,7 +62,7 @@ export default function Navbar({ user }) {
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-medium text-slate-700 hover:bg-slate-50 transition"
+                  className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-medium text-slate-700 hover:bg-slate-50 transition cursor-pointer"
                 >
                   Logout
                 </button>

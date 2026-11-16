@@ -7,7 +7,7 @@ import ResumeUpload from './pages/ResumeUpload';
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem('access');
   if (!token) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
   return children;
 }
@@ -35,7 +35,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   );

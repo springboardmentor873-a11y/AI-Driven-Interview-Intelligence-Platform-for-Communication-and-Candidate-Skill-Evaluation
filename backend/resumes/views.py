@@ -1,25 +1,49 @@
-from rest_framework import generics, serializers
+import os
+from rest_framework import generics, serializers, status, permissions
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.response import Response
 from pypdf import PdfReader
-from .models import Resume
+from users.permissions import IsCandidate
+from .models import Resume, validate_pdf_file
 
 
 class ResumeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Resume
-        fields = ['id', 'file', 'text', 'skills', 'uploaded_at']
-        read_only_fields = ['text', 'skills', 'uploaded_at']
+        fields = [
+            'id',
+            'file',
+            'file_name',
+            'file_size',
+            'text',
+            'skills',
+            'uploaded_at'
+        ]
+        read_only_fields = ['file_name', 'file_size', 'text', 'skills', 'uploaded_at']
+
+    def validate_file(self, value):
+        validate_pdf_file(value)
+        return value
 
 
-class ResumeListCreate(generics.ListCreateAPIView):
+class ResumeListCreateView(generics.ListCreateAPIView):
     serializer_class = ResumeSerializer
     parser_classes = [MultiPartParser, FormParser]
+    permission_classes = [permissions.IsAuthenticated, IsCandidate]
 
     def get_queryset(self):
         return Resume.objects.filter(user=self.request.user).order_by('-uploaded_at')
 
     def perform_create(self, serializer):
-        r = serializer.save(user=self.request.user)
+        uploaded_file = self.request.FILES.get('file')
+        file_name = uploaded_file.name if uploaded_file else ''
+        file_size = uploaded_file.size if uploaded_file else 0
+
+        r = serializer.save(
+            user=self.request.user,
+            file_name=file_name,
+            file_size=file_size
+        )
         try:
             reader = PdfReader(r.file.path)
             text = ''.join((p.extract_text() or '') for p in reader.pages)
@@ -27,3 +51,20 @@ class ResumeListCreate(generics.ListCreateAPIView):
             text = ''
         r.text = text
         r.save()
+
+
+class ResumeDetailDestroyView(generics.RetrieveDestroyAPIView):
+    serializer_class = ResumeSerializer
+    permission_classes = [permissions.IsAuthenticated, IsCandidate]
+
+    def get_queryset(self):
+        return Resume.objects.filter(user=self.request.user)
+
+    def perform_destroy(self, instance):
+        # Remove file from storage if present
+        if instance.file and os.path.exists(instance.file.path):
+            try:
+                os.remove(instance.file.path)
+            except Exception:
+                pass
+        instance.delete()

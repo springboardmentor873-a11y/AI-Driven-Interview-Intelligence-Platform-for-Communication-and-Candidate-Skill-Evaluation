@@ -8,6 +8,7 @@ export default function ResumeUpload() {
   const [resumes, setResumes] = useState([]);
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const nav = useNavigate();
@@ -16,21 +17,49 @@ export default function ResumeUpload() {
     const fetchProfileAndResumes = async () => {
       try {
         const userRes = await api.get('/auth/me/');
+        if (userRes.data.role !== 'candidate') {
+          // Only candidates have access to resume management
+          nav('/dashboard');
+          return;
+        }
         setUser(userRes.data);
         const resumeRes = await api.get('/resumes/');
         setResumes(resumeRes.data);
       } catch (err) {
         localStorage.removeItem('access');
-        nav('/');
+        localStorage.removeItem('refresh');
+        nav('/login');
       }
     };
     fetchProfileAndResumes();
   }, [nav]);
 
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files?.[0] || null;
+    setError('');
+    setSuccess('');
+
+    if (selectedFile) {
+      if (!selectedFile.name.toLowerCase().endsWith('.pdf')) {
+        setError('Invalid file type. Only PDF (.pdf) files are allowed.');
+        setFile(null);
+        e.target.value = '';
+        return;
+      }
+      if (selectedFile.size > 5 * 1024 * 1024) {
+        setError('File size exceeds the 5 MB limit. Please select a smaller PDF.');
+        setFile(null);
+        e.target.value = '';
+        return;
+      }
+    }
+    setFile(selectedFile);
+  };
+
   const handleUpload = async (e) => {
     e.preventDefault();
     if (!file) {
-      setError('Please select a PDF resume file to upload.');
+      setError('Please select a valid PDF resume file to upload.');
       return;
     }
     setError('');
@@ -49,17 +78,46 @@ export default function ResumeUpload() {
       setSuccess('Resume uploaded and text extracted successfully!');
       setResumes([data, ...resumes]);
       setFile(null);
-      // Reset input element
       e.target.reset();
     } catch (err) {
-      setError(
+      const backendErr =
         err.response?.data?.file?.[0] ||
         err.response?.data?.detail ||
-        'Failed to upload resume. Please try again.'
-      );
+        err.response?.data?.error ||
+        'Failed to upload resume. Please check the file and try again.';
+      setError(backendErr);
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this resume?')) {
+      return;
+    }
+    setError('');
+    setSuccess('');
+    setDeletingId(id);
+
+    try {
+      await api.delete(`/resumes/${id}/`);
+      setResumes(resumes.filter((r) => r.id !== id));
+      setSuccess('Resume deleted successfully.');
+    } catch (err) {
+      setError(
+        err.response?.data?.detail ||
+        'Failed to delete resume. Please try again.'
+      );
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const formatFileSize = (bytes) => {
+    if (!bytes) return 'N/A';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   };
 
   return (
@@ -99,7 +157,7 @@ export default function ResumeUpload() {
               <input
                 type="file"
                 accept=".pdf,application/pdf"
-                onChange={(e) => setFile(e.target.files?.[0] || null)}
+                onChange={handleFileChange}
                 className="block w-full text-sm text-slate-500
                   file:mr-4 file:py-2.5 file:px-4
                   file:rounded-lg file:border-0
@@ -111,13 +169,13 @@ export default function ResumeUpload() {
               <button
                 type="submit"
                 disabled={uploading}
-                className="whitespace-nowrap px-6 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 transition"
+                className="whitespace-nowrap px-6 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 transition cursor-pointer"
               >
                 {uploading ? 'Processing PDF...' : 'Upload & Parse'}
               </button>
             </div>
             <p className="text-xs text-slate-500">
-              Supported formats: PDF. PyPDF automatically parses text upon upload.
+              Supported format: PDF only. Maximum file size: 5 MB.
             </p>
           </form>
         </div>
@@ -142,22 +200,31 @@ export default function ResumeUpload() {
                   <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 pb-3 border-b border-slate-100">
                     <div>
                       <span className="font-semibold text-slate-800">
-                        Resume #{r.id}
+                        {r.file_name || `Resume #${r.id}`}
                       </span>
                       <span className="ml-3 text-xs text-slate-500">
-                        Uploaded on: {new Date(r.uploaded_at).toLocaleString()}
+                        Size: {formatFileSize(r.file_size)} • Uploaded on: {new Date(r.uploaded_at).toLocaleString()}
                       </span>
                     </div>
-                    {r.file && (
-                      <a
-                        href={r.file}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-xs font-semibold text-blue-600 hover:text-blue-700 underline"
+                    <div className="flex items-center gap-4">
+                      {r.file && (
+                        <a
+                          href={r.file}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-xs font-semibold text-blue-600 hover:text-blue-700 underline"
+                        >
+                          View Original PDF
+                        </a>
+                      )}
+                      <button
+                        onClick={() => handleDelete(r.id)}
+                        disabled={deletingId === r.id}
+                        className="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-2.5 py-1 rounded border border-rose-200 disabled:opacity-50 transition cursor-pointer"
                       >
-                        View Original PDF
-                      </a>
-                    )}
+                        {deletingId === r.id ? 'Deleting...' : 'Delete'}
+                      </button>
+                    </div>
                   </div>
 
                   <div>

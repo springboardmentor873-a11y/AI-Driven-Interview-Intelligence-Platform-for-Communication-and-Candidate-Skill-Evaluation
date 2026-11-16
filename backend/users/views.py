@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
-from .serializers import RegisterSerializer
+from .serializers import RegisterSerializer, UserSerializer
 from .permissions import IsCandidate, IsRecruiter, IsAdmin
 
 
@@ -13,14 +13,17 @@ class RegisterView(generics.CreateAPIView):
 
 
 class MeView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request):
-        u = request.user
-        return Response({
-            'id': u.id,
-            'username': u.username,
-            'email': u.email,
-            'role': u.role
-        })
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request):
+        serializer = UserSerializer(request.user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class LogoutView(APIView):

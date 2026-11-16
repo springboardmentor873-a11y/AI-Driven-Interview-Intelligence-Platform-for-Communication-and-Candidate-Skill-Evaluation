@@ -1,6 +1,7 @@
 from django.urls import path
-from .views import ResumeListCreate
+from .views import ResumeListCreateView, ResumeDetailDestroyView
 
 urlpatterns = [
-    path('', ResumeListCreate.as_view(), name='resume-list-create'),
+    path('', ResumeListCreateView.as_view(), name='resume-list-create'),
+    path('<int:pk>/', ResumeDetailDestroyView.as_view(), name='resume-detail-destroy'),
 ]

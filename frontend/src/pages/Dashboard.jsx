@@ -56,14 +56,16 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <div className="flex gap-3">
-            <Link
-              to="/resumes"
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition"
-            >
-              Upload Resume
-            </Link>
-          </div>
+          {user.role === 'candidate' && (
+            <div className="flex gap-3">
+              <Link
+                to="/resumes"
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition"
+              >
+                Upload Resume
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Candidate Dashboard View */}
