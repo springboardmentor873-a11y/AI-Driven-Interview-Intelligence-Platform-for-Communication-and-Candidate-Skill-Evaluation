@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+/* Change the whole app's colours here.
+   Alternates:  indigo  ink #1e1b4b  accent #4f46e5  dark #4338ca
+                rose    ink #3b0d1f  accent #be123c  dark #9f1239
+                amber   ink #2b1d0e  accent #b45309  dark #92400e */
+@theme {
+  --color-ink: #0b2e33;          /* sidebar, active nav, headings */
+  --color-paper: #f2f7f6;        /* page background */
+  --color-accent: #0f766e;       /* buttons, links, focus */
+  --color-accent-dark: #115e59;  /* button hover */
+}
+
+body { @apply bg-paper text-ink antialiased; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
