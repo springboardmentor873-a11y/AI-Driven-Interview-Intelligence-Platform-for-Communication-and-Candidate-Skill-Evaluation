@@ -19,6 +19,7 @@ from .serializers import (
     ProfileUpdateSerializer,
     RegisterSerializer,
     UserSerializer,
+    wrong_role_message,
 )
 
 User = get_user_model()
@@ -108,6 +109,11 @@ class GoogleLoginView(APIView):
 
     def post(self, request):
         token = request.data.get("id_token")
+        # Which login the person used. Missing means the register page, which
+        # creates a candidate when the email is new.
+        requested_role = request.data.get("role") or None
+        if requested_role and requested_role not in User.Role.values:
+            return Response({"role": ["Choose candidate, recruiter or admin."]}, status=status.HTTP_400_BAD_REQUEST)
         if not token:
             return Response({"detail": "id_token is required."}, status=status.HTTP_400_BAD_REQUEST)
         if not settings.GOOGLE_CLIENT_ID:
@@ -125,6 +131,13 @@ class GoogleLoginView(APIView):
 
         email = info["email"].lower()
         user = User.objects.filter(email__iexact=email).first()
+        if user is None and requested_role not in (None, User.Role.CANDIDATE):
+            # Recruiter and admin accounts are never created through Google sign-in
+            label = dict(User.Role.choices)[requested_role]
+            return Response(
+                {"detail": f"No {label} account exists for this Google email."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         if user is None:
             user = User.objects.create_user(
                 username=email,
@@ -134,6 +147,11 @@ class GoogleLoginView(APIView):
             )
         elif not user.is_active:
             return Response({"detail": "This account is disabled."}, status=status.HTTP_403_FORBIDDEN)
+        elif requested_role and user.role != requested_role:
+            return Response(
+                {"detail": wrong_role_message(user.role, requested_role)},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         refresh = EmailTokenObtainPairSerializer.get_token(user)
         return Response(

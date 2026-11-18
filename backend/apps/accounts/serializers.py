@@ -1,8 +1,21 @@
 from django.contrib.auth import get_user_model, password_validation
 from rest_framework import serializers
+from rest_framework.exceptions import PermissionDenied
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 User = get_user_model()
+
+
+ROLE_LABELS = dict(User.Role.choices)
+
+
+def wrong_role_message(actual_role, requested_role):
+    """Shown when someone signs in through the wrong role's login."""
+    actual, requested = ROLE_LABELS[actual_role], ROLE_LABELS[requested_role]
+    return (
+        f"This account is registered as {actual}, not {requested}. "
+        f"Please choose {actual} to sign in."
+    )
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -58,6 +71,9 @@ class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
         super().__init__(*args, **kwargs)
         self.fields.pop(self.username_field, None)
         self.fields["email"] = serializers.EmailField()
+        # Which login the person used (Candidate, Recruiter or Admin). Optional so
+        # other API clients keep working; the web app always sends it.
+        self.fields["role"] = serializers.ChoiceField(choices=User.Role.choices, required=False)
 
     def validate(self, attrs):
         user = User.objects.filter(email__iexact=attrs["email"]).first()
@@ -67,6 +83,11 @@ class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
                 "password": attrs["password"],
             }
         )
+        # Checked only after the password is correct, so this never reveals
+        # which role an account has to someone who does not know the password.
+        requested_role = attrs.get("role")
+        if requested_role and self.user.role != requested_role:
+            raise PermissionDenied(wrong_role_message(self.user.role, requested_role))
         data["user"] = UserSerializer(self.user).data
         return data
 class ProfileUpdateSerializer(serializers.ModelSerializer):

@@ -6,8 +6,8 @@ Base URL: `http://localhost:8000`. Send `Authorization: Bearer <access token>` o
 |---|---|---|---|
 | GET | /api/health/ | Public | Service check |
 | POST | /api/auth/register/ | Public | Create a Candidate or Recruiter account |
-| POST | /api/auth/login/ | Public | Log in with email and password |
-| POST | /api/auth/google/ | Public | Log in with a Google ID token |
+| POST | /api/auth/login/ | Public | Log in with email and password. Optional `role` (`candidate`, `recruiter`, `admin`): the login is refused with 403 if the account has a different role |
+| POST | /api/auth/google/ | Public | Log in with a Google ID token. Optional `role` works the same way. Recruiter and admin accounts are never created through Google |
 | POST | /api/auth/refresh/ | Public | Exchange a refresh token for new tokens |
 | POST | /api/auth/logout/ | Logged in | Blacklist the refresh token |
 | GET | /api/auth/me/ | Logged in | Current user |

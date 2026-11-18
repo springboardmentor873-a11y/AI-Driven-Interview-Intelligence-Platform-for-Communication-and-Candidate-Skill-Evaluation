@@ -41,8 +41,9 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener("auth:logout", clearSession);
   }, [clearSession]);
 
-  const login = async (email, password) => {
-    const { data } = await client.post("/api/auth/login/", { email, password });
+  // role is which login the person used; the server rejects accounts of another role
+  const login = async (email, password, role) => {
+    const { data } = await client.post("/api/auth/login/", { email, password, role });
     return saveSession(data);
   };
 
@@ -51,8 +52,8 @@ export function AuthProvider({ children }) {
     return saveSession(data);
   };
 
-  const googleLogin = async (credential) => {
-    const { data } = await client.post("/api/auth/google/", { id_token: credential });
+  const googleLogin = async (credential, role) => {
+    const { data } = await client.post("/api/auth/google/", { id_token: credential, role });
     return saveSession(data);
   };
 
