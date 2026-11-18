@@ -20,4 +20,20 @@ Base URL: `http://localhost:8000`. Send `Authorization: Bearer <access token>` o
 | GET | /api/resumes/{id}/download/ | Candidate (owner) | View the PDF |
 | POST | /api/resumes/{id}/set-primary/ | Candidate (owner) | Mark as primary |
 | POST | /api/resumes/{id}/reparse/ | Candidate (owner) | Read the PDF and run skill analysis again |
+| POST | /api/interviews/generate-questions/ | Candidate | Preview a question set built from a resume (nothing is saved) |
 | DELETE | /api/resumes/{id}/ | Candidate (owner) | Delete resume and file |
+
+## Generate questions
+
+`POST /api/interviews/generate-questions/`
+
+| Field | Required | Notes |
+|---|---|---|
+| interview_type | Yes | `hr`, `technical`, `behavioral` or `aptitude` |
+| difficulty | No | `easy`, `medium` (default) or `hard` |
+| domain | No | Free text up to 100 characters, for example `healthcare` |
+| question_count | No | 1 to 20, default 10 |
+| resume_id | No | Defaults to the primary resume. Works with no resume too |
+
+The response has `source` (`ai` for Gemini, `basic` for the built-in question bank), the settings used, and
+`questions`, each with `text`, `category` and `time_limit_seconds`.
