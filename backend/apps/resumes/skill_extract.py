@@ -165,16 +165,24 @@ def clean_result(data) -> dict:
     }
 
 
-def analyze_resume(text: str) -> dict:
-    """Return the structured result for `text`. Never raises."""
+def analyze(text: str) -> tuple:
+    """Return (result, source). source is "ai", "basic" or "" (nothing to analyse).
+
+    Never raises: any AI problem falls back to the rule-based extractor.
+    """
     if not text.strip():
-        return clean_result({})
+        return clean_result({}), ""
     try:
-        return clean_result(gemini.generate_json(
+        data = gemini.generate_json(
             PROMPT_TEMPLATE.format(text=text), system=SYSTEM_PROMPT, temperature=0.2,
-        ))
+        )
+        return clean_result(data), "ai"
     except gemini.AIUnavailable:
         pass
     except gemini.AIError as exc:
         logger.warning("AI skill extraction failed, using rule-based fallback: %s", exc)
-    return clean_result(rule_based_extract(text))
+    return clean_result(rule_based_extract(text)), "basic"
+
+
+def analyze_resume(text: str) -> dict:
+    return analyze(text)[0]

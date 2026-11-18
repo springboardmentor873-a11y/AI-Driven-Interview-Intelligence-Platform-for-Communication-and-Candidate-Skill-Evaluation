@@ -16,6 +16,8 @@ class Resume(models.Model):
     experience = models.JSONField(default=list, blank=True)
     education = models.JSONField(default=list, blank=True)
     summary = models.TextField(blank=True)
+    # How the fields above were filled: "ai" (Gemini), "basic" (rule-based) or "" (not parsed)
+    parse_source = models.CharField(max_length=10, blank=True, default="")
     is_primary = models.BooleanField(default=False)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 

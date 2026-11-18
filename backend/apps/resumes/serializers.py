@@ -1,8 +1,7 @@
 from rest_framework import serializers
 
 from .models import Resume
-from .skill_extract import analyze_resume
-from .text_extract import extract_text
+from .parsing import parse_resume
 
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
 MAX_RESUMES_PER_USER = 5
@@ -10,14 +9,19 @@ MAX_RESUMES_PER_USER = 5
 
 class ResumeSerializer(serializers.ModelSerializer):
     size = serializers.SerializerMethodField()
+    has_text = serializers.SerializerMethodField()
 
     class Meta:
         model = Resume
         fields = (
             "id", "original_name", "is_primary", "uploaded_at", "size",
             "skills", "technologies", "experience", "education", "summary",
+            "parse_source", "has_text",
         )
         read_only_fields = fields
+
+    def get_has_text(self, obj):
+        return bool(obj.extracted_text)
 
     def get_size(self, obj):
         try:
@@ -60,16 +64,6 @@ class ResumeUploadSerializer(serializers.ModelSerializer):
             original_name=f.name[:255],
             is_primary=is_first,
         )
-        # Read the saved PDF once so later steps (skill extraction, question
-        # generation) can work from text. Failure leaves it blank, not an error.
-        with resume.file.open("rb") as stored:
-            resume.extracted_text = extract_text(stored)
-        update_fields = ["extracted_text"]
-        if resume.extracted_text:
-            # Fill skills, technologies, experience, education and summary.
-            # analyze_resume never raises, so a failure cannot block the upload.
-            for field, value in analyze_resume(resume.extracted_text).items():
-                setattr(resume, field, value)
-            update_fields += ["skills", "technologies", "experience", "education", "summary"]
-        resume.save(update_fields=update_fields)
-        return resume
+        # Read the PDF and fill skills, experience, etc. Never raises, so a
+        # parsing problem cannot block the upload.
+        return parse_resume(resume)

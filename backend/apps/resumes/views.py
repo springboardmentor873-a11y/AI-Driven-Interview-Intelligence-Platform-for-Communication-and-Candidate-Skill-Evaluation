@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from apps.accounts.permissions import IsCandidate
 
 from .models import Resume
+from .parsing import parse_resume
 from .serializers import ResumeSerializer, ResumeUploadSerializer
 
 
@@ -65,3 +66,9 @@ class ResumeViewSet(
             )
         except FileNotFoundError:
             raise Http404
+
+    @action(detail=True, methods=["post"])
+    def reparse(self, request, pk=None):
+        """Run text extraction and skill analysis again on a saved resume."""
+        resume = parse_resume(self.get_object())
+        return Response(ResumeSerializer(resume).data)

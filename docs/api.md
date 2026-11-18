@@ -19,4 +19,5 @@ Base URL: `http://localhost:8000`. Send `Authorization: Bearer <access token>` o
 | POST | /api/resumes/ | Candidate | Upload a PDF (multipart, field `file`) |
 | GET | /api/resumes/{id}/download/ | Candidate (owner) | View the PDF |
 | POST | /api/resumes/{id}/set-primary/ | Candidate (owner) | Mark as primary |
+| POST | /api/resumes/{id}/reparse/ | Candidate (owner) | Read the PDF and run skill analysis again |
 | DELETE | /api/resumes/{id}/ | Candidate (owner) | Delete resume and file |

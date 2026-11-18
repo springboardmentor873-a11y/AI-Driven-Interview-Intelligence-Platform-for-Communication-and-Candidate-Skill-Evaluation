@@ -34,6 +34,7 @@ erDiagram
         json experience
         json education
         text summary
+        string parse_source "ai, basic or empty"
     }
     INTERVIEW_TEMPLATE {
         int id PK

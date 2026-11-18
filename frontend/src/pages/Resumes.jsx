@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Navbar from "../components/layout/Navbar";
 import Button from "../components/ui/Button";
+import ResumeDetails from "../components/ResumeDetails";
 import client from "../api/client";
 import { parseError } from "../utils/errors";
 
@@ -20,6 +21,8 @@ export default function Resumes() {
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState("");
+  const [openId, setOpenId] = useState(null);
+  const [analysingId, setAnalysingId] = useState(null);
   const inputRef = useRef(null);
 
   const load = useCallback(async () => {
@@ -77,6 +80,19 @@ export default function Resumes() {
     }
   };
 
+  const reanalyse = async (id) => {
+    setError("");
+    setAnalysingId(id);
+    try {
+      const { data } = await client.post(`/api/resumes/${id}/reparse/`);
+      setResumes((list) => list.map((r) => (r.id === id ? data : r)));
+    } catch {
+      setError("Could not analyse this resume. Please try again.");
+    } finally {
+      setAnalysingId(null);
+    }
+  };
+
   const remove = async (resume) => {
     if (!window.confirm(`Delete "${resume.original_name}"?`)) return;
     setError("");
@@ -94,7 +110,7 @@ export default function Resumes() {
       <main className="mx-auto max-w-4xl px-6 py-10">
         <h1 className="text-3xl font-extrabold">My resumes</h1>
         <p className="mt-2 text-white/60">
-          Upload your PDF resume. Your primary resume is the one used to build interview
+          Upload your PDF resume. Open Details to see the skills we found. Your primary resume is the one used to build interview
           questions.
         </p>
 
@@ -139,10 +155,8 @@ export default function Resumes() {
             <p className="text-white/50">No resumes yet. Upload your first one above.</p>
           )}
           {resumes.map((r) => (
-            <div
-              key={r.id}
-              className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 bg-surface p-5"
-            >
+            <div key={r.id} className="rounded-2xl border border-white/10 bg-surface p-5">
+              <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="min-w-0">
                 <div className="flex items-center gap-3">
                   <p className="truncate font-semibold">{r.original_name}</p>
@@ -160,6 +174,13 @@ export default function Resumes() {
                 <Button variant="solid" className="!px-4 !py-2 text-sm" onClick={() => view(r.id)}>
                   View
                 </Button>
+                <Button
+                  variant="ghost"
+                  className="!px-4 !py-2 text-sm"
+                  onClick={() => setOpenId(openId === r.id ? null : r.id)}
+                >
+                  {openId === r.id ? "Hide details" : "Details"}
+                </Button>
                 {!r.is_primary && (
                   <Button variant="ghost" className="!px-4 !py-2 text-sm" onClick={() => makePrimary(r.id)}>
                     Set primary
@@ -169,6 +190,14 @@ export default function Resumes() {
                   Delete
                 </Button>
               </div>
+              </div>
+              {openId === r.id && (
+                <ResumeDetails
+                  resume={r}
+                  busy={analysingId === r.id}
+                  onReanalyse={() => reanalyse(r.id)}
+                />
+              )}
             </div>
           ))}
         </div>
