@@ -44,6 +44,8 @@ class InterviewSession(models.Model):
     difficulty = models.CharField(max_length=10, choices=Difficulty.choices, default=Difficulty.MEDIUM)
     domain = models.CharField(max_length=100, blank=True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.SCHEDULED)
+    # How the questions were made: "ai" (Gemini) or "basic" (built-in question bank)
+    question_source = models.CharField(max_length=10, blank=True, default="")
     scheduled_at = models.DateTimeField(null=True, blank=True)
     started_at = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)

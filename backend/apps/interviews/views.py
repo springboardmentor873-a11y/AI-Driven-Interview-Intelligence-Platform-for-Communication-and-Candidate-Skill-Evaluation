@@ -1,10 +1,21 @@
+from django.db import transaction
+from django.db.models import Count
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from rest_framework import mixins, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.permissions import IsCandidate
 
+from .models import Answer, InterviewSession, Question
 from .question_gen import generate_questions
-from .serializers import GenerateQuestionsSerializer
+from .serializers import (
+    CreateSessionSerializer, GenerateQuestionsSerializer, QuestionSerializer,
+    SessionSerializer, SubmitAnswerSerializer,
+)
 
 
 class GenerateQuestionsView(APIView):
@@ -29,3 +40,164 @@ class GenerateQuestionsView(APIView):
             "domain": data["domain"],
             "questions": questions,
         })
+
+
+OPEN_STATUSES = ("scheduled", "in_progress")
+MAX_OPEN_SESSIONS = 5  # each new session costs an AI call, so cap unfinished ones
+
+
+def _question_payload(question):
+    return QuestionSerializer(question).data if question else None
+
+
+class SessionViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
+):
+    """A candidate's interview sessions: create, run, finish and review them."""
+
+    permission_classes = [IsCandidate]
+    serializer_class = SessionSerializer
+
+    def get_queryset(self):
+        # Candidates only ever see their own sessions
+        return (
+            InterviewSession.objects.filter(candidate=self.request.user)
+            .select_related("resume")
+            .annotate(
+                question_total=Count("questions", distinct=True),
+                answered_total=Count("questions__answer", distinct=True),
+            )
+            .order_by("-created_at", "-id")  # newest first for the history list
+        )
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["include_questions"] = self.action == "retrieve"
+        return context
+
+    def _detail(self, session, **extra):
+        session = self.get_queryset().get(pk=session.pk)
+        data = SessionSerializer(session, context={**self.get_serializer_context(), "include_questions": True}).data
+        return Response({**data, **extra})
+
+    def create(self, request, *args, **kwargs):
+        serializer = CreateSessionSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        open_count = InterviewSession.objects.filter(
+            candidate=request.user, status__in=OPEN_STATUSES
+        ).count()
+        if open_count >= MAX_OPEN_SESSIONS:
+            raise ValidationError({
+                "detail": f"You have {open_count} unfinished interviews. Finish or cancel one before starting another."
+            })
+
+        questions, source = generate_questions(
+            data["resume"], data["interview_type"], data["difficulty"],
+            data["domain"], data["question_count"],
+        )
+        with transaction.atomic():
+            session = InterviewSession.objects.create(
+                candidate=request.user, resume=data["resume"],
+                interview_type=data["interview_type"], difficulty=data["difficulty"],
+                domain=data["domain"], question_source=source,
+            )
+            Question.objects.bulk_create([
+                Question(session=session, order=i, text=q["text"], category=q["category"],
+                         time_limit_seconds=q["time_limit_seconds"])
+                for i, q in enumerate(questions, start=1)
+            ])
+        response = self._detail(session)
+        response.status_code = status.HTTP_201_CREATED
+        return response
+
+    # --- helpers for the actions below -------------------------------------
+    def _locked(self, pk):
+        """The session row, locked for this request so double clicks cannot race."""
+        get_object_or_404(self.get_queryset(), pk=pk)  # 404 for other people's sessions
+        return InterviewSession.objects.select_for_update().get(pk=pk)
+
+    @staticmethod
+    def _current_question(session):
+        return session.questions.filter(answer__isnull=True).order_by("order").first()
+
+    @staticmethod
+    def _require(session, *allowed):
+        if session.status not in allowed:
+            raise ValidationError({"detail": f"This interview is {session.get_status_display().lower()}."})
+
+    # --- actions -----------------------------------------------------------
+    @action(detail=True, methods=["post"])
+    def start(self, request, pk=None):
+        with transaction.atomic():
+            session = self._locked(pk)
+            self._require(session, "scheduled", "in_progress")  # starting twice is harmless
+            if session.status == "scheduled":
+                session.status = "in_progress"
+                session.started_at = timezone.now()
+                session.save(update_fields=["status", "started_at"])
+        return self._detail(session, next_question=_question_payload(self._current_question(session)))
+
+    @action(detail=True, methods=["get"], url_path="next-question")
+    def next_question(self, request, pk=None):
+        session = get_object_or_404(self.get_queryset(), pk=pk)
+        self._require(session, "in_progress")
+        return Response({
+            "status": session.status,
+            "question": _question_payload(self._current_question(session)),
+            "answered": session.answered_total,
+            "total": session.question_total,
+        })
+
+    @action(detail=True, methods=["post"])
+    def answer(self, request, pk=None):
+        serializer = SubmitAnswerSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        with transaction.atomic():
+            session = self._locked(pk)
+            self._require(session, "in_progress")
+            current = self._current_question(session)
+            if current is None or current.id != data["question_id"]:
+                raise ValidationError({"question_id": "This is not the current question."})
+            Answer.objects.create(
+                question=current, transcript=data["transcript"], duration_seconds=data["duration_seconds"],
+            )
+            following = self._current_question(session)
+            if following is None:  # that was the last question
+                session.status = "completed"
+                session.ended_at = timezone.now()
+                session.save(update_fields=["status", "ended_at"])
+        return Response({
+            "status": session.status,
+            "answered": Answer.objects.filter(question__session=session).count(),
+            "total": session.questions.count(),
+            "next_question": _question_payload(following),
+        })
+
+    @action(detail=True, methods=["post"])
+    def finish(self, request, pk=None):
+        """End early. Questions not answered yet simply stay unanswered."""
+        with transaction.atomic():
+            session = self._locked(pk)
+            self._require(session, "in_progress", "completed")
+            if session.status == "in_progress":
+                session.status = "completed"
+                session.ended_at = timezone.now()
+                session.save(update_fields=["status", "ended_at"])
+        return self._detail(session)
+
+    @action(detail=True, methods=["post"])
+    def cancel(self, request, pk=None):
+        with transaction.atomic():
+            session = self._locked(pk)
+            self._require(session, "scheduled", "in_progress", "cancelled")
+            if session.status != "cancelled":
+                session.status = "cancelled"
+                session.ended_at = timezone.now()
+                session.save(update_fields=["status", "ended_at"])
+        return self._detail(session)

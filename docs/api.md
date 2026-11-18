@@ -21,6 +21,14 @@ Base URL: `http://localhost:8000`. Send `Authorization: Bearer <access token>` o
 | POST | /api/resumes/{id}/set-primary/ | Candidate (owner) | Mark as primary |
 | POST | /api/resumes/{id}/reparse/ | Candidate (owner) | Read the PDF and run skill analysis again |
 | POST | /api/interviews/generate-questions/ | Candidate | Preview a question set built from a resume (nothing is saved) |
+| POST | /api/interviews/sessions/ | Candidate | Create an interview session with generated questions |
+| GET | /api/interviews/sessions/ | Candidate | History of your sessions, newest first |
+| GET | /api/interviews/sessions/{id}/ | Candidate (owner) | Session details. Questions and answers appear once it is finished |
+| POST | /api/interviews/sessions/{id}/start/ | Candidate (owner) | Start the interview |
+| GET | /api/interviews/sessions/{id}/next-question/ | Candidate (owner) | The current question |
+| POST | /api/interviews/sessions/{id}/answer/ | Candidate (owner) | Submit an answer to the current question |
+| POST | /api/interviews/sessions/{id}/finish/ | Candidate (owner) | End the interview early |
+| POST | /api/interviews/sessions/{id}/cancel/ | Candidate (owner) | Cancel an interview that is not finished |
 | DELETE | /api/resumes/{id}/ | Candidate (owner) | Delete resume and file |
 
 ## Generate questions
@@ -37,3 +45,21 @@ Base URL: `http://localhost:8000`. Send `Authorization: Bearer <access token>` o
 
 The response has `source` (`ai` for Gemini, `basic` for the built-in question bank), the settings used, and
 `questions`, each with `text`, `category` and `time_limit_seconds`.
+
+## Interview sessions
+
+A session moves through `scheduled` -> `in_progress` -> `completed`, or ends as `cancelled`.
+
+1. `POST /api/interviews/sessions/` takes the same options as generate-questions (`interview_type`,
+   `difficulty`, `domain`, `question_count`, `resume_id`) and saves the questions with the session.
+   You can have up to 5 unfinished sessions at a time.
+2. `POST .../start/` begins the interview. Calling it again on a running session is harmless.
+3. `GET .../next-question/` returns the current question with `answered` and `total`.
+4. `POST .../answer/` takes `question_id` (must be the current question), `transcript` and
+   `duration_seconds`. An empty transcript counts as a skipped question. The response includes the
+   next question. Answering the last question completes the session.
+5. `POST .../finish/` ends early. Unanswered questions stay unanswered.
+
+Question text is hidden until the session is over, so the interview room only ever sees the current
+question. Each session records `question_source` (`ai` or `basic`). Sessions are private to the
+candidate who created them: anyone else gets 404.

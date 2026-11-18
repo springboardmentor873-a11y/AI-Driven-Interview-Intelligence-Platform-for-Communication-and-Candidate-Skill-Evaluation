@@ -51,6 +51,7 @@ erDiagram
         int template_id FK
         int resume_id FK
         string status
+        string question_source "ai or basic"
         datetime started_at
         datetime ended_at
         file video_file
