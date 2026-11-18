@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from .models import Resume
+from .text_extract import extract_text
 
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
 MAX_RESUMES_PER_USER = 5
@@ -52,9 +53,15 @@ class ResumeUploadSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
         f = validated_data["file"]
         is_first = not Resume.objects.filter(user=user).exists()
-        return Resume.objects.create(
+        resume = Resume.objects.create(
             user=user,
             file=f,
             original_name=f.name[:255],
             is_primary=is_first,
         )
+        # Read the saved PDF once so later steps (skill extraction, question
+        # generation) can work from text. Failure leaves it blank, not an error.
+        with resume.file.open("rb") as stored:
+            resume.extracted_text = extract_text(stored)
+        resume.save(update_fields=["extracted_text"])
+        return resume
