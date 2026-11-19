@@ -8,6 +8,8 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import AdminUsers from "./pages/AdminUsers";
 import Templates from "./pages/Templates";
+import InterviewSetup from "./pages/InterviewSetup";
+import InterviewRoom from "./pages/InterviewRoom";
 
 export default function App() {
   return (
@@ -24,6 +26,8 @@ export default function App() {
             </Route>
                <Route element={<ProtectedRoute roles={["candidate"]} />}>
               <Route path="/resumes" element={<Resumes />} />
+              <Route path="/interview" element={<InterviewSetup />} />
+              <Route path="/interview/:id" element={<InterviewRoom />} />
             </Route>
             <Route element={<ProtectedRoute roles={["recruiter"]} />}>
               <Route path="/templates" element={<Templates />} />

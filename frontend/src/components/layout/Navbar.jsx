@@ -45,6 +45,12 @@ export default function Navbar() {
               </Link>
             )}
 
+            {user.role === "candidate" && (
+              <Link to="/interview" className="text-white/70 hover:text-white">
+                Interview
+              </Link>
+            )}
+
             {user.role === "recruiter" && (
               <Link to="/templates" className="text-white/70 hover:text-white">
                 Templates

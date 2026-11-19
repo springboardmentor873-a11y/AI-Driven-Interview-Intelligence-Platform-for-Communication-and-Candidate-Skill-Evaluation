@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 const CARDS = {
   candidate: [
     { title: "My resumes", note: "Upload and manage your resumes", to: "/resumes" },
-    { title: "Start a mock interview", note: "Milestone 2" },
+    { title: "Start a mock interview", note: "Practice with your camera and microphone", to: "/interview" },
     { title: "Performance analytics", note: "Milestone 4" },
   ],
   recruiter: [
