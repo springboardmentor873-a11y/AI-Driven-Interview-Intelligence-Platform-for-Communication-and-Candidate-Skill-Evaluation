@@ -45,6 +45,12 @@ export default function Navbar() {
               </Link>
             )}
 
+            {user.role === "recruiter" && (
+              <Link to="/templates" className="text-white/70 hover:text-white">
+                Templates
+              </Link>
+            )}
+
             {user.role === "admin" && (
               <Link to="/admin/users" className="text-white/70 hover:text-white">
                 Users

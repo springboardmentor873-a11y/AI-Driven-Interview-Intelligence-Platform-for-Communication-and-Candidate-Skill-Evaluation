@@ -24,6 +24,8 @@ class InterviewTemplate(models.Model):
     domain = models.CharField(max_length=100, blank=True)
     duration_minutes = models.PositiveIntegerField(default=30)
     question_count = models.PositiveIntegerField(default=10)
+    # Candidates can only see and use published templates; unpublish to hide one
+    is_published = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

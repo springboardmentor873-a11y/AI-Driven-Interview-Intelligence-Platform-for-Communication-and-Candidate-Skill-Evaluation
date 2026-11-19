@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import AdminUsers from "./pages/AdminUsers";
+import Templates from "./pages/Templates";
 
 export default function App() {
   return (
@@ -23,6 +24,9 @@ export default function App() {
             </Route>
                <Route element={<ProtectedRoute roles={["candidate"]} />}>
               <Route path="/resumes" element={<Resumes />} />
+            </Route>
+            <Route element={<ProtectedRoute roles={["recruiter"]} />}>
+              <Route path="/templates" element={<Templates />} />
             </Route>
             <Route element={<ProtectedRoute roles={["admin"]} />}>
               <Route path="/admin/users" element={<AdminUsers />} />

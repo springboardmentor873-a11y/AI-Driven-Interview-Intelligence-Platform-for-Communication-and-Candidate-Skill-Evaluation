@@ -21,7 +21,10 @@ Base URL: `http://localhost:8000`. Send `Authorization: Bearer <access token>` o
 | POST | /api/resumes/{id}/set-primary/ | Candidate (owner) | Mark as primary |
 | POST | /api/resumes/{id}/reparse/ | Candidate (owner) | Read the PDF and run skill analysis again |
 | POST | /api/interviews/generate-questions/ | Candidate | Preview a question set built from a resume (nothing is saved) |
-| POST | /api/interviews/sessions/ | Candidate | Create an interview session with generated questions |
+| GET | /api/interviews/templates/ | Any signed-in user | Recruiter: own templates. Candidate: published templates. Admin: all |
+| POST | /api/interviews/templates/ | Recruiter | Create a template |
+| GET, PUT, PATCH, DELETE | /api/interviews/templates/{id}/ | Recruiter (owner) | Read, edit or delete a template (candidates and admins can read) |
+| POST | /api/interviews/sessions/ | Candidate | Create an interview session with generated questions, optionally from a template |
 | GET | /api/interviews/sessions/ | Candidate | History of your sessions, newest first |
 | GET | /api/interviews/sessions/{id}/ | Candidate (owner) | Session details. Questions and answers appear once it is finished |
 | POST | /api/interviews/sessions/{id}/start/ | Candidate (owner) | Start the interview |
@@ -63,3 +66,27 @@ A session moves through `scheduled` -> `in_progress` -> `completed`, or ends as 
 Question text is hidden until the session is over, so the interview room only ever sees the current
 question. Each session records `question_source` (`ai` or `basic`). Sessions are private to the
 candidate who created them: anyone else gets 404.
+
+## Interview templates
+
+A recruiter sets up an interview once and candidates start sessions from it.
+
+| Field | Notes |
+|---|---|
+| title | Required, up to 200 characters |
+| description | Optional, up to 2000 characters |
+| interview_type | `hr`, `technical`, `behavioral` or `aptitude` |
+| difficulty | `easy`, `medium` (default) or `hard` |
+| domain | Optional, up to 100 characters |
+| question_count | 1 to 20, default 10 |
+| duration_minutes | 5 to 180, default 30. Must allow at least 30 seconds per question |
+| is_published | Default `true`. Candidates only see published templates |
+
+Recruiters see only their own templates, with a `session_count`. Candidates see a reduced view
+(no statistics) with the recruiter's name. A recruiter can have up to 50 templates. Deleting a
+template keeps the interviews that were already started from it.
+
+Start a session from a template with `POST /api/interviews/sessions/` and `{"template_id": 3}`
+(plus an optional `resume_id`). The template's type, difficulty, domain and question count replace
+anything else in the request, and `duration_minutes` is split evenly across the questions
+(between 30 seconds and 10 minutes each).

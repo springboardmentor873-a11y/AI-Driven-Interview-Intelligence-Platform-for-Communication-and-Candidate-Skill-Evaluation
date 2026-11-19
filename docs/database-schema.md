@@ -44,6 +44,8 @@ erDiagram
         string difficulty
         string domain
         int duration_minutes
+        int question_count
+        bool is_published
     }
     INTERVIEW_SESSION {
         int id PK

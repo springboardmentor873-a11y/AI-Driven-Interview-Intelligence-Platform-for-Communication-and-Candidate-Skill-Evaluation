@@ -10,7 +10,7 @@ const CARDS = {
   ],
   recruiter: [
     { title: "Candidate reports", note: "Milestone 4" },
-    { title: "Interview templates", note: "Milestone 2" },
+    { title: "Interview templates", note: "Create and manage interviews", to: "/templates" },
     { title: "Compare candidates", note: "Milestone 4" },
   ],
   admin: [

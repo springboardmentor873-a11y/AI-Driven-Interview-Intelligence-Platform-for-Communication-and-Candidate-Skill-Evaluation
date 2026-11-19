@@ -3,18 +3,20 @@ from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import mixins, status, viewsets
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.accounts.permissions import IsCandidate
+from apps.accounts.permissions import IsCandidate, IsRecruiter
 
-from .models import Answer, InterviewSession, Question
+from .models import Answer, InterviewSession, InterviewTemplate, Question
 from .question_gen import generate_questions
 from .serializers import (
-    CreateSessionSerializer, GenerateQuestionsSerializer, QuestionSerializer,
-    SessionSerializer, SubmitAnswerSerializer,
+    MAX_SECONDS_PER_QUESTION, MIN_SECONDS_PER_QUESTION,
+    CandidateTemplateSerializer, CreateSessionSerializer, GenerateQuestionsSerializer,
+    QuestionSerializer, SessionSerializer, SubmitAnswerSerializer, TemplateSerializer,
 )
 
 
@@ -65,7 +67,7 @@ class SessionViewSet(
         # Candidates only ever see their own sessions
         return (
             InterviewSession.objects.filter(candidate=self.request.user)
-            .select_related("resume")
+            .select_related("resume", "template")
             .annotate(
                 question_total=Count("questions", distinct=True),
                 answered_total=Count("questions__answer", distinct=True),
@@ -100,9 +102,16 @@ class SessionViewSet(
             data["resume"], data["interview_type"], data["difficulty"],
             data["domain"], data["question_count"],
         )
+        template = data["template"]
+        if template and questions:
+            # The template's duration is the whole interview, so split it across the questions
+            per_question = template.duration_minutes * 60 // len(questions)
+            per_question = max(MIN_SECONDS_PER_QUESTION, min(MAX_SECONDS_PER_QUESTION, per_question))
+            for q in questions:
+                q["time_limit_seconds"] = per_question
         with transaction.atomic():
             session = InterviewSession.objects.create(
-                candidate=request.user, resume=data["resume"],
+                candidate=request.user, resume=data["resume"], template=template,
                 interview_type=data["interview_type"], difficulty=data["difficulty"],
                 domain=data["domain"], question_source=source,
             )
@@ -201,3 +210,37 @@ class SessionViewSet(
                 session.ended_at = timezone.now()
                 session.save(update_fields=["status", "ended_at"])
         return self._detail(session)
+
+
+MAX_TEMPLATES_PER_RECRUITER = 50
+
+
+class TemplateViewSet(viewsets.ModelViewSet):
+    """Interview templates.
+
+    Recruiters create, edit and delete their own. Candidates can only read the
+    published ones (to pick one when starting an interview). Admins can read all.
+    """
+
+    def get_permissions(self):
+        if self.action in ("list", "retrieve"):
+            return [IsAuthenticated()]
+        return [IsRecruiter()]
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = InterviewTemplate.objects.select_related("created_by").order_by("-created_at", "-id")
+        if user.role == "candidate":
+            return queryset.filter(is_published=True)
+        if user.role == "recruiter":
+            queryset = queryset.filter(created_by=user)
+        return queryset.annotate(session_count=Count("sessions", distinct=True))
+
+    def get_serializer_class(self):
+        return CandidateTemplateSerializer if self.request.user.role == "candidate" else TemplateSerializer
+
+    def perform_create(self, serializer):
+        owned = InterviewTemplate.objects.filter(created_by=self.request.user).count()
+        if owned >= MAX_TEMPLATES_PER_RECRUITER:
+            raise ValidationError({"detail": f"You can have up to {MAX_TEMPLATES_PER_RECRUITER} templates. Delete one first."})
+        serializer.save(created_by=self.request.user)
