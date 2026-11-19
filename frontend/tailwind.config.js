@@ -14,7 +14,24 @@ export default {
         "btn-brand": "linear-gradient(90deg, #7c3aed, #a855f7)",
         "text-accent": "linear-gradient(90deg, #8b5cf6, #ec4899, #f59e0b)",
       },
-      boxShadow: { glow: "0 10px 30px -5px rgba(139,61,240,0.5)" },
+      boxShadow: {
+        glow: "0 10px 30px -5px rgba(139,61,240,0.5)",
+        card: "0 1px 0 0 rgba(255,255,255,0.05) inset, 0 24px 48px -28px rgba(0,0,0,0.8)",
+      },
+      keyframes: {
+        "fade-up": {
+          "0%": { opacity: "0", transform: "translateY(14px)" },
+          "100%": { opacity: "1", transform: "none" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-16px)" },
+        },
+      },
+      animation: {
+        "fade-up": "fade-up 0.6s ease-out both",
+        float: "float 10s ease-in-out infinite",
+      },
       borderRadius: { "4xl": "2rem" },
       fontFamily: { sans: ['"Plus Jakarta Sans"', "sans-serif"] },
     },

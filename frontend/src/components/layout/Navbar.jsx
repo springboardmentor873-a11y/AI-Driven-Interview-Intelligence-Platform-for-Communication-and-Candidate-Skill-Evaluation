@@ -1,10 +1,10 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Button from "../ui/Button";
 
 function Logo() {
   return (
-    <Link to="/" className="flex items-center gap-2 text-xl font-bold text-white">
+    <Link to="/" className="order-1 mr-auto flex items-center gap-2 whitespace-nowrap text-xl font-bold text-white">
       <span className="grid grid-cols-2 gap-0.5">
         {[0, 1, 2, 3].map((i) => (
           <i
@@ -18,6 +18,21 @@ function Logo() {
   );
 }
 
+// The page you are on is highlighted
+const linkClass = ({ isActive }) =>
+  `whitespace-nowrap rounded-full px-3 py-1.5 transition ${
+    isActive ? "bg-white/10 font-semibold text-white" : "text-white/60 hover:text-white"
+  }`;
+
+const LINKS = {
+  candidate: [
+    { to: "/resumes", label: "Resumes" },
+    { to: "/interview", label: "Interview" },
+  ],
+  recruiter: [{ to: "/templates", label: "Templates" }],
+  admin: [{ to: "/admin/users", label: "Users" }],
+};
+
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -27,56 +42,41 @@ export default function Navbar() {
     navigate("/login");
   };
 
+  const initial = (user?.first_name || user?.email || "?").charAt(0).toUpperCase();
+
   return (
-    <header className="border-b border-white/10 bg-ink/80 backdrop-blur">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-ink/75 backdrop-blur-xl">
+      <nav className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 sm:flex-nowrap sm:px-6 sm:py-3.5">
         <Logo />
 
         {user ? (
-          <div className="flex items-center gap-5 text-sm">
-            <Link to="/dashboard" className="text-white/70 hover:text-white">
-              Dashboard
-            </Link>
+          <>
+            {/* On a phone the links get their own scrollable row under the logo */}
+            <div className="order-3 -mx-1 flex w-full items-center gap-1 overflow-x-auto px-1 text-sm sm:order-2 sm:mx-0 sm:w-auto sm:overflow-visible sm:px-0">
+              <NavLink to="/dashboard" className={linkClass}>
+                Dashboard
+              </NavLink>
+              {(LINKS[user.role] || []).map((l) => (
+                <NavLink key={l.to} to={l.to} className={linkClass}>
+                  {l.label}
+                </NavLink>
+              ))}
+            </div>
 
-            {/* Candidate Resumes Link */}
-            {user.role === "candidate" && (
-              <Link to="/resumes" className="text-white/70 hover:text-white">
-                Resumes
-              </Link>
-            )}
-
-            {user.role === "candidate" && (
-              <Link to="/interview" className="text-white/70 hover:text-white">
-                Interview
-              </Link>
-            )}
-
-            {user.role === "recruiter" && (
-              <Link to="/templates" className="text-white/70 hover:text-white">
-                Templates
-              </Link>
-            )}
-
-            {user.role === "admin" && (
-              <Link to="/admin/users" className="text-white/70 hover:text-white">
-                Users
-              </Link>
-            )}
-
-            <span className="rounded-full bg-brand-500/20 px-3 py-1 text-xs font-semibold capitalize text-brand-400">
-              {user.role}
-            </span>
-
-            <Button
-              variant="solid"
-              className="!px-4 !py-2 text-sm"
-              onClick={handleLogout}
-            >
-              Logout
-            </Button>
-          </div>
+            <div className="order-2 flex items-center gap-2 sm:order-3">
+              <span className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 py-1 pl-1 pr-3 sm:flex">
+                <span className="grid h-6 w-6 place-items-center rounded-full bg-btn-brand text-xs font-bold">
+                  {initial}
+                </span>
+                <span className="text-xs font-semibold capitalize text-brand-400">{user.role}</span>
+              </span>
+              <Button variant="solid" className="!px-4 !py-2 text-sm" onClick={handleLogout}>
+                Logout
+              </Button>
+            </div>
+          </>
         ) : (
-          <div className="flex items-center gap-3">
+          <div className="order-2 flex items-center gap-3">
             <Link to="/login" className="text-sm text-white/70 hover:text-white">
               Sign in
             </Link>
