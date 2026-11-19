@@ -13,8 +13,14 @@ load_dotenv(BASE_DIR / ".env")
 
 # Security settings
 SECRET_KEY = os.getenv("SECRET_KEY")
-
 DEBUG = os.getenv("DEBUG", "False") == "True"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
+GEMINI_TIMEOUT_MS = int(os.getenv("GEMINI_TIMEOUT_MS", "30000"))
+AI_DETERMINISTIC_FALLBACK = os.getenv(
+    "AI_DETERMINISTIC_FALLBACK",
+    "True" if DEBUG else "False",
+).lower() in {"true", "1", "yes"}
 
 ALLOWED_HOSTS = []
 

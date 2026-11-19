@@ -17,13 +17,25 @@ class Interview(models.Model):
     class Status(models.TextChoices):
         CREATED = "CREATED", "Created"
         IN_PROGRESS = "IN_PROGRESS", "In Progress"
+        PAUSED = "PAUSED", "Paused"
         COMPLETED = "COMPLETED", "Completed"
+        ABANDONED = "ABANDONED", "Abandoned"
 
     candidate = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="interviews",
     )
+
+    resume = models.ForeignKey(
+        "accounts.Resume",
+        on_delete=models.SET_NULL,
+        related_name="interviews",
+        null=True,
+        blank=True,
+    )
+
+    target_role = models.CharField(max_length=120, default="General")
 
     interview_type = models.CharField(
         max_length=20,
@@ -46,6 +58,8 @@ class Interview(models.Model):
 
     current_question = models.PositiveIntegerField(default=0)
 
+    generation_source = models.CharField(max_length=16, blank=True, default="")
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     started_at = models.DateTimeField(
@@ -58,6 +72,19 @@ class Interview(models.Model):
         blank=True,
     )
 
+    paused_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    elapsed_seconds = models.PositiveIntegerField(default=0)
+
+    recording = models.FileField(
+        upload_to="interviews/",
+        null=True,
+        blank=True,
+    )
+
     def __str__(self):
         return (
             f"{self.candidate.username} - "
@@ -66,6 +93,12 @@ class Interview(models.Model):
 
 
 class Question(models.Model):
+    class Style(models.TextChoices):
+        CONCEPTUAL = "CONCEPTUAL", "Conceptual"
+        PRACTICAL = "PRACTICAL", "Practical"
+        SCENARIO = "SCENARIO", "Scenario"
+        PROBLEM_SOLVING = "PROBLEM_SOLVING", "Problem Solving"
+
     interview = models.ForeignKey(
         Interview,
         on_delete=models.CASCADE,
@@ -78,6 +111,33 @@ class Question(models.Model):
         max_length=100,
         blank=True,
     )
+
+    topic = models.CharField(max_length=100, blank=True)
+
+    question_style = models.CharField(
+        max_length=20,
+        choices=Style.choices,
+        default=Style.CONCEPTUAL,
+    )
+
+    relevance_explanation = models.TextField(blank=True, default="")
+
+    difficulty = models.CharField(
+        max_length=10,
+        choices=Interview.Difficulty.choices,
+        default=Interview.Difficulty.MEDIUM,
+    )
+
+    question_type = models.CharField(
+        max_length=20,
+        choices=[
+            ("TECHNICAL", "Technical"),
+            ("PRACTICAL", "Practical"),
+        ],
+        default="TECHNICAL",
+    )
+
+    expected_criteria = models.JSONField(blank=True, default=list)
 
     order = models.PositiveIntegerField()
 
@@ -99,6 +159,10 @@ class Answer(models.Model):
     )
 
     answer_text = models.TextField(blank=True)
+
+    evaluation = models.JSONField(blank=True, null=True)
+
+    evaluation_source = models.CharField(max_length=16, blank=True, default="")
 
     submitted_at = models.DateTimeField(
         auto_now_add=True,

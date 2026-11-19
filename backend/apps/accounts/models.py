@@ -42,6 +42,12 @@ class Resume(models.Model):
         validators=[FileExtensionValidator(["pdf"])],
     )
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    extracted_skills = models.JSONField(blank=True, default=list)
+    extracted_qualifications = models.JSONField(blank=True, default=list)
+    extracted_experience = models.JSONField(blank=True, default=list)
+    extracted_projects = models.JSONField(blank=True, default=list)
+    skills_extracted_at = models.DateTimeField(blank=True, null=True)
+    extraction_source = models.CharField(max_length=16, blank=True, default="")
 
     def __str__(self):
         return f"Resume {self.pk} for {self.owner.username}"

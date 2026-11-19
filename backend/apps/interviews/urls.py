@@ -4,15 +4,57 @@ from .views import (
     AnswerCreateView,
     InterviewDetailView,
     InterviewListCreateView,
+    GenerateInterviewView,
     QuestionListCreateView,
+    StartInterviewView,
+    PauseInterviewView,
+    ResumeInterviewView,
+    AbandonInterviewView,
+    InterviewRecordingView,
+    InterviewRecordingDownloadView,
 )
 
 
 urlpatterns = [
     path(
+        "generate/",
+        GenerateInterviewView.as_view(),
+        name="interview-generate",
+    ),
+    path(
         "",
         InterviewListCreateView.as_view(),
         name="interview-list-create",
+    ),
+    path(
+        "<int:pk>/start/",
+        StartInterviewView.as_view(),
+        name="interview-start",
+    ),
+    path(
+        "<int:pk>/pause/",
+        PauseInterviewView.as_view(),
+        name="interview-pause",
+    ),
+    path(
+        "<int:pk>/resume/",
+        ResumeInterviewView.as_view(),
+        name="interview-resume",
+    ),
+    path(
+        "<int:pk>/abandon/",
+        AbandonInterviewView.as_view(),
+        name="interview-abandon",
+    ),
+    path(
+        "<int:pk>/recording/",
+        InterviewRecordingView.as_view(),
+        name="interview-recording",
+    ),
+    path(
+        "<int:pk>/recording/download/",
+        InterviewRecordingDownloadView.as_view(),
+        name="interview-recording-download",
     ),
     path(
         "<int:pk>/",

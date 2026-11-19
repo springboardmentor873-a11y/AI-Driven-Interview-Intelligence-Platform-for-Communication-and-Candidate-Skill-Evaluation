@@ -10,6 +10,7 @@ from .views import (
     ResumeDetailView,
     ResumeDownloadView,
     ResumeListCreateView,
+    ResumeSkillsView,
 )
 
 
@@ -43,6 +44,11 @@ urlpatterns = [
         "resumes/<int:pk>/download/",
         ResumeDownloadView.as_view(),
         name="resume-download",
+    ),
+    path(
+        "resumes/<int:pk>/extract-skills/",
+        ResumeSkillsView.as_view(),
+        name="resume-extract-skills",
     ),
     path(
         "resumes/<int:pk>/",

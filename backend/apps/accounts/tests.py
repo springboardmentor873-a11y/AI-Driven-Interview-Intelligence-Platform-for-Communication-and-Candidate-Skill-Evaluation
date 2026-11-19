@@ -1,10 +1,16 @@
+from io import BytesIO
 import tempfile
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.files.storage import default_storage
 from django.test import TestCase, override_settings
+from pypdf import PdfWriter
 from rest_framework.test import APIClient
+
+from apps.ai_services import AIResult
+from .services import ResumeParseError, extract_resume_text
 
 User = get_user_model()
 
@@ -127,6 +133,106 @@ class ResumeApiTests(TestCase):
         )
         self.assertEqual(delete_response.status_code, 204)
         self.assertFalse(default_storage.exists(stored_file))
+
+    def test_candidate_can_extract_and_persist_resume_profile(self):
+        self.client.force_authenticate(self.candidate)
+        upload_response = self.client.post(
+            "/api/auth/resumes/",
+            {"file": self._pdf_upload()},
+            format="multipart",
+        )
+        resume_id = upload_response.data["id"]
+
+        with (
+            patch(
+                "apps.accounts.services.extract_resume_text",
+                return_value="Python and Django experience",
+            ),
+            patch(
+                "apps.accounts.services.extract_resume_profile_from_text",
+                return_value=AIResult(
+                    data={
+                        "skills": ["Python", "Django"],
+                        "qualifications": ["BSc Computer Science"],
+                        "experience": [
+                            {
+                                "role": "Developer",
+                                "organization": "",
+                                "duration": "",
+                                "highlights": ["Built APIs"],
+                            }
+                        ],
+                        "projects": [
+                            {
+                                "name": "Interview app",
+                                "technologies": ["Python"],
+                                "description": "Built an interview app.",
+                            }
+                        ],
+                    },
+                    source="gemini",
+                ),
+            ),
+        ):
+            response = self.client.post(
+                f"/api/auth/resumes/{resume_id}/extract-skills/",
+                {"ai_consent": True},
+                format="json",
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["extracted_skills"], ["Python", "Django"])
+        self.assertEqual(
+            response.data["extracted_qualifications"],
+            ["BSc Computer Science"],
+        )
+        self.assertEqual(response.data["extracted_projects"][0]["name"], "Interview app")
+        self.assertEqual(response.data["extraction_source"], "gemini")
+        self.assertIsNotNone(response.data["skills_extracted_at"])
+
+    def test_resume_extraction_without_consent_uses_local_fallback(self):
+        self.client.force_authenticate(self.candidate)
+        upload_response = self.client.post(
+            "/api/auth/resumes/",
+            {"file": self._pdf_upload()},
+            format="multipart",
+        )
+        resume_id = upload_response.data["id"]
+
+        with (
+            patch(
+                "apps.accounts.services.extract_resume_text",
+                return_value="Python and Django experience",
+            ),
+            patch("apps.ai_services.genai.Client") as gemini_client,
+            override_settings(
+                GEMINI_API_KEY="test-key",
+                AI_DETERMINISTIC_FALLBACK=False,
+            ),
+        ):
+            response = self.client.post(
+                f"/api/auth/resumes/{resume_id}/extract-skills/",
+                {"ai_consent": False},
+                format="json",
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["extracted_skills"], ["Python", "Django"])
+        self.assertEqual(response.data["extraction_source"], "fallback")
+        gemini_client.assert_not_called()
+
+    def test_resume_parser_rejects_a_pdf_without_selectable_text(self):
+        pdf_file = BytesIO()
+        writer = PdfWriter()
+        writer.add_blank_page(width=72, height=72)
+        writer.write(pdf_file)
+        pdf_file.seek(0)
+
+        with self.assertRaisesMessage(
+            ResumeParseError,
+            "No selectable text was found",
+        ):
+            extract_resume_text(pdf_file)
 
     def test_resume_api_rejects_non_pdf_and_invalid_pdf_content(self):
         self.client.force_authenticate(self.candidate)

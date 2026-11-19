@@ -51,8 +51,27 @@ class ResumeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Resume
-        fields = ["id", "file", "uploaded_at"]
-        read_only_fields = ["id", "uploaded_at"]
+        fields = [
+            "id",
+            "file",
+            "uploaded_at",
+            "extracted_skills",
+            "extracted_qualifications",
+            "extracted_experience",
+            "extracted_projects",
+            "skills_extracted_at",
+            "extraction_source",
+        ]
+        read_only_fields = [
+            "id",
+            "uploaded_at",
+            "extracted_skills",
+            "extracted_qualifications",
+            "extracted_experience",
+            "extracted_projects",
+            "skills_extracted_at",
+            "extraction_source",
+        ]
 
     def validate_file(self, value):
         if value.size > self.max_file_size:
