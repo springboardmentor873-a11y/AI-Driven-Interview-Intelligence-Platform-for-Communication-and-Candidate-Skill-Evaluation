@@ -34,10 +34,18 @@ Put these in `backend/.env` (the key comes from Google AI Studio) and restart th
 ```
 GEMINI_API_KEY=your-key
 GEMINI_MODEL=model-name-you-want-to-use
+GEMINI_FALLBACK_MODEL=optional-second-model
 ```
 
-A wrong model name is not fatal: the app falls back to its basic mode and logs a warning. The
-"Basic scan" badge on a resume and `question_source` on a session show which mode was used.
+Google sometimes answers "503 high demand". The backend then tries up to three times, waiting 1 and
+2 seconds between attempts, and uses `GEMINI_FALLBACK_MODEL` for the last attempt if you set one.
+Permanent problems (a wrong key or model name) are not retried. Each attempt is cut off after 30
+seconds (`GEMINI_TIMEOUT_SECONDS`).
+
+If Gemini still fails, the app falls back to its basic mode and logs the reason, for example
+`Gemini call failed (model ..., attempt 2 of 3): 503 UNAVAILABLE`. See it with
+`docker compose logs backend --tail 100`. The "Basic scan" badge on a resume and `question_source`
+on a session show which mode was used.
 
 ## Known limits (planned for later)
 

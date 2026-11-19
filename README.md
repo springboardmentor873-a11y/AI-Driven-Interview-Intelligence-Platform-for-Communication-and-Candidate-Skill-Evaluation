@@ -24,7 +24,7 @@ and feedback.
 | backend/.env | DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT | PostgreSQL connection |
 | backend/.env | CORS_ORIGINS | Allowed frontend origin |
 | backend/.env | GOOGLE_CLIENT_ID | Google sign-in |
-| backend/.env | GEMINI_API_KEY, GEMINI_MODEL | Gemini, for skill extraction and question generation. Without a key the app uses its built-in fallbacks |
+| backend/.env | GEMINI_API_KEY, GEMINI_MODEL, GEMINI_FALLBACK_MODEL (optional) | Gemini, for skill extraction and question generation. Without a key the app uses its built-in fallbacks |
 | frontend/.env | VITE_API_URL | Backend address |
 | frontend/.env | VITE_GOOGLE_CLIENT_ID | Google sign-in |
 

@@ -86,8 +86,15 @@ export default function Resumes() {
     try {
       const { data } = await client.post(`/api/resumes/${id}/reparse/`);
       setResumes((list) => list.map((r) => (r.id === id ? data : r)));
-    } catch {
-      setError("Could not analyse this resume. Please try again.");
+    } catch (err) {
+      if (err.response?.status === 404) {
+        // It was deleted (maybe in another tab) while the analysis was running
+        setResumes((list) => list.filter((r) => r.id !== id));
+        setOpenId(null);
+        setError("That resume no longer exists.");
+      } else {
+        setError("Could not analyse this resume. Please try again.");
+      }
     } finally {
       setAnalysingId(null);
     }

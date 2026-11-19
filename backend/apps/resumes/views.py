@@ -1,6 +1,7 @@
 from django.http import FileResponse, Http404
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 
@@ -70,5 +71,8 @@ class ResumeViewSet(
     @action(detail=True, methods=["post"])
     def reparse(self, request, pk=None):
         """Run text extraction and skill analysis again on a saved resume."""
-        resume = parse_resume(self.get_object())
+        try:
+            resume = parse_resume(self.get_object())
+        except Resume.DoesNotExist:  # deleted while the analysis was running
+            raise NotFound("This resume no longer exists.")
         return Response(ResumeSerializer(resume).data)

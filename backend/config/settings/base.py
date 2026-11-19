@@ -82,6 +82,9 @@ USE_TZ = True
 STATIC_URL = "static/"
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+# Optional second model, tried on the last attempt when the main one is busy
+GEMINI_FALLBACK_MODEL = os.getenv("GEMINI_FALLBACK_MODEL", "")
+GEMINI_TIMEOUT_SECONDS = int(os.getenv("GEMINI_TIMEOUT_SECONDS", "30"))
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"

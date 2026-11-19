@@ -67,3 +67,16 @@ def test_recruiter_cannot_reparse(auth_client, make_user):
     rid = upload(auth_client(make_user("a@example.com"))).data["id"]
     recruiter = auth_client(make_user("r@example.com", role="recruiter"))
     assert recruiter.post(f"{URL}{rid}/reparse/").status_code == 403
+
+
+def test_resume_deleted_during_reanalysis_gives_404_not_a_crash(auth_client, make_user, monkeypatch):
+    client = auth_client(make_user("a@example.com"))
+    rid = upload(client).data["id"]
+
+    def analyse_then_vanish(text):
+        Resume.objects.filter(id=rid).delete()  # the person deletes it while the AI call is running
+        return {"skills": [], "technologies": [], "experience": [], "education": [], "summary": ""}, "basic"
+
+    monkeypatch.setattr("apps.resumes.parsing.analyze", analyse_then_vanish)
+    res = client.post(f"{URL}{rid}/reparse/")
+    assert res.status_code == 404 and "no longer exists" in res.data["detail"]
