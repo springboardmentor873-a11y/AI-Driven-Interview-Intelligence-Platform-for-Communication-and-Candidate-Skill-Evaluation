@@ -6,6 +6,7 @@ import CameraPreview from "../components/CameraPreview";
 import QuestionCard from "../components/QuestionCard";
 import useAudioLevel from "../hooks/useAudioLevel";
 import useMediaStream from "../hooks/useMediaStream";
+import useRecorder, { extensionFor } from "../hooks/useRecorder";
 import client from "../api/client";
 import { parseError } from "../utils/errors";
 
@@ -22,8 +23,11 @@ export default function InterviewRoom() {
   const [progress, setProgress] = useState({ answered: 0, total: 0 });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [upload, setUpload] = useState({ state: "idle", percent: 0, message: "" });
   const busyRef = useRef(false);
+  const filesRef = useRef(null); // the recording, kept until it is safely uploaded
   const media = useMediaStream();
+  const recorder = useRecorder();
   const level = useAudioLevel(media.stream);
 
   useEffect(() => {
@@ -50,16 +54,52 @@ export default function InterviewRoom() {
       setQuestion(data.next_question);
       setProgress({ answered: data.answered_count, total: data.question_total });
       setPhase("live");
+      recorder.start(media.stream); // nothing happens if there is no camera or this browser cannot record
     } catch (err) {
       setError(parseError(err).general || "Could not start this interview.");
     }
   };
 
-  const showResult = (data) => {
-    media.stop();
+  const sendRecording = async () => {
+    const files = filesRef.current;
+    if (!files) return;
+    const body = new FormData();
+    if (files.video) body.append("video", files.video, `video.${extensionFor(files.video)}`);
+    if (files.audio) body.append("audio", files.audio, `audio.${extensionFor(files.audio)}`);
+    setUpload({ state: "uploading", percent: 0, message: "" });
+    try {
+      const { data } = await client.post(url(id, "recording/"), body, {
+        onUploadProgress: (e) => e.total && setUpload({ state: "uploading", percent: Math.round((e.loaded / e.total) * 100), message: "" }),
+      });
+      filesRef.current = null;
+      setSession((s) => ({ ...s, has_video: data.has_video, has_audio: data.has_audio }));
+      setUpload({ state: "done", percent: 100, message: "" });
+    } catch (err) {
+      setUpload({ state: "failed", percent: 0, message: parseError(err).general || "Could not upload your recording." });
+    }
+  };
+
+  const deleteRecording = async () => {
+    if (!window.confirm("Delete the recording of this interview? This cannot be undone.")) return;
+    try {
+      await client.delete(url(id, "recording/"));
+      setSession((s) => ({ ...s, has_video: false, has_audio: false }));
+      setUpload({ state: "idle", percent: 0, message: "" });
+    } catch (err) {
+      setError(parseError(err).general || "Could not delete the recording.");
+    }
+  };
+
+  const showResult = async (data) => {
     setSession(data);
     setProgress({ answered: data.answered_count, total: data.question_total });
     setPhase("done");
+    const files = await recorder.stop(); // stop recording before the camera is switched off
+    media.stop();
+    if (files) {
+      filesRef.current = files;
+      await sendRecording();
+    }
   };
 
   const submit = async (seconds) => {
@@ -73,7 +113,7 @@ export default function InterviewRoom() {
       if (data.next_question) {
         setQuestion(data.next_question);
       } else {
-        showResult((await client.get(url(id))).data);
+        showResult((await client.get(url(id))).data); // runs in the background: the recording uploads after
       }
     } catch (err) {
       setError(parseError(err).general || "Could not save your answer. Press submit to try again.");
@@ -206,6 +246,28 @@ export default function InterviewRoom() {
         </p>
       )}
       {error && <p className="mt-4 text-red-300">{error}</p>}
+      {upload.state === "uploading" && (
+        <div className="mt-4 rounded-xl bg-white/5 px-4 py-3 text-sm text-white/70">
+          Saving your recording... {upload.percent}%. Keep this page open until it finishes.
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+            <div className="h-full rounded-full bg-brand-500 transition-[width]" style={{ width: `${upload.percent}%` }} />
+          </div>
+        </div>
+      )}
+      {(session.has_video || session.has_audio) && upload.state !== "uploading" && (
+        <p className="mt-4 text-sm text-white/60">
+          Your recording is saved privately. Only you can see it.{" "}
+          <button type="button" onClick={deleteRecording} className="font-semibold text-red-300 underline">
+            Delete recording
+          </button>
+        </p>
+      )}
+      {upload.state === "failed" && (
+        <div className="mt-4 rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          {upload.message} Do not close this page, your recording is still here.{" "}
+          <button type="button" onClick={sendRecording} className="font-semibold underline">Try again</button>
+        </div>
+      )}
       <div className="mt-6 space-y-3">
         {questions.map((q) => (
           <div key={q.id} className="rounded-2xl border border-white/10 bg-surface px-5 py-4">

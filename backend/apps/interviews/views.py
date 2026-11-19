@@ -1,16 +1,21 @@
+import uuid
+
 from django.db import transaction
 from django.db.models import Count
+from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import mixins, status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import NotFound, ValidationError
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.permissions import IsCandidate, IsRecruiter
 
+from . import recordings
 from .models import Answer, InterviewSession, InterviewTemplate, Question
 from .question_gen import generate_questions
 from .serializers import (
@@ -210,6 +215,66 @@ class SessionViewSet(
                 session.ended_at = timezone.now()
                 session.save(update_fields=["status", "ended_at"])
         return self._detail(session)
+
+    @action(detail=True, methods=["get", "post", "delete"], parser_classes=[MultiPartParser, FormParser])
+    def recording(self, request, pk=None):
+        """The interview's video and audio, kept private to the candidate who made them."""
+        if request.method == "POST":
+            return self._upload_recording(request, pk)
+        if request.method == "DELETE":
+            return self._delete_recording(pk)
+        return self._download_recording(request, pk)
+
+    def _upload_recording(self, request, pk):
+        files = {kind: request.FILES[kind] for kind in ("video", "audio") if kind in request.FILES}
+        if not files:
+            raise ValidationError({"detail": "Send a video and/or an audio file."})
+        # Check every file before saving any, so a bad one leaves nothing half-saved
+        formats = {kind: recordings.check_upload(kind, upload) for kind, upload in files.items()}
+        with transaction.atomic():
+            session = self._locked(pk)
+            self._require(session, "completed")  # recordings belong to a finished interview
+            for kind, upload in files.items():
+                field = getattr(session, f"{kind}_file")
+                if field:
+                    field.delete(save=False)  # a retry replaces the earlier upload
+                ext = recordings.EXTENSIONS[kind][formats[kind]]
+                upload.name = f"session-{session.pk}-{uuid.uuid4().hex[:8]}.{ext}"
+                setattr(session, f"{kind}_file", upload)
+            session.save(update_fields=[f"{kind}_file" for kind in files])
+        return self._detail(session)
+
+    def _delete_recording(self, pk):
+        with transaction.atomic():
+            session = self._locked(pk)
+            for kind in ("video", "audio"):
+                field = getattr(session, f"{kind}_file")
+                if field:
+                    field.delete(save=False)
+                    setattr(session, f"{kind}_file", None)
+            session.save(update_fields=["video_file", "audio_file"])
+        return self._detail(session)
+
+    def _download_recording(self, request, pk):
+        kind = request.query_params.get("type", "video")
+        if kind not in ("video", "audio"):
+            raise ValidationError({"type": "Choose video or audio."})
+        session = get_object_or_404(self.get_queryset(), pk=pk)
+        stored = getattr(session, f"{kind}_file")
+        if not stored:
+            raise NotFound("There is no recording of this kind.")
+        try:
+            handle = stored.open("rb")
+        except FileNotFoundError:
+            raise NotFound("The recording file is missing.")
+        # The type comes from the stored file name (set by us), never from the client
+        ext = stored.name.rsplit(".", 1)[-1]
+        fmt = {"m4a": "mp4"}.get(ext, ext)
+        response = FileResponse(handle, content_type=recordings.CONTENT_TYPES[kind].get(fmt, "application/octet-stream"))
+        response["Content-Disposition"] = f'inline; filename="interview-{session.pk}-{kind}.{ext}"'
+        response["X-Content-Type-Options"] = "nosniff"
+        response["Cache-Control"] = "private, no-store"
+        return response
 
 
 MAX_TEMPLATES_PER_RECRUITER = 50

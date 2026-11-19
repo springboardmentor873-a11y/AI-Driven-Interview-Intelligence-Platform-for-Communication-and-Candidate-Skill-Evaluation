@@ -74,13 +74,15 @@ class SessionSerializer(serializers.ModelSerializer):
     question_total = serializers.SerializerMethodField()
     answered_count = serializers.SerializerMethodField()
     questions = serializers.SerializerMethodField()
+    has_video = serializers.SerializerMethodField()
+    has_audio = serializers.SerializerMethodField()
 
     class Meta:
         model = InterviewSession
         fields = (
             "id", "interview_type", "difficulty", "domain", "status", "question_source",
             "resume", "resume_name", "template", "template_title", "question_total", "answered_count",
-            "created_at", "started_at", "ended_at", "questions",
+            "created_at", "started_at", "ended_at", "has_video", "has_audio", "questions",
         )
         read_only_fields = fields
 
@@ -93,6 +95,12 @@ class SessionSerializer(serializers.ModelSerializer):
         if hasattr(obj, "answered_total"):
             return obj.answered_total
         return Answer.objects.filter(question__session=obj).count()
+
+    def get_has_video(self, obj):
+        return bool(obj.video_file)
+
+    def get_has_audio(self, obj):
+        return bool(obj.audio_file)
 
     def get_questions(self, obj):
         if not self.context.get("include_questions") or obj.status not in FINISHED_STATUSES:

@@ -5,7 +5,7 @@ behavioral and aptitude interviews with AI-driven questions, speech and behavior
 and feedback.
 
 ## Tech stack
-- Backend: Python, Django, Django REST Framework, SimpleJWT, Google OAuth2
+- Backend: Python, Django, Django REST Framework, SimpleJWT, Google OAuth2, Google Gemini, pdfplumber
 - Frontend: React (Vite), Tailwind CSS, Axios, React Router
 - Database: PostgreSQL (SQLite fallback for development)
 - DevOps: Docker and Docker Compose, Git and GitHub
@@ -24,6 +24,7 @@ and feedback.
 | backend/.env | DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT | PostgreSQL connection |
 | backend/.env | CORS_ORIGINS | Allowed frontend origin |
 | backend/.env | GOOGLE_CLIENT_ID | Google sign-in |
+| backend/.env | GEMINI_API_KEY, GEMINI_MODEL | Gemini, for skill extraction and question generation. Without a key the app uses its built-in fallbacks |
 | frontend/.env | VITE_API_URL | Backend address |
 | frontend/.env | VITE_GOOGLE_CLIENT_ID | Google sign-in |
 
@@ -35,15 +36,17 @@ and feedback.
 backend/
   config/          Django settings (base, dev, prod) and URLs
   apps/accounts/   Users, roles, JWT, Google login, admin user management
-  apps/resumes/    Resume upload and management
-  apps/interviews/ Interview schema (used from Milestone 2)
+  apps/ai/         The single place that calls Gemini
+  apps/resumes/    Resume upload, text extraction and skill analysis
+  apps/interviews/ Templates, question generation, sessions and recordings
   apps/scoring/    Score and feedback schema (used from Milestone 3)
   tests/           Pytest tests
 frontend/src/
   api/             Axios client with automatic token refresh
   context/         Auth state
-  components/      Navbar, layouts, form controls, protected routes
-  pages/           Login, Register, Dashboard, Resumes, Admin users
+  components/      Navbar, layouts, form controls, protected routes, interview room parts
+  hooks/           Camera and microphone, recording
+  pages/           Login, Register, Dashboard, Resumes, Templates, Interview setup and room, Admin users
 docs/              Scope and workflows, database schema, API reference, wireframes
 ```
 
@@ -52,11 +55,12 @@ docs/              Scope and workflows, database schema, API reference, wirefram
 - [Database schema](docs/database-schema.md)
 - [API reference](docs/api.md)
 - [UI wireframes](docs/wireframes.md)
+- [Milestone 2 guide](docs/milestone-2.md)
 
 ## Milestone status
 | Milestone | Status |
 |---|---|
 | 1. Requirements, database design and core setup | Complete |
-| 2. Resume parsing and interview engine | Planned |
+| 2. Resume parsing and interview engine | Complete |
 | 3. Speech analysis and AI monitoring | Planned |
 | 4. Analytics, testing and deployment | Planned |
