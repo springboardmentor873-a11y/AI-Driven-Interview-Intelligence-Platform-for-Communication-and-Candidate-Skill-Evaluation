@@ -81,3 +81,13 @@
 @media (prefers-reduced-motion: reduce) {
   .auth-simple .brand-panel, .auth-simple .form-panel { transition: none; }
 }
+
+.signup-roles { border: 0; padding: 0; margin: 0 0 4px; min-width: 0; }
+.signup-roles legend { font-size: 12px; margin-bottom: 10px; color: #c8bfd8; }
+.signup-roles > div { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.signup-roles label { display: flex; align-items: center; gap: 8px; padding: 12px 10px; border: 1px solid #504363; border-radius: 8px; cursor: pointer; background: #1b172b; }
+.signup-roles label:has(input:checked) { border-color: #b18be9; background: #38294d; }
+.signup-roles input { accent-color: #b18be9; margin: 0; }
+.signup-roles strong { display: block; font-size: 12px; font-weight: 550; }
+.signup-roles small { display: block; font-size: 10px; color: #b7aac9; margin-top: 4px; }
+.role-signup-note { font-size: 11px; line-height: 1.6; text-align: center; color: #b7aac9; margin-top: 20px; }

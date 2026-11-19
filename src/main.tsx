@@ -4,6 +4,7 @@ import App from './App';
 import './styles.css';
 import './auth-simple.css';
 import './workspace.css';
+import './glass.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode><App /></React.StrictMode>,

@@ -25,7 +25,8 @@ function SocialAuth({ onError }: { onError: (error: string) => void }) {
 export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   const register = mode === 'register'; const { session, loading, recovery } = useAuth(); const navigate = useNavigate();
   const [busy, setBusy] = useState(false); const [error, setError] = useState(''); const [success, setSuccess] = useState(''); const [password, setPassword] = useState('');
-  useEffect(() => { setError(''); setSuccess(''); setPassword(''); }, [mode]);
+  const [accountRole, setAccountRole] = useState<'candidate' | 'recruiter'>('candidate');
+  useEffect(() => { setError(''); setSuccess(''); setPassword(''); setAccountRole('candidate'); }, [mode]);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setError(''); setSuccess('');
     if (!supabase) { setError('Connect Supabase before creating an account or signing in. See the setup guide in README.md.'); return; }
@@ -43,7 +44,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
     try {
       if (register) {
         const { data, error: authError } = await supabase.auth.signUp({ email, password: enteredPassword, options: {
-          emailRedirectTo: redirectUrl('/auth/callback'), data: { full_name: String(form.get('fullName')).trim(), phone: `${form.get('countryCode')}${String(form.get('phone')).replace(/[\s()-]/g, '')}`, terms_accepted_at: new Date().toISOString() },
+          emailRedirectTo: redirectUrl('/auth/callback'), data: { account_role: accountRole, full_name: String(form.get('fullName')).trim(), phone: `${form.get('countryCode')}${String(form.get('phone')).replace(/[\s()-]/g, '')}`, terms_accepted_at: new Date().toISOString() },
         } });
         if (authError) throw authError;
         if (data.session) navigate('/dashboard', { replace: true });
@@ -60,13 +61,14 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   if (recovery && session) return <Navigate to="/reset-password" replace />;
   if (session) return <Navigate to="/dashboard" replace />;
   return <motion.div key={mode} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}><div className="form-kicker"><span /> {register ? 'MAKE YOUR NEXT MOVE' : 'WELCOME BACK'}</div><h2>{register ? 'Create your account' : 'Sign in'}</h2><p className="form-subtitle">{register ? 'A more confident you starts right here.' : 'Your next opportunity is worth preparing for.'}</p><SetupNotice /><Notice>{error}</Notice><Notice type="success">{success}</Notice><form onSubmit={submit} className="auth-form" key={mode}>
+    {register && <fieldset className="signup-roles" disabled={busy}><legend>I’m joining as</legend><div>{([{ value: 'candidate', label: 'Candidate', detail: 'Practice and improve' }, { value: 'recruiter', label: 'Evaluator', detail: 'Review interviews' }] as const).map(role => <label key={role.value}><input type="radio" name="accountRole" value={role.value} checked={accountRole === role.value} onChange={() => setAccountRole(role.value)} /><span><strong>{role.label}</strong><small>{role.detail}</small></span></label>)}</div></fieldset>}
     {register && <Field label="Full name" name="fullName" icon={UserRound} placeholder="Your full name" autoComplete="name" required minLength={2} maxLength={100} />}
     <Field label="Email address" name="email" icon={Mail} type="email" placeholder="you@example.com" autoComplete="email" required maxLength={254} />
     <Field label="Password" name="password" icon={LockKeyhole} type="password" placeholder={register ? 'Create a strong password' : 'Enter your password'} autoComplete={register ? 'new-password' : 'current-password'} required minLength={register ? 12 : undefined} maxLength={128} value={password} onChange={e => setPassword(e.target.value)} />
     {register && <><div className="password-guidance"><span className={password.length >= 12 ? 'passed' : ''}><Check size={12} />12+ characters</span><span className={/[a-z]/.test(password) && /[A-Z]/.test(password) && /[0-9]/.test(password) ? 'passed' : ''}><Check size={12} />Aa & numbers</span></div><Field label="Confirm password" name="confirmPassword" icon={LockKeyhole} type="password" placeholder="Re-enter your password" autoComplete="new-password" required maxLength={128} /><div className="field"><label htmlFor="phone">Phone number</label><div className="input-wrap phone-input"><select name="countryCode" aria-label="Country calling code" defaultValue="+91"><option value="+91">IN +91</option><option value="+1">US/CA +1</option><option value="+44">UK +44</option><option value="+61">AU +61</option><option value="+65">SG +65</option><option value="+971">AE +971</option></select><input id="phone" name="phone" type="tel" inputMode="tel" autoComplete="tel-national" placeholder="Your phone number" required maxLength={18} /></div></div><label className="checkbox-row"><input type="checkbox" name="terms" required /><span>I agree to the <Link to="/terms">Terms of Service</Link> and <Link to="/privacy">Privacy Notice</Link>.</span></label></>}
     {!register && <div className="login-options"><span><ShieldCheck size={13} /> Secure, persistent sign-in</span><Link to="/forgot-password">Forgot password?</Link></div>}
     <Button type="submit" busy={busy} className="full-width" disabled={!isConfigured}>{register ? 'Create account' : 'Sign in'}<ArrowRight size={18} /></Button>
-  </form><SocialAuth onError={setError} /><p className="auth-switch">{register ? 'Already part of the journey?' : 'New to SmartHire AI?'} <Link to={register ? '/login' : '/register'}>{register ? 'Sign in' : 'Create an account'} <ArrowRight size={14} /></Link></p></motion.div>;
+  </form>{register && accountRole === 'recruiter' ? <p className="role-signup-note">Use email registration to create an evaluator account.</p> : <SocialAuth onError={setError} />}<p className="auth-switch">{register ? 'Already part of the journey?' : 'New to SmartHire AI?'} <Link to={register ? '/login' : '/register'}>{register ? 'Sign in' : 'Create an account'} <ArrowRight size={14} /></Link></p></motion.div>;
 }
 
 export function ForgotPassword() {

@@ -130,3 +130,7 @@ backend/app/          FastAPI and access-token validation
 backend/tests/        API authentication regression tests
 docs/                 Testing checklist and asset provenance
 ```
+
+## Resume skill extraction
+
+The Resume page supports reviewed keyword-based skill extraction through FastAPI. Start the backend in a second terminal. See [setup and limits](docs/RESUME-EXTRACTION.md). AI scoring, semantic summaries, and interview generation are not yet implemented.

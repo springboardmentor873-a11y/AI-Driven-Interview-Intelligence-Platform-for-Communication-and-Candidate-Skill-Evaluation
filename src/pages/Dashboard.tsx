@@ -4,21 +4,22 @@ import { useAuth } from '../context/AuthContext';
 import { EmptyState } from '../components/ui';
 
 const steps = [
-  { number: '01', icon: FileUser, title: 'Prepare your resume', description: 'Your skills and experience will shape your interview questions.', to: '/resume', link: 'Resume details' },
+  { number: '01', icon: FileUser, title: 'Prepare your resume', description: 'Your skills and experience will shape your interview questions.', to: '/resume', link: 'Manage resume' },
   { number: '02', icon: Video, title: 'Practice an interview', description: 'Technical, HR, behavioral, or aptitude. Practice for your next role.', to: '/interview', link: 'Explore interviews' },
   { number: '03', icon: BarChart3, title: 'Learn from feedback', description: 'Review your answers, communication, and areas to improve.', to: '/analytics', link: 'View progress' },
 ];
 export default function Dashboard() {
   const { profile, session } = useAuth();
   const name = String(profile?.full_name || session?.user.user_metadata.full_name || 'there').split(' ')[0];
+  if (profile?.role === 'recruiter') return <div className="overview"><div className="page-heading"><div><div className="eyebrow small-eyebrow">EVALUATOR WORKSPACE</div><h1>Welcome, {name}.</h1><p>Review interviews and help candidates improve.</p></div></div><section className="card"><EmptyState icon={FileBarChart} title="Your evaluation workspace is getting ready" description="Assigned candidate interviews, assessment reports, and interview templates will appear here as the evaluation workflow is added. No candidate records are shared with this account yet."><Link className="button" to="/profile">View your profile <ArrowRight size={16} /></Link></EmptyState></section></div>;
   return <div className="overview">
     <div className="page-heading"><div><div className="eyebrow small-eyebrow">YOUR WORKSPACE</div><h1>Welcome, {name}.</h1><p>A little practice. A more confident next interview.</p></div><Link className="subtle-link" to="/profile">My profile <ArrowRight size={16} /></Link></div>
     <section className="practice-intro" aria-labelledby="practice-title">
-      <div className="practice-copy"><span className="feature-status">INTERVIEW PRACTICE · COMING SOON</span><h2 id="practice-title">Make your next<br />interview feel familiar.</h2><p>Practice answering questions that match your skills, then get clear feedback to help you improve.</p><Link className="button" to="/interview">Explore mock interviews <ArrowRight size={17} /></Link></div>
+      <div className="practice-copy"><span className="feature-status">AI INTERVIEW PRACTICE</span><h2 id="practice-title">Make your next<br />interview feel familiar.</h2><p>Practice answering questions that match your skills, then get clear feedback to help you improve.</p><Link className="button" to="/interview">Explore mock interviews <ArrowRight size={17} /></Link></div>
       <img src="/images/login-interview-flat.png" alt="A candidate practicing a video interview" width="360" height="240" />
     </section>
-    <section className="preparation" aria-labelledby="preparation-title"><div className="overview-section-heading"><h2 id="preparation-title">Your preparation, in three steps</h2><span>Planned features</span></div><div className="preparation-grid">{steps.map(({ number, icon: Icon, title, description, to, link }) => <Link className="preparation-step" to={to} key={number}><div className="step-top"><Icon size={22} /><span>{number}</span></div><h3>{title}</h3><p>{description}</p><span className="step-link">{link}<ArrowRight size={16} /></span></Link>)}</div></section>
-    <section className="recent-sessions" aria-labelledby="recent-title"><div className="overview-section-heading"><h2 id="recent-title">Recent interviews</h2><Link className="subtle-link" to="/interviews">View history <ArrowRight size={15} /></Link></div><div className="session-empty"><span className="session-icon"><History size={23} /></span><div><h3>No interviews yet</h3><p>Your completed sessions and feedback will appear here when interview practice launches.</p></div></div></section>
+    <section className="preparation" aria-labelledby="preparation-title"><div className="overview-section-heading"><h2 id="preparation-title">Your preparation, in three steps</h2><span>Resume upload · Available</span></div><div className="preparation-grid">{steps.map(({ number, icon: Icon, title, description, to, link }) => <Link className="preparation-step" to={to} key={number}><div className="step-top"><Icon size={22} /><span>{number}</span></div><h3>{title}</h3><p>{description}</p><span className="step-link">{link}<ArrowRight size={16} /></span></Link>)}</div></section>
+    <section className="recent-sessions" aria-labelledby="recent-title"><div className="overview-section-heading"><h2 id="recent-title">Recent interviews</h2><Link className="subtle-link" to="/interviews">View history <ArrowRight size={15} /></Link></div><div className="session-empty"><span className="session-icon"><History size={23} /></span><div><h3>Your practice history</h3><p>Open My interviews to resume a session or review your saved answers.</p></div></div></section>
   </div>;
 }
 

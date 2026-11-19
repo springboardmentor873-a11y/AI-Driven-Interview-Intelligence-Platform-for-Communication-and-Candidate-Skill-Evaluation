@@ -38,11 +38,27 @@ describe('Account and privacy boundaries', () => {
   });
   it('renders only empty interview data for a new account', () => {
     render(<MemoryRouter><Dashboard /></MemoryRouter>);
-    expect(screen.getByText('No interviews yet')).toBeTruthy();
-    expect(screen.getByText('Planned features')).toBeTruthy();
+    expect(screen.getByText('Your practice history')).toBeTruthy();
+    expect(screen.getByText('Resume upload · Available')).toBeTruthy();
     expect(screen.queryByRole('region', { name: 'Your interview statistics' })).toBeNull();
-    expect(screen.getByRole('link', { name: /Resume details/ }).getAttribute('href')).toBe('/resume');
+    expect(screen.getByRole('link', { name: /Manage resume/ }).getAttribute('href')).toBe('/resume');
     expect(screen.getByRole('link', { name: /Explore mock interviews/ }).getAttribute('href')).toBe('/interview');
+  });
+  it('submits the selected evaluator role and keeps social signup out of that flow', async () => {
+    mocks.signUp.mockResolvedValue({ data: { session: null }, error: null });
+    render(<MemoryRouter><AuthPage mode="register" /></MemoryRouter>);
+    expect((screen.getByRole('radio', { name: /Candidate/ }) as HTMLInputElement).checked).toBe(true);
+    fireEvent.click(screen.getByRole('radio', { name: /Evaluator/ }));
+    expect(screen.queryByRole('button', { name: /Google/ })).toBeNull();
+    fireEvent.change(screen.getByLabelText('Full name'), { target: { value: 'Test Evaluator' } });
+    fireEvent.change(screen.getByLabelText('Email address'), { target: { value: 'evaluator@example.com' } });
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'StrongPassphrase42' } });
+    fireEvent.change(screen.getByLabelText('Confirm password'), { target: { value: 'StrongPassphrase42' } });
+    fireEvent.change(screen.getByLabelText('Phone number'), { target: { value: '9876543210' } });
+    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.submit(screen.getByRole('button', { name: 'Create account' }).closest('form')!);
+    await waitFor(() => expect(mocks.signUp).toHaveBeenCalledWith(expect.objectContaining({ options: expect.objectContaining({ data: expect.objectContaining({ account_role: 'recruiter' }) }) })));
+    expect(screen.queryByRole('radio', { name: /Admin/ })).toBeNull();
   });
   it('surfaces incorrect credential errors from Supabase', async () => {
     mocks.signInWithPassword.mockResolvedValue({ error: { message: 'Invalid login credentials' } });

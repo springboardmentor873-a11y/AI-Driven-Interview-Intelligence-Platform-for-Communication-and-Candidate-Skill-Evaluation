@@ -70,3 +70,33 @@
   .preparation-step, .step-link svg, .subtle-link svg, .button svg, .nav-link { transition: none; }
   .preparation-step:hover, .preparation-step:hover .step-link svg, .subtle-link:hover svg, .button:hover svg:last-child { transform: none; }
 }
+
+.resume-page { max-width: 900px; }
+.resume-upload { text-align: center; margin: 22px 0; padding: 38px 24px; }
+.resume-file-icon { color: #c4b5fd; margin-bottom: 18px; }
+.resume-upload > p, .resume-next p { font-size: 13px; line-height: 1.8; color: #b9b1c8; margin: 12px 0 20px; }
+.resume-file-details { display: grid; gap: 7px; margin: 24px auto; padding: 18px; max-width: 430px; border: 1px solid #504363; border-radius: 10px; }
+.resume-file-details strong { font-size: 14px; }
+.resume-file-details span, .resume-upload > small { font-size: 11px; color: #b9b1c8; }
+.resume-actions { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 12px; margin: 20px 0; }
+.resume-actions .text-button { display: inline-flex; align-items: center; gap: 6px; padding: 10px; }
+.resume-preview { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; margin-top: 24px; }
+.resume-remove { border-top: 1px solid #504363; margin-top: 24px; padding-top: 24px; }
+.resume-remove p { font-size: 13px; line-height: 1.7; }
+.resume-suggestions { margin-top: 24px; }
+.resume-suggestions h3 { font-size: 15px; }
+.resume-suggestions fieldset { display: flex; flex-wrap: wrap; gap: 12px; border: 0; padding: 0; margin: 20px 0; }
+.resume-suggestions .checkbox-row { padding: 9px 12px; border: 1px solid #504363; border-radius: 8px; font-size: 12px; }
+.interview-page { max-width: 960px; }
+.interview-setup fieldset { border: 0; padding: 0; margin: 0; }
+.interview-setup legend { font-size: 16px; margin-bottom: 24px; }
+.interview-setup select { min-height: 44px; padding: 10px; border: 1px solid #504363; border-radius: 8px; background: #1b172b; color: #eee; }
+.interview-help { font-size: 12px; color: #b9b1c8; line-height: 1.8; margin: 18px 0; }
+.interview-skills { display: flex; flex-wrap: wrap; gap: 15px; margin: 18px 0; }
+.interview-skills .checkbox-row { font-size: 12px; }
+.interview-room h2 { font-size: 20px; line-height: 1.7; margin: 24px 0; }
+.session-list > a { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 0; border-bottom: 1px solid #504363; }
+.session-list > a:last-child { border-bottom: 0; }
+.session-list strong { font-size: 14px; }
+.session-list div > span { display: block; font-size: 12px; color: #b9b1c8; margin-top: 8px; }
+@media(max-width:680px) { .session-list > a { align-items: flex-start; flex-direction: column; } }

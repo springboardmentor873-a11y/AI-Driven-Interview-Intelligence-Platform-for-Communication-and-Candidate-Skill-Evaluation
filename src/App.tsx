@@ -10,6 +10,10 @@ import { AuthCallback, AuthPage, ForgotPassword, ResetPassword } from './pages/A
 const AppLayout = lazy(() => import('./components/AppLayout'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const UpcomingPage = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.UpcomingPage })));
+const InterviewSetup = lazy(() => import('./pages/Interviews').then(m => ({ default: m.InterviewSetup })));
+const InterviewHistory = lazy(() => import('./pages/Interviews').then(m => ({ default: m.InterviewHistory })));
+const InterviewRoom = lazy(() => import('./pages/Interviews').then(m => ({ default: m.InterviewRoom })));
+const Resume = lazy(() => import('./pages/Resume'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Settings = lazy(() => import('./pages/Settings'));
 const Legal = lazy(() => import('./pages/Legal'));
@@ -45,9 +49,13 @@ export default function App() {
               <Route element={<ProtectedRoute />}>
                 <Route element={<AppLayout />}>
                   <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/interview" element={<InterviewSetup />} />
+                  <Route path="/interviews" element={<InterviewHistory />} />
+                  <Route path="/interviews/:id" element={<InterviewRoom />} />
+                  <Route path="/resume" element={<Resume />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/settings" element={<Settings />} />
-                  {(['interview', 'interviews', 'resume', 'analytics', 'reports'] as const).map(page => (
+                  {(['analytics', 'reports'] as const).map(page => (
                     <Route key={page} path={`/${page}`} element={<UpcomingPage page={page} />} />
                   ))}
                 </Route>
