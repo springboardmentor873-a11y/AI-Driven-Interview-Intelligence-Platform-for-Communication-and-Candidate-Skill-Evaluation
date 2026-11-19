@@ -58,3 +58,24 @@ def test_raises_aierror_after_two_failures(configured, monkeypatch):
     patch_client(monkeypatch, [RuntimeError("boom"), "not json"])
     with pytest.raises(gemini.AIError):
         gemini.generate_json("hi")
+
+
+def test_client_stays_open_while_the_request_runs(configured, monkeypatch):
+    """Regression: the client used to be dropped (and closed) before the request was sent."""
+
+    class Models:
+        # Like the real SDK, this does not keep the Client object alive
+        def generate_content(self, model, contents, config):
+            if Client.closed:
+                raise RuntimeError("Cannot send a request, as the client has been closed.")
+            return SimpleNamespace(text='{"ok": true}')
+
+    class Client:
+        closed = False
+        models = Models()
+
+        def __del__(self):  # the real SDK closes its connection here
+            Client.closed = True
+
+    monkeypatch.setattr(gemini, "_client", Client)
+    assert gemini.generate_json("hi") == {"ok": True}

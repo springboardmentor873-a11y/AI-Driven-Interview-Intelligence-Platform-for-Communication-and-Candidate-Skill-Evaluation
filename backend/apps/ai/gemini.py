@@ -59,7 +59,11 @@ def generate_json(prompt: str, system: str = "", temperature: float = 0.4):
     last_error = None
     for _ in range(2):  # one retry for transient failures
         try:
-            response = _client().models.generate_content(
+            # Keep a reference to the client while the request runs. If it is created and
+            # dropped in one expression, Python closes it before the request is sent and
+            # the call fails with "the client has been closed".
+            client = _client()
+            response = client.models.generate_content(
                 model=settings.GEMINI_MODEL, contents=prompt, config=config
             )
             return _parse_json(response.text)
