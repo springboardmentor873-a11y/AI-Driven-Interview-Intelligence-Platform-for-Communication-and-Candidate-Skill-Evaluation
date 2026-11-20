@@ -659,6 +659,18 @@ h1 {
   justify-self: start;
 }
 
+.upload-progress {
+  width: 100%;
+  height: 8px;
+  accent-color: #6b63d9;
+}
+
+.upload-success {
+  margin: 0;
+  color: #26734d;
+  font-size: 11px;
+}
+
 .resume-list {
   display: grid;
   gap: 10px;
@@ -835,6 +847,96 @@ h1 {
   line-height: 1.6;
 }
 
+.room-timer,
+.recording-badge {
+  color: #6558cb;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.room-controls {
+  display: grid;
+  grid-template-columns: minmax(220px, 320px) minmax(180px, 1fr);
+  gap: 16px;
+  align-items: start;
+  padding: 14px;
+  border: 1px solid #eaecf3;
+  border-radius: 10px;
+  background: #fbfbfe;
+}
+
+.media-preview {
+  overflow: hidden;
+  border-radius: 9px;
+  background: #171c2a;
+}
+
+.media-preview video {
+  display: block;
+  width: 100%;
+  min-height: 180px;
+  max-height: 220px;
+  object-fit: cover;
+  background: #171c2a;
+}
+
+.media-placeholder {
+  display: grid;
+  min-height: 180px;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  color: #aeb4c4;
+  font-size: 11px;
+}
+
+.media-device-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
+  background: #fff;
+}
+
+.session-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.secondary-button {
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 1px solid #dddff0;
+  border-radius: 8px;
+  background: #fff;
+  color: #5b50c6;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.secondary-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.recording-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #b44c55;
+}
+
+.recording-badge::before {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #d95b64;
+  content: "";
+}
+
 .question-count {
   margin-bottom: 0;
   color: #6558cb;
@@ -1004,4 +1106,164 @@ h1 {
   .evaluation-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Milestone 2: Interview Templates & Domain Selection */
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin: 12px 0 18px;
+}
+
+.template-card {
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.template-card:hover {
+  border-color: #3b82f6;
+  background: #f8fafc;
+}
+
+.template-card.active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 0 0 1px #2563eb;
+}
+
+.template-card strong {
+  display: block;
+  font-size: 13px;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.template-card p {
+  margin: 0;
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.template-meta {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #2563eb;
+}
+
+/* Interview Progress Bar */
+.interview-progress-bar-wrap {
+  margin: 12px 0;
+  background: #f1f5f9;
+  padding: 10px 14px;
+  border-radius: 6px;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 500;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+.interview-progress {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: none;
+}
+
+.interview-progress::-webkit-progress-bar {
+  background-color: #e2e8f0;
+  border-radius: 4px;
+}
+
+.interview-progress::-webkit-progress-value {
+  background-color: #2563eb;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.interview-progress::-moz-progress-bar {
+  background-color: #2563eb;
+  border-radius: 4px;
+}
+
+/* Timer Warning States */
+.timer--warning {
+  color: #d97706 !important;
+  font-weight: 600;
+}
+
+.timer--critical {
+  color: #dc2626 !important;
+  font-weight: 700;
+  animation: pulse-timer 1.5s infinite;
+}
+
+@keyframes pulse-timer {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Tag pills for Education, Technologies, Certifications */
+.tag-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 11px;
+  border-radius: 12px;
+  margin: 2px 4px 2px 0;
+}
+
+.tech-tag {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.cert-tag {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+/* Recruiter Workspace */
+.recruiter-panel {
+  margin-top: 28px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 24px;
+}
+
+.recruiter-candidates-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+}
+
+.recruiter-candidates-table th,
+.recruiter-candidates-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 13px;
+}
+
+.recruiter-candidates-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 600;
 }

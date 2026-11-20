@@ -1,7 +1,10 @@
 import json
+from pathlib import Path
+import tempfile
 from unittest.mock import Mock, patch
 
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from google.genai.errors import APIError
 from httpx import ReadTimeout
@@ -22,6 +25,9 @@ from apps.ai_services import (
 )
 
 User = get_user_model()
+RECORDING_FIXTURE = (
+    Path(__file__).parent / "fixtures" / "valid_recording.webm"
+)
 
 
 class AIProviderTests(TestCase):
@@ -227,6 +233,68 @@ class AIProviderTests(TestCase):
                     len(set(first_question_by_level.values())),
                     3,
                 )
+
+    def test_local_fallback_respects_nontechnical_type_role_difficulty_and_count(
+        self,
+    ):
+        categories = {
+            "HR": ("Hr", ("stakeholder", "teammate", "colleague")),
+            "BEHAVIORAL": (
+                "Behavioral",
+                (
+                    "describe a time",
+                    "tell me about a time",
+                    "disagreement",
+                    "setback",
+                ),
+            ),
+            "APTITUDE": (
+                "Aptitude",
+                ("records", "prioritize", "approach", "process"),
+            ),
+        }
+        difficulty_context = (
+            "multiple constraints, failure risks, and a measurable outcome"
+        )
+
+        with override_settings(
+            GEMINI_API_KEY="",
+            AI_DETERMINISTIC_FALLBACK=True,
+        ):
+            for interview_type, (category, markers) in categories.items():
+                with self.subTest(interview_type=interview_type):
+                    result = generate_interview_questions(
+                        target_role="Backend Engineer",
+                        interview_type=interview_type,
+                        difficulty="HARD",
+                        skills=["Python"],
+                        question_count=5,
+                        local_only=True,
+                    )
+
+                    self.assertEqual(result.source, "fallback")
+                    self.assertEqual(len(result.data), 5)
+                    self.assertEqual(
+                        {question["difficulty"] for question in result.data},
+                        {"ADVANCED"},
+                    )
+                    self.assertEqual(
+                        {question["category"] for question in result.data},
+                        {category},
+                    )
+                    self.assertEqual(
+                        len({question["topic"] for question in result.data}),
+                        5,
+                    )
+                    for question in result.data:
+                        text = question["question_text"].casefold()
+                        self.assertIn("backend engineer", text)
+                        self.assertIn("python", text)
+                        self.assertIn(difficulty_context, text)
+                        self.assertTrue(
+                            any(marker in text for marker in markers),
+                            text,
+                        )
 
     @patch("apps.ai_services.genai.Client")
     def test_repeated_gemini_concepts_use_labeled_fallback(
@@ -497,6 +565,14 @@ class AIProviderTests(TestCase):
 
 class CandidateInterviewAccessTests(TestCase):
     def setUp(self):
+        self.media_directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.media_directory.cleanup)
+        settings_override = override_settings(
+            MEDIA_ROOT=self.media_directory.name
+        )
+        settings_override.enable()
+        self.addCleanup(settings_override.disable)
+
         self.client = APIClient()
         self.candidate = User.objects.create_user(
             username="candidate",
@@ -893,3 +969,295 @@ class CandidateInterviewAccessTests(TestCase):
         answer = question.answer
         self.assertIsNotNone(answer.evaluation)
         self.assertEqual(answer.evaluation_source, "fallback")
+
+    def test_interview_can_be_paused_resumed_and_abandoned(self):
+        interview = self.candidate.interviews.create(
+            interview_type="TECHNICAL",
+            status="IN_PROGRESS",
+            total_questions=1,
+        )
+        interview.questions.create(
+            question_text="Explain an API.",
+            topic="API",
+            order=1,
+        )
+        self.client.force_authenticate(self.candidate)
+
+        pause_response = self.client.post(
+            f"/api/interviews/{interview.pk}/pause/",
+            {"elapsed_seconds": 42},
+            format="json",
+        )
+        self.assertEqual(pause_response.status_code, 200)
+        self.assertEqual(pause_response.data["status"], "PAUSED")
+        self.assertEqual(pause_response.data["elapsed_seconds"], 42)
+
+        resume_response = self.client.post(
+            f"/api/interviews/{interview.pk}/resume/",
+            {},
+            format="json",
+        )
+        self.assertEqual(resume_response.status_code, 200)
+        self.assertEqual(resume_response.data["status"], "IN_PROGRESS")
+
+        abandon_response = self.client.post(
+            f"/api/interviews/{interview.pk}/abandon/",
+            {"elapsed_seconds": 55},
+            format="json",
+        )
+        self.assertEqual(abandon_response.status_code, 200)
+        self.assertEqual(abandon_response.data["status"], "ABANDONED")
+        self.assertEqual(abandon_response.data["elapsed_seconds"], 55)
+
+        interview.refresh_from_db()
+        self.assertIsNotNone(interview.completed_at)
+
+    def test_candidate_can_upload_download_and_replace_recording(self):
+        interview = self.candidate.interviews.create(
+            interview_type="BEHAVIORAL",
+            status="COMPLETED",
+        )
+        self.client.force_authenticate(self.candidate)
+        fixture_bytes = RECORDING_FIXTURE.read_bytes()
+        recording = SimpleUploadedFile(
+            "interview.webm",
+            fixture_bytes,
+            content_type="video/webm",
+        )
+
+        upload_response = self.client.post(
+            f"/api/interviews/{interview.pk}/recording/",
+            {"recording": recording},
+            format="multipart",
+        )
+        self.assertEqual(upload_response.status_code, 200)
+        self.assertTrue(upload_response.data["recording"])
+
+        download_response = self.client.get(
+            f"/api/interviews/{interview.pk}/recording/download/"
+        )
+        self.assertEqual(download_response.status_code, 200)
+        self.assertEqual(download_response["Content-Type"], "video/webm")
+        self.assertIn(
+            'attachment; filename="interview.webm"',
+            download_response["Content-Disposition"],
+        )
+        self.assertEqual(
+            b"".join(download_response.streaming_content),
+            fixture_bytes,
+        )
+
+        interview.refresh_from_db()
+        original_name = interview.recording.name
+        replacement = SimpleUploadedFile(
+            "replacement.webm",
+            fixture_bytes,
+            content_type="video/webm",
+        )
+        replacement_response = self.client.post(
+            f"/api/interviews/{interview.pk}/recording/",
+            {"recording": replacement},
+            format="multipart",
+        )
+        self.assertEqual(replacement_response.status_code, 200)
+        interview.refresh_from_db()
+        self.assertNotEqual(interview.recording.name, original_name)
+        self.assertFalse(interview.recording.storage.exists(original_name))
+
+    def test_mp4_signature_controls_saved_extension_and_download_headers(self):
+        interview = self.candidate.interviews.create(
+            interview_type="TECHNICAL",
+            status="COMPLETED",
+        )
+        self.client.force_authenticate(self.candidate)
+        mp4_bytes = b"\x00\x00\x00\x18ftypisom\x00\x00\x02\x00isomiso2"
+
+        upload_response = self.client.post(
+            f"/api/interviews/{interview.pk}/recording/",
+            {
+                "recording": SimpleUploadedFile(
+                    "recording.webm",
+                    mp4_bytes,
+                    content_type="video/mp4",
+                )
+            },
+            format="multipart",
+        )
+
+        self.assertEqual(upload_response.status_code, 200)
+        self.assertTrue(upload_response.data["recording"].endswith(".mp4"))
+        interview.refresh_from_db()
+        self.assertTrue(interview.recording.name.endswith(".mp4"))
+
+        download_response = self.client.get(
+            f"/api/interviews/{interview.pk}/recording/download/"
+        )
+        self.assertEqual(download_response.status_code, 200)
+        self.assertEqual(download_response["Content-Type"], "video/mp4")
+        self.assertIn(".mp4", download_response["Content-Disposition"])
+        self.assertEqual(
+            b"".join(download_response.streaming_content),
+            mp4_bytes,
+        )
+
+    def test_failed_recording_replacement_preserves_existing_file(self):
+        interview = self.candidate.interviews.create(
+            interview_type="BEHAVIORAL",
+            status="COMPLETED",
+        )
+        self.client.force_authenticate(self.candidate)
+        fixture_bytes = RECORDING_FIXTURE.read_bytes()
+        upload_response = self.client.post(
+            f"/api/interviews/{interview.pk}/recording/",
+            {
+                "recording": SimpleUploadedFile(
+                    "interview.webm",
+                    fixture_bytes,
+                    content_type="video/webm",
+                )
+            },
+            format="multipart",
+        )
+        self.assertEqual(upload_response.status_code, 200)
+
+        interview.refresh_from_db()
+        original_name = interview.recording.name
+        storage = interview.recording.storage
+        replacement = SimpleUploadedFile(
+            "replacement.webm",
+            fixture_bytes,
+            content_type="video/webm",
+        )
+        self.client.raise_request_exception = False
+        with patch.object(storage, "save", side_effect=OSError("disk full")):
+            response = self.client.post(
+                f"/api/interviews/{interview.pk}/recording/",
+                {"recording": replacement},
+                format="multipart",
+            )
+        self.client.raise_request_exception = True
+
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(interview.recording.name, original_name)
+        self.assertTrue(storage.exists(original_name))
+
+    def test_recording_upload_rejects_empty_and_mime_spoofed_content(self):
+        interview = self.candidate.interviews.create(
+            interview_type="TECHNICAL",
+            status="COMPLETED",
+        )
+        self.client.force_authenticate(self.candidate)
+
+        for name, content in (
+            ("empty.webm", b""),
+            ("fake.webm", b"fake-webm-data"),
+        ):
+            with self.subTest(name=name):
+                response = self.client.post(
+                    f"/api/interviews/{interview.pk}/recording/",
+                    {
+                        "recording": SimpleUploadedFile(
+                            name,
+                            content,
+                            content_type="video/webm",
+                        )
+                    },
+                    format="multipart",
+                )
+                self.assertEqual(response.status_code, 400)
+                interview.refresh_from_db()
+                self.assertFalse(interview.recording)
+
+    def test_candidate_can_delete_only_their_interview_and_recording(self):
+        interview = self.candidate.interviews.create(
+            interview_type="TECHNICAL",
+            status="COMPLETED",
+        )
+        interview.recording.save(
+            "interview-delete-test.webm",
+            SimpleUploadedFile(
+                "interview.webm",
+                RECORDING_FIXTURE.read_bytes(),
+                content_type="video/webm",
+            ),
+        )
+        recording_name = interview.recording.name
+        self.client.force_authenticate(self.other_candidate)
+
+        forbidden_response = self.client.delete(
+            f"/api/interviews/{interview.pk}/"
+        )
+        self.assertEqual(forbidden_response.status_code, 404)
+        interview.refresh_from_db()
+        self.assertTrue(interview.recording)
+
+        self.client.force_authenticate(self.candidate)
+        delete_response = self.client.delete(
+            f"/api/interviews/{interview.pk}/"
+        )
+        self.assertEqual(delete_response.status_code, 204)
+        self.assertFalse(
+            interview.recording.storage.exists(recording_name)
+        )
+        self.assertFalse(
+            self.candidate.interviews.filter(pk=interview.pk).exists()
+        )
+
+    def test_interview_templates_endpoint_returns_templates(self):
+        self.client.force_authenticate(self.candidate)
+        response = self.client.get("/api/interviews/templates/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response.data, list)
+        self.assertGreaterEqual(len(response.data), 3)
+        template_ids = [t["id"] for t in response.data]
+        self.assertIn("quick_technical", template_ids)
+        self.assertIn("behavioral_screen", template_ids)
+
+    def test_domains_endpoint_returns_domain_profiles(self):
+        self.client.force_authenticate(self.candidate)
+        response = self.client.get("/api/interviews/domains/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response.data, list)
+        self.assertGreaterEqual(len(response.data), 4)
+        domain_ids = [d["id"] for d in response.data]
+        self.assertIn("backend_developer", domain_ids)
+        self.assertIn("frontend_developer", domain_ids)
+
+    def test_interview_generation_with_domain_and_time_limit(self):
+        self.client.force_authenticate(self.candidate)
+        response = self.client.post(
+            "/api/interviews/generate/",
+            {
+                "target_role": "Backend Engineer",
+                "interview_type": "TECHNICAL",
+                "difficulty": "MEDIUM",
+                "total_questions": 3,
+                "domain": "backend_developer",
+                "time_limit_seconds": 900,
+                "ai_consent": False,
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data["domain"], "backend_developer")
+        self.assertEqual(response.data["time_limit_seconds"], 900)
+        self.assertEqual(response.data["total_questions"], 3)
+
+    def test_recruiter_endpoints_access_control(self):
+        # Candidate should be denied access to recruiter endpoints
+        self.client.force_authenticate(self.candidate)
+        denied_candidates = self.client.get("/api/interviews/recruiter/candidates/")
+        self.assertEqual(denied_candidates.status_code, 403)
+
+        # Recruiter should have access
+        recruiter = User.objects.create_user(
+            username="recruiter_test",
+            email="recruiter_test@example.com",
+            password="StrongPassword123!",
+            role=User.Role.RECRUITER,
+        )
+        self.client.force_authenticate(recruiter)
+        allowed_candidates = self.client.get("/api/interviews/recruiter/candidates/")
+        self.assertEqual(allowed_candidates.status_code, 200)
+        self.assertIsInstance(allowed_candidates.data, list)
+

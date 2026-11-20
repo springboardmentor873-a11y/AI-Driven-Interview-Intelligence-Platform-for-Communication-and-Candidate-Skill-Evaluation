@@ -46,6 +46,17 @@ class Resume(models.Model):
     extracted_qualifications = models.JSONField(blank=True, default=list)
     extracted_experience = models.JSONField(blank=True, default=list)
     extracted_projects = models.JSONField(blank=True, default=list)
+    extracted_candidate_name = models.CharField(
+        max_length=120,
+        blank=True,
+        default="",
+    )
+    extracted_email = models.EmailField(blank=True, default="")
+    extracted_phone = models.CharField(max_length=40, blank=True, default="")
+    extracted_summary = models.TextField(blank=True, default="")
+    extracted_education = models.JSONField(blank=True, default=list)
+    extracted_technologies = models.JSONField(blank=True, default=list)
+    extracted_certifications = models.JSONField(blank=True, default=list)
     skills_extracted_at = models.DateTimeField(blank=True, null=True)
     extraction_source = models.CharField(max_length=16, blank=True, default="")
 

@@ -1,5 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from pypdf import PdfReader
+from pypdf.errors import PdfReadError
 
 from .models import Resume
 
@@ -57,8 +59,15 @@ class ResumeSerializer(serializers.ModelSerializer):
             "uploaded_at",
             "extracted_skills",
             "extracted_qualifications",
+            "extracted_education",
+            "extracted_technologies",
+            "extracted_certifications",
             "extracted_experience",
             "extracted_projects",
+            "extracted_candidate_name",
+            "extracted_email",
+            "extracted_phone",
+            "extracted_summary",
             "skills_extracted_at",
             "extraction_source",
         ]
@@ -67,8 +76,15 @@ class ResumeSerializer(serializers.ModelSerializer):
             "uploaded_at",
             "extracted_skills",
             "extracted_qualifications",
+            "extracted_education",
+            "extracted_technologies",
+            "extracted_certifications",
             "extracted_experience",
             "extracted_projects",
+            "extracted_candidate_name",
+            "extracted_email",
+            "extracted_phone",
+            "extracted_summary",
             "skills_extracted_at",
             "extraction_source",
         ]
@@ -81,9 +97,23 @@ class ResumeSerializer(serializers.ModelSerializer):
 
         header = value.read(1024)
         value.seek(0)
-        if b"%PDF-" not in header:
+        if not header.startswith(b"%PDF-"):
             raise serializers.ValidationError(
                 "The uploaded file must be a valid PDF."
+            )
+
+        try:
+            page_count = len(PdfReader(value).pages)
+        except (PdfReadError, OSError, ValueError) as exc:
+            value.seek(0)
+            raise serializers.ValidationError(
+                "The uploaded file must be a readable PDF."
+            ) from exc
+        finally:
+            value.seek(0)
+        if page_count == 0:
+            raise serializers.ValidationError(
+                "The uploaded PDF must contain at least one page."
             )
 
         return value

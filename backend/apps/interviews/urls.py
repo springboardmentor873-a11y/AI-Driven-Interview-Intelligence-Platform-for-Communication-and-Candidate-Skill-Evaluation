@@ -2,10 +2,14 @@ from django.urls import path
 
 from .views import (
     AnswerCreateView,
+    DomainListView,
     InterviewDetailView,
     InterviewListCreateView,
     GenerateInterviewView,
+    InterviewTemplateListView,
     QuestionListCreateView,
+    RecruiterCandidateListView,
+    RecruiterInterviewDetailView,
     StartInterviewView,
     PauseInterviewView,
     ResumeInterviewView,
@@ -16,6 +20,26 @@ from .views import (
 
 
 urlpatterns = [
+    path(
+        "templates/",
+        InterviewTemplateListView.as_view(),
+        name="interview-templates",
+    ),
+    path(
+        "domains/",
+        DomainListView.as_view(),
+        name="interview-domains",
+    ),
+    path(
+        "recruiter/candidates/",
+        RecruiterCandidateListView.as_view(),
+        name="recruiter-candidates",
+    ),
+    path(
+        "recruiter/interviews/<int:pk>/",
+        RecruiterInterviewDetailView.as_view(),
+        name="recruiter-interview-detail",
+    ),
     path(
         "generate/",
         GenerateInterviewView.as_view(),

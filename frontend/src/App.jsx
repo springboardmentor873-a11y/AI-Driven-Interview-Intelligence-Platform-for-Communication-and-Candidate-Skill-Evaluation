@@ -4,6 +4,98 @@ const API_BASE_URL = (
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api"
 ).replace(/\/+$/, "");
 
+const RECORDING_MIME_TYPES = [
+  "video/mp4",
+  "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
+  "video/webm;codecs=vp8,opus",
+  "video/webm;codecs=vp9,opus",
+  "video/webm",
+];
+
+function chooseRecordingMimeType() {
+  const supportedTypes = RECORDING_MIME_TYPES.filter((type) =>
+    MediaRecorder.isTypeSupported(type),
+  );
+  const video = document.createElement("video");
+  return (
+    supportedTypes.find((type) => video.canPlayType?.(type)) ||
+    supportedTypes[0] ||
+    ""
+  );
+}
+
+function recordingFileExtension(mimeType) {
+  const container = mimeType.split(";", 1)[0].trim().toLowerCase();
+  if (container === "video/mp4" || container === "audio/mp4") {
+    return "mp4";
+  }
+  if (container === "video/webm" || container === "audio/webm") {
+    return "webm";
+  }
+  return "";
+}
+
+const DEFAULT_DOMAINS = [
+  { id: "frontend_developer", label: "Frontend Developer" },
+  { id: "backend_developer", label: "Backend Developer" },
+  { id: "data_engineer", label: "Data Engineer" },
+  { id: "devops_engineer", label: "DevOps Engineer" },
+  { id: "fullstack_developer", label: "Full-Stack Developer" },
+];
+
+const DEFAULT_TEMPLATES = [
+  {
+    id: "quick_technical",
+    name: "Quick Technical Screen",
+    description: "3 focused technical questions for a rapid skill check (15 min).",
+    interview_type: "TECHNICAL",
+    difficulty: "MEDIUM",
+    total_questions: 3,
+    time_limit_seconds: 900,
+    domain: "backend_developer",
+  },
+  {
+    id: "full_technical",
+    name: "Full Technical Assessment",
+    description: "5 comprehensive technical questions covering design and trade-offs (30 min).",
+    interview_type: "TECHNICAL",
+    difficulty: "HARD",
+    total_questions: 5,
+    time_limit_seconds: 1800,
+    domain: "backend_developer",
+  },
+  {
+    id: "behavioral_screen",
+    name: "Behavioral & Leadership",
+    description: "4 questions on communication, teamwork, and resolution (20 min).",
+    interview_type: "BEHAVIORAL",
+    difficulty: "MEDIUM",
+    total_questions: 4,
+    time_limit_seconds: 1200,
+    domain: "",
+  },
+  {
+    id: "hr_round",
+    name: "HR Fit & Communication",
+    description: "3 HR questions evaluating motivation and professional fit (15 min).",
+    interview_type: "HR",
+    difficulty: "EASY",
+    total_questions: 3,
+    time_limit_seconds: 900,
+    domain: "",
+  },
+  {
+    id: "aptitude_reasoning",
+    name: "Analytical & Problem Solving",
+    description: "3 logical prioritization and analytical reasoning challenges (15 min).",
+    interview_type: "APTITUDE",
+    difficulty: "MEDIUM",
+    total_questions: 3,
+    time_limit_seconds: 900,
+    domain: "",
+  },
+];
+
 const workflow = [
   {
     number: "01",
@@ -44,6 +136,24 @@ function aiSourceLabel(source) {
   return "";
 }
 
+function apiError(data, status) {
+  const messages = [];
+  if (typeof data?.detail === "string") {
+    messages.push(data.detail);
+  } else if (data && typeof data === "object") {
+    Object.values(data).forEach((value) => {
+      messages.push(...(Array.isArray(value) ? value : [value]));
+    });
+  }
+
+  const error = new Error(
+    messages.filter((message) => typeof message === "string").join(" ") ||
+      `Request failed with status ${status}.`,
+  );
+  error.status = status;
+  return error;
+}
+
 async function requestJson(path, { method = "GET", token, body } = {}) {
   const headers = {};
 
@@ -62,24 +172,49 @@ async function requestJson(path, { method = "GET", token, body } = {}) {
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    const messages = [];
-    if (typeof data?.detail === "string") {
-      messages.push(data.detail);
-    } else if (data && typeof data === "object") {
-      Object.values(data).forEach((value) => {
-        messages.push(...(Array.isArray(value) ? value : [value]));
-      });
-    }
-
-    const error = new Error(
-      messages.filter((message) => typeof message === "string").join(" ") ||
-        `Request failed with status ${response.status}.`,
-    );
-    error.status = response.status;
-    throw error;
+    throw apiError(data, response.status);
   }
 
   return data;
+}
+
+function uploadJsonWithProgress(
+  path,
+  { token, body, onProgress },
+) {
+  return new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    request.open("POST", `${API_BASE_URL}${path}`);
+    if (token) {
+      request.setRequestHeader("Authorization", `Bearer ${token}`);
+    }
+    request.upload.addEventListener("progress", (event) => {
+      if (event.lengthComputable) {
+        onProgress(Math.round((event.loaded / event.total) * 100));
+      }
+    });
+    request.addEventListener("load", () => {
+      let data = null;
+      try {
+        data = JSON.parse(request.responseText);
+      } catch {
+        data = null;
+      }
+      if (request.status < 200 || request.status >= 300) {
+        reject(apiError(data, request.status));
+        return;
+      }
+      onProgress(100);
+      resolve(data);
+    });
+    request.addEventListener("error", () => {
+      reject(new Error("Network error while uploading the resume."));
+    });
+    request.addEventListener("abort", () => {
+      reject(new Error("Resume upload was canceled."));
+    });
+    request.send(body);
+  });
 }
 
 function App() {
@@ -103,6 +238,8 @@ function App() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [resumeUploadMessage, setResumeUploadMessage] = useState("");
   const [extractingResumeId, setExtractingResumeId] = useState(null);
   const [resumeAiConsent, setResumeAiConsent] = useState(false);
   const [generationAiConsent, setGenerationAiConsent] = useState(false);
@@ -111,6 +248,31 @@ function App() {
   const [isStartingInterview, setIsStartingInterview] = useState(false);
   const [isSubmittingAnswer, setIsSubmittingAnswer] = useState(false);
   const fileInputRef = useRef(null);
+  const videoPreviewRef = useRef(null);
+  const mediaStreamRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const recordingChunksRef = useRef([]);
+  const recordingInterviewIdRef = useRef(null);
+  const [roomSeconds, setRoomSeconds] = useState(0);
+  const [domains, setDomains] = useState(DEFAULT_DOMAINS);
+  const [templates, setTemplates] = useState(DEFAULT_TEMPLATES);
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
+  const [targetRole, setTargetRole] = useState("General");
+  const [interviewType, setInterviewType] = useState("TECHNICAL");
+  const [difficulty, setDifficulty] = useState("MEDIUM");
+  const [totalQuestions, setTotalQuestions] = useState(5);
+  const [selectedDomain, setSelectedDomain] = useState("");
+  const [timeLimitSeconds, setTimeLimitSeconds] = useState("");
+  const [recruiterCandidates, setRecruiterCandidates] = useState([]);
+  const [mediaRecordingEnabled, setMediaRecordingEnabled] = useState(false);
+  const [isStartingMedia, setIsStartingMedia] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaError, setMediaError] = useState("");
+  const [cameraEnabled, setCameraEnabled] = useState(true);
+  const [microphoneEnabled, setMicrophoneEnabled] = useState(true);
+  const [isUploadingRecording, setIsUploadingRecording] = useState(false);
+  const [hasPendingRecording, setHasPendingRecording] = useState(false);
+  const [recordingPlaybackUrl, setRecordingPlaybackUrl] = useState("");
 
   useEffect(() => {
     if (!accessToken) {
@@ -163,6 +325,48 @@ function App() {
     };
   }, [accessToken]);
 
+  useEffect(() => {
+    if (!accessToken) return;
+    requestJson("/interviews/domains/", { token: accessToken })
+      .then((data) => Array.isArray(data) && data.length && setDomains(data))
+      .catch(() => {});
+    requestJson("/interviews/templates/", { token: accessToken })
+      .then((data) => Array.isArray(data) && data.length && setTemplates(data))
+      .catch(() => {});
+  }, [accessToken]);
+
+  useEffect(() => {
+    if (!accessToken || (profile?.role !== "RECRUITER" && profile?.role !== "ADMIN")) {
+      return;
+    }
+    requestJson("/interviews/recruiter/candidates/", { token: accessToken })
+      .then((data) => Array.isArray(data) && setRecruiterCandidates(data))
+      .catch(() => {});
+  }, [accessToken, profile?.role]);
+
+  useEffect(() => {
+    if (selectedInterview?.status !== "IN_PROGRESS") {
+      return undefined;
+    }
+    const timer = window.setInterval(() => {
+      setRoomSeconds((seconds) => seconds + 1);
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [selectedInterview?.status]);
+
+  useEffect(() => {
+    if (videoPreviewRef.current && mediaStreamRef.current) {
+      videoPreviewRef.current.srcObject = mediaStreamRef.current;
+    }
+  }, [mediaRecordingEnabled, isStartingMedia]);
+
+  useEffect(() => {
+    if (!recordingPlaybackUrl) {
+      return undefined;
+    }
+    return () => URL.revokeObjectURL(recordingPlaybackUrl);
+  }, [recordingPlaybackUrl]);
+
   async function handleAuthSubmit(event) {
     event.preventDefault();
     setAuthError("");
@@ -203,6 +407,10 @@ function App() {
   }
 
   function handleSignOut() {
+    if (mediaRecorderRef.current?.state !== "inactive") {
+      mediaRecorderRef.current.stop();
+    }
+    stopMediaStream();
     sessionStorage.removeItem("smarthire.access");
     sessionStorage.removeItem("smarthire.refresh");
     setAccessToken(null);
@@ -215,7 +423,12 @@ function App() {
     setResumeAiConsent(false);
     setGenerationAiConsent(false);
     setAnswerAiConsent(false);
+    setSelectedTemplateId("");
+    setSelectedDomain("");
+    setTimeLimitSeconds("");
+    setRecruiterCandidates([]);
     setDashboardError("");
+    setResumeUploadMessage("");
     setInterviewError("");
     setAuthError("");
   }
@@ -223,6 +436,7 @@ function App() {
   async function handleResumeUpload(event) {
     event.preventDefault();
     setDashboardError("");
+    setResumeUploadMessage("");
 
     if (!selectedFile) {
       setDashboardError("Choose a PDF file to upload.");
@@ -240,15 +454,17 @@ function App() {
     const form = new FormData();
     form.append("file", selectedFile);
     setIsUploading(true);
+    setUploadProgress(0);
 
     try {
-      const resume = await requestJson("/auth/resumes/", {
-        method: "POST",
+      const resume = await uploadJsonWithProgress("/auth/resumes/", {
         token: accessToken,
         body: form,
+        onProgress: setUploadProgress,
       });
       setResumes((current) => [resume, ...current]);
       setSelectedFile(null);
+      setResumeUploadMessage("Resume uploaded successfully.");
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -342,15 +558,194 @@ function App() {
     setSelectedInterview(interview);
     setInterviewQuestions(questions);
     setAnswerText("");
+    setRoomSeconds(interview.elapsed_seconds || 0);
     return interview;
   }
 
   async function handleOpenInterview(interviewId) {
     setInterviewError("");
     try {
+      if (selectedInterview?.status === "IN_PROGRESS") {
+        stopAndUploadRecording();
+      }
       await loadInterview(interviewId);
     } catch (error) {
       setInterviewError(error.message);
+    }
+  }
+
+  async function handleInterviewDelete(interviewId) {
+    if (
+      !window.confirm(
+        "Delete this interview and its uploaded recording? This cannot be undone.",
+      )
+    ) {
+      return;
+    }
+    setInterviewError("");
+    try {
+      await requestJson(`/interviews/${interviewId}/`, {
+        method: "DELETE",
+        token: accessToken,
+      });
+      setInterviews((current) =>
+        current.filter((interview) => interview.id !== interviewId),
+      );
+      if (selectedInterview?.id === interviewId) {
+        setSelectedInterview(null);
+        setInterviewQuestions([]);
+        stopMediaStream();
+      }
+    } catch (error) {
+      setInterviewError(error.message);
+    }
+  }
+
+  function formatRoomTime(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    return [hours, minutes, remainingSeconds]
+      .map((value) => String(value).padStart(2, "0"))
+      .join(":");
+  }
+
+  function stopMediaStream() {
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      mediaStreamRef.current = null;
+    }
+  }
+
+  async function uploadRecording(interviewId) {
+    const chunks = recordingChunksRef.current;
+    if (!chunks.length) {
+      setHasPendingRecording(false);
+      setMediaError("No recording data was captured.");
+      return;
+    }
+    const recordingType =
+      mediaRecorderRef.current?.mimeType || chunks[0]?.type || "";
+    const blob = new Blob(chunks, recordingType ? { type: recordingType } : {});
+    if (!blob.size) {
+      setHasPendingRecording(false);
+      setMediaError("The recording is empty and could not be uploaded.");
+      return;
+    }
+    const extension = recordingFileExtension(blob.type);
+    if (!extension) {
+      setHasPendingRecording(false);
+      setMediaError("The recorded media format is not supported.");
+      return;
+    }
+    setHasPendingRecording(true);
+    setIsUploadingRecording(true);
+    const form = new FormData();
+    form.append("recording", blob, `interview-${interviewId}.${extension}`);
+    try {
+      const interview = await requestJson(
+        `/interviews/${interviewId}/recording/`,
+        {
+          method: "POST",
+          token: accessToken,
+          body: form,
+        },
+      );
+      recordingChunksRef.current = [];
+      recordingInterviewIdRef.current = null;
+      setHasPendingRecording(false);
+      setMediaError("");
+      setRecordingPlaybackUrl("");
+      setSelectedInterview((current) =>
+        current?.id === interview.id ? interview : current,
+      );
+      setInterviews((current) =>
+        current.map((item) =>
+          item.id === interview.id ? interview : item,
+        ),
+      );
+    } catch (error) {
+      setMediaError(error.message);
+    } finally {
+      setIsUploadingRecording(false);
+    }
+  }
+
+  function stopAndUploadRecording() {
+    const recorder = mediaRecorderRef.current;
+    if (!recorder || recorder.state === "inactive") {
+      stopMediaStream();
+      return;
+    }
+    const interviewId = recordingInterviewIdRef.current;
+    recorder.addEventListener(
+      "stop",
+      () => {
+        setIsRecording(false);
+        stopMediaStream();
+        if (interviewId) {
+          uploadRecording(interviewId);
+        } else {
+          setMediaError("The recording is not associated with an interview.");
+        }
+      },
+      { once: true },
+    );
+    recorder.stop();
+  }
+
+  async function startMediaRoom() {
+    setMediaError("");
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setMediaError("Camera and microphone access is not supported in this browser.");
+      return;
+    }
+    setIsStartingMedia(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+      mediaStreamRef.current = stream;
+      recordingInterviewIdRef.current = selectedInterview?.id || null;
+      if (videoPreviewRef.current) {
+        videoPreviewRef.current.srcObject = stream;
+      }
+      setMediaRecordingEnabled(true);
+
+      if (typeof MediaRecorder !== "undefined") {
+        const mimeType = chooseRecordingMimeType();
+        if (!mimeType) {
+          stopMediaStream();
+          setMediaRecordingEnabled(false);
+          setMediaError(
+            "This browser does not support a recognized recording format.",
+          );
+          return;
+        }
+        const recorder = new MediaRecorder(stream, { mimeType });
+        recordingChunksRef.current = [];
+        recorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            recordingChunksRef.current.push(event.data);
+          }
+        };
+        mediaRecorderRef.current = recorder;
+        recorder.start(1000);
+        setIsRecording(true);
+      } else {
+        setMediaError("Live preview is available, but recording is not supported.");
+      }
+    } catch (error) {
+      stopMediaStream();
+      setMediaRecordingEnabled(false);
+      setMediaError(
+        error?.name === "NotAllowedError"
+          ? "Camera or microphone permission was denied."
+          : "Could not start camera and microphone access.",
+      );
+    } finally {
+      setIsStartingMedia(false);
     }
   }
 
@@ -362,17 +757,27 @@ function App() {
     const resumeId = String(form.get("resume") || "");
 
     try {
+      const domainVal = String(form.get("domain") || "").trim();
+      const timeLimitVal = form.get("time_limit_seconds");
+      const requestPayload = {
+        resume: Number(resumeId),
+        target_role: String(form.get("target_role") || "").trim(),
+        interview_type: String(form.get("interview_type") || ""),
+        difficulty: String(form.get("difficulty") || ""),
+        total_questions: Number(form.get("total_questions")),
+        ai_consent: generationAiConsent,
+      };
+      if (domainVal) {
+        requestPayload.domain = domainVal;
+      }
+      if (timeLimitVal && !isNaN(Number(timeLimitVal))) {
+        requestPayload.time_limit_seconds = Number(timeLimitVal);
+      }
+
       const interview = await requestJson("/interviews/generate/", {
         method: "POST",
         token: accessToken,
-        body: JSON.stringify({
-          resume: Number(resumeId),
-          target_role: String(form.get("target_role") || "").trim(),
-          interview_type: String(form.get("interview_type") || ""),
-          difficulty: String(form.get("difficulty") || ""),
-          total_questions: Number(form.get("total_questions")),
-          ai_consent: generationAiConsent,
-        }),
+        body: JSON.stringify(requestPayload),
       });
       setInterviews((current) => [interview, ...current]);
       await loadInterview(interview.id);
@@ -401,10 +806,162 @@ function App() {
           item.id === interview.id ? interview : item,
         ),
       );
+      setRoomSeconds(interview.elapsed_seconds || 0);
+      await startMediaRoom();
     } catch (error) {
       setInterviewError(error.message);
     } finally {
       setIsStartingInterview(false);
+    }
+  }
+
+  async function handlePauseInterview() {
+    if (!selectedInterview) {
+      return;
+    }
+    setInterviewError("");
+    try {
+      const interview = await requestJson(
+        `/interviews/${selectedInterview.id}/pause/`,
+        {
+          method: "POST",
+          token: accessToken,
+          body: JSON.stringify({ elapsed_seconds: roomSeconds }),
+        },
+      );
+      setSelectedInterview(interview);
+      setInterviews((current) =>
+        current.map((item) =>
+          item.id === interview.id ? interview : item,
+        ),
+      );
+      setRoomSeconds(interview.elapsed_seconds);
+      if (mediaRecorderRef.current?.state === "recording") {
+        mediaRecorderRef.current.pause();
+      }
+    } catch (error) {
+      setInterviewError(error.message);
+    }
+  }
+
+  async function handleResumeInterview() {
+    if (!selectedInterview) {
+      return;
+    }
+    setInterviewError("");
+    try {
+      const interview = await requestJson(
+        `/interviews/${selectedInterview.id}/resume/`,
+        {
+          method: "POST",
+          token: accessToken,
+          body: JSON.stringify({}),
+        },
+      );
+      setSelectedInterview(interview);
+      setInterviews((current) =>
+        current.map((item) =>
+          item.id === interview.id ? interview : item,
+        ),
+      );
+      if (mediaRecorderRef.current?.state === "paused") {
+        mediaRecorderRef.current.resume();
+      }
+    } catch (error) {
+      setInterviewError(error.message);
+    }
+  }
+
+  async function handleAbandonInterview() {
+    if (!selectedInterview) {
+      return;
+    }
+    if (!window.confirm("Abandon this interview? Your answers remain saved.")) {
+      return;
+    }
+    setInterviewError("");
+    try {
+      const interview = await requestJson(
+        `/interviews/${selectedInterview.id}/abandon/`,
+        {
+          method: "POST",
+          token: accessToken,
+          body: JSON.stringify({ elapsed_seconds: roomSeconds }),
+        },
+      );
+      setSelectedInterview(interview);
+      setInterviews((current) =>
+        current.map((item) =>
+          item.id === interview.id ? interview : item,
+        ),
+      );
+      setRoomSeconds(interview.elapsed_seconds);
+      stopAndUploadRecording();
+    } catch (error) {
+      setInterviewError(error.message);
+    }
+  }
+
+  function toggleCamera() {
+    const track = mediaStreamRef.current
+      ?.getVideoTracks()
+      .find((item) => item.readyState === "live");
+    if (track) {
+      track.enabled = !cameraEnabled;
+      setCameraEnabled((enabled) => !enabled);
+    }
+  }
+
+  function toggleMicrophone() {
+    const track = mediaStreamRef.current
+      ?.getAudioTracks()
+      .find((item) => item.readyState === "live");
+    if (track) {
+      track.enabled = !microphoneEnabled;
+      setMicrophoneEnabled((enabled) => !enabled);
+    }
+  }
+
+  async function handleRecordingDownload(interviewId) {
+    setMediaError("");
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/interviews/${interviewId}/recording/download/`,
+        { headers: { Authorization: `Bearer ${accessToken}` } },
+      );
+      if (!response.ok) {
+        throw new Error(`Recording download failed with status ${response.status}.`);
+      }
+      const fileUrl = URL.createObjectURL(await response.blob());
+      const link = document.createElement("a");
+      link.href = fileUrl;
+      link.download = `smarthire-interview-${interviewId}.webm`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(fileUrl);
+    } catch (error) {
+      setMediaError(error.message);
+    }
+  }
+
+  async function handleRecordingPlay(interviewId) {
+    setMediaError("");
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/interviews/${interviewId}/recording/download/`,
+        { headers: { Authorization: `Bearer ${accessToken}` } },
+      );
+      if (!response.ok) {
+        throw new Error(
+          `Recording playback failed with status ${response.status}.`,
+        );
+      }
+      setRecordingPlaybackUrl(
+        URL.createObjectURL(await response.blob()),
+      );
+    } catch (error) {
+      setMediaError(error.message);
     }
   }
 
@@ -429,6 +986,7 @@ function App() {
         body: JSON.stringify({
           answer_text: answerText.trim(),
           ai_consent: answerAiConsent,
+          elapsed_seconds: roomSeconds,
         }),
       });
       setAnswerAiConsent(false);
@@ -438,6 +996,9 @@ function App() {
           item.id === interview.id ? interview : item,
         ),
       );
+      if (interview.status === "COMPLETED") {
+        stopAndUploadRecording();
+      }
     } catch (error) {
       setInterviewError(error.message);
     } finally {
@@ -733,8 +1294,23 @@ function App() {
                 className="primary-button upload-button"
                 disabled={!selectedFile || isUploading}
               >
-                {isUploading ? "Uploading..." : "Upload PDF"}
+                {isUploading
+                  ? `Uploading ${uploadProgress}%...`
+                  : "Upload PDF"}
               </button>
+              {isUploading && (
+                <progress
+                  aria-label="Resume upload progress"
+                  className="upload-progress"
+                  max="100"
+                  value={uploadProgress}
+                />
+              )}
+              {resumeUploadMessage && (
+                <p className="upload-success" role="status">
+                  {resumeUploadMessage}
+                </p>
+              )}
             </form>
             <label className="consent-field">
               <input
@@ -744,11 +1320,10 @@ function App() {
               />
               <span>
                 I consent to send this resume's text, with best-effort
-                redaction, to Google Gemini for profile extraction. Google
-                may use submitted content and responses from unpaid API usage
-                to improve its products and services; human reviewers may
-                process them. Do not send sensitive, confidential, or personal
-                information; redaction is not guaranteed.
+                redaction, to Gemini for profile extraction. Review Google's
+                Gemini API terms before consenting. Do not send
+                sensitive, confidential, or personal information; redaction
+                is not guaranteed.
               </span>
             </label>
             <p className="muted">
@@ -760,7 +1335,7 @@ function App() {
                 rel="noreferrer"
                 target="_blank"
               >
-                current Gemini API terms
+                current API terms
               </a>
               .
             </p>
@@ -774,9 +1349,47 @@ function App() {
                         Uploaded{" "}
                         {new Date(resume.uploaded_at).toLocaleDateString()}
                       </span>
+                      {resume.extracted_candidate_name && (
+                        <span>
+                          Candidate: {resume.extracted_candidate_name}
+                        </span>
+                      )}
+                      {resume.extracted_email && (
+                        <span>Email: {resume.extracted_email}</span>
+                      )}
+                      {resume.extracted_phone && (
+                        <span>Phone: {resume.extracted_phone}</span>
+                      )}
+                      {resume.extracted_summary && (
+                        <span className="skill-summary">
+                          Summary: {resume.extracted_summary}
+                        </span>
+                      )}
                       {resume.extracted_skills?.length > 0 && (
                         <span className="skill-summary">
                           Skills: {resume.extracted_skills.join(", ")}
+                        </span>
+                      )}
+                      {resume.extracted_technologies?.length > 0 && (
+                        <span className="skill-summary">
+                          Technologies: {resume.extracted_technologies.join(", ")}
+                        </span>
+                      )}
+                      {resume.extracted_education?.length > 0 && (
+                        <span className="skill-summary">
+                          Education:{" "}
+                          {resume.extracted_education
+                            .map((item) =>
+                              [item.degree, item.institution, item.year]
+                                .filter(Boolean)
+                                .join(" · "),
+                            )
+                            .join("; ")}
+                        </span>
+                      )}
+                      {resume.extracted_certifications?.length > 0 && (
+                        <span className="skill-summary">
+                          Certifications: {resume.extracted_certifications.join(", ")}
                         </span>
                       )}
                       {resume.extraction_source && (
@@ -875,6 +1488,40 @@ function App() {
             <span className="step-count">Resume to questions</span>
           </div>
 
+          <div className="template-picker-section">
+            <p className="eyebrow">QUICK START TEMPLATES</p>
+            <div className="template-grid" role="group" aria-label="Interview Templates">
+              {templates.map((tpl) => (
+                <button
+                  key={tpl.id}
+                  type="button"
+                  className={`template-card ${selectedTemplateId === tpl.id ? "active" : ""}`}
+                  onClick={() => {
+                    setSelectedTemplateId(tpl.id);
+                    setTargetRole(
+                      tpl.domain === "backend_developer"
+                        ? "Backend Engineer"
+                        : tpl.domain === "frontend_developer"
+                          ? "Frontend Engineer"
+                          : tpl.name.replace(/ Screen| Assessment| Round/i, ""),
+                    );
+                    setInterviewType(tpl.interview_type);
+                    setDifficulty(tpl.difficulty);
+                    setTotalQuestions(tpl.total_questions);
+                    if (tpl.domain) setSelectedDomain(tpl.domain);
+                    if (tpl.time_limit_seconds) setTimeLimitSeconds(String(tpl.time_limit_seconds));
+                  }}
+                >
+                  <strong>{tpl.name}</strong>
+                  <p>{tpl.description}</p>
+                  <span className="template-meta">
+                    {tpl.difficulty} · {tpl.total_questions} questions · {Math.round(tpl.time_limit_seconds / 60)} min
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="interview-layout">
             <form
               className="interview-form"
@@ -896,7 +1543,8 @@ function App() {
               <label>
                 Target role
                 <input
-                  defaultValue="General"
+                  value={targetRole}
+                  onChange={(event) => setTargetRole(event.target.value)}
                   maxLength={120}
                   name="target_role"
                   required
@@ -905,7 +1553,11 @@ function App() {
               <div className="interview-form-row">
                 <label>
                   Interview type
-                  <select defaultValue="TECHNICAL" name="interview_type">
+                  <select
+                    value={interviewType}
+                    onChange={(event) => setInterviewType(event.target.value)}
+                    name="interview_type"
+                  >
                     <option value="TECHNICAL">Technical</option>
                     <option value="HR">HR</option>
                     <option value="BEHAVIORAL">Behavioral</option>
@@ -914,16 +1566,56 @@ function App() {
                 </label>
                 <label>
                   Difficulty
-                  <select defaultValue="MEDIUM" name="difficulty">
+                  <select
+                    value={difficulty}
+                    onChange={(event) => setDifficulty(event.target.value)}
+                    name="difficulty"
+                  >
                     <option value="EASY">Beginner</option>
                     <option value="MEDIUM">Intermediate</option>
                     <option value="HARD">Advanced</option>
                   </select>
                 </label>
               </div>
+              <div className="interview-form-row">
+                <label>
+                  Technical domain
+                  <select
+                    value={selectedDomain}
+                    onChange={(event) => setSelectedDomain(event.target.value)}
+                    name="domain"
+                  >
+                    <option value="">General / None</option>
+                    {domains.map((dom) => (
+                      <option key={dom.id} value={dom.id}>
+                        {dom.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Time limit
+                  <select
+                    value={timeLimitSeconds}
+                    onChange={(event) => setTimeLimitSeconds(event.target.value)}
+                    name="time_limit_seconds"
+                  >
+                    <option value="">No limit</option>
+                    <option value="600">10 minutes</option>
+                    <option value="900">15 minutes</option>
+                    <option value="1200">20 minutes</option>
+                    <option value="1800">30 minutes</option>
+                    <option value="2700">45 minutes</option>
+                  </select>
+                </label>
+              </div>
               <label>
                 Number of questions
-                <select defaultValue="5" name="total_questions">
+                <select
+                  value={totalQuestions}
+                  onChange={(event) => setTotalQuestions(Number(event.target.value))}
+                  name="total_questions"
+                >
                   {[3, 5, 7, 10].map((count) => (
                     <option key={count} value={count}>
                       {count} questions
@@ -945,12 +1637,11 @@ function App() {
                 <span>
                   I consent to send my selected role, resume-derived skills,
                   relevant project descriptions and experience highlights,
-                  and earlier generated questions to Google Gemini. Resume
-                  text may also be sent if needed for extraction, with
-                  best-effort redaction. Google may use
-                  submitted content and responses from unpaid API usage to
-                  improve its products and services; human reviewers may
-                  process them. Do not include sensitive, confidential, or
+                  and earlier generated questions to Gemini through Google's
+                  Gemini API.
+                  Resume text may also be sent if needed for extraction, with
+                  best-effort redaction. Review Google's Gemini API terms before
+                  consenting. Do not include sensitive, confidential, or
                   personal information; redaction is not guaranteed.
                 </span>
               </label>
@@ -963,7 +1654,7 @@ function App() {
                   rel="noreferrer"
                   target="_blank"
                 >
-                  current Gemini API terms
+                  current API terms
                 </a>
                 .
               </p>
@@ -1014,6 +1705,13 @@ function App() {
                           ? "Review"
                           : "Open"}
                       </button>
+                      <button
+                        className="text-button danger-button"
+                        onClick={() => handleInterviewDelete(interview.id)}
+                        type="button"
+                      >
+                        Delete
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -1038,15 +1736,140 @@ function App() {
                 <h3>{selectedInterview.target_role}</h3>
                 <p className="muted">
                   {selectedInterview.interview_type} ·{" "}
-                  {selectedInterview.difficulty} ·{" "}
-                  {selectedInterview.status.replaceAll("_", " ")}
+                  {selectedInterview.difficulty}
+                  {selectedInterview.domain && ` · ${selectedInterview.domain.replace("_", " ")}`}
+                  {" · "}{selectedInterview.status.replaceAll("_", " ")}
                 </p>
+                <div className="room-timer-container">
+                  <p className={`room-timer ${selectedInterview.time_limit_seconds && (selectedInterview.time_limit_seconds - roomSeconds) <= 120 ? "timer--critical" : selectedInterview.time_limit_seconds && (selectedInterview.time_limit_seconds - roomSeconds) <= 300 ? "timer--warning" : ""}`}>
+                    Session time: {formatRoomTime(roomSeconds)}
+                    {selectedInterview.time_limit_seconds && (
+                      <span> · Remaining: {formatRoomTime(Math.max(0, selectedInterview.time_limit_seconds - roomSeconds))} ({Math.round(selectedInterview.time_limit_seconds / 60)} min limit)</span>
+                    )}
+                  </p>
+                </div>
+                {interviewQuestions.length > 0 && (
+                  <div className="interview-progress-bar-wrap">
+                    <div className="progress-info">
+                      <span>Progress: Question {Math.min(selectedInterview.current_question + 1, interviewQuestions.length)} of {interviewQuestions.length}</span>
+                      <span>{Math.round((selectedInterview.current_question / interviewQuestions.length) * 100)}%</span>
+                    </div>
+                    <progress
+                      className="interview-progress"
+                      max={interviewQuestions.length}
+                      value={selectedInterview.current_question}
+                    />
+                  </div>
+                )}
                 {selectedInterview.generation_source && (
                   <span className="source-badge">
                     {aiSourceLabel(selectedInterview.generation_source)}
                   </span>
                 )}
               </div>
+
+              {(selectedInterview.status === "IN_PROGRESS" ||
+                selectedInterview.status === "PAUSED") && (
+                <div className="room-controls">
+                  <div className="media-preview">
+                    {mediaRecordingEnabled ? (
+                      <video
+                        autoPlay
+                        muted
+                        playsInline
+                        ref={videoPreviewRef}
+                      />
+                    ) : (
+                      <div className="media-placeholder">
+                        <span>Camera preview</span>
+                        <button
+                          className="secondary-button"
+                          disabled={isStartingMedia}
+                          onClick={startMediaRoom}
+                          type="button"
+                        >
+                          {isStartingMedia
+                            ? "Connecting..."
+                            : "Enable camera and microphone"}
+                        </button>
+                      </div>
+                    )}
+                    {mediaRecordingEnabled && (
+                      <div className="media-device-actions">
+                        <button
+                          className="text-button"
+                          onClick={toggleCamera}
+                          type="button"
+                        >
+                          {cameraEnabled ? "Turn camera off" : "Turn camera on"}
+                        </button>
+                        <button
+                          className="text-button"
+                          onClick={toggleMicrophone}
+                          type="button"
+                        >
+                          {microphoneEnabled
+                            ? "Mute microphone"
+                            : "Unmute microphone"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <div className="session-controls">
+                    {selectedInterview.status === "IN_PROGRESS" ? (
+                      <button
+                        className="secondary-button"
+                        onClick={handlePauseInterview}
+                        type="button"
+                      >
+                        Pause session
+                      </button>
+                    ) : (
+                      <button
+                        className="secondary-button"
+                        onClick={handleResumeInterview}
+                        type="button"
+                      >
+                        Resume session
+                      </button>
+                    )}
+                    <button
+                      className="text-button danger-button"
+                      onClick={handleAbandonInterview}
+                      type="button"
+                    >
+                      Abandon
+                    </button>
+                    {isRecording && (
+                      <span className="recording-badge">Recording</span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {mediaError && (
+                <p className="form-message error" role="alert">
+                  {mediaError}
+                </p>
+              )}
+              {isUploadingRecording && (
+                <p role="status">Uploading interview recording...</p>
+              )}
+              {hasPendingRecording &&
+                recordingInterviewIdRef.current === selectedInterview.id && (
+                  <button
+                    className="secondary-button"
+                    disabled={isUploadingRecording}
+                    onClick={() =>
+                      uploadRecording(selectedInterview.id)
+                    }
+                    type="button"
+                  >
+                    {isUploadingRecording
+                      ? "Uploading recording..."
+                      : "Retry recording upload"}
+                  </button>
+                )}
 
               {interviewQuestions
                 .filter((question) => question.answer)
@@ -1185,13 +2008,11 @@ function App() {
                         />
                         <span>
                           Optional: I consent to send this answer and its
-                          question, with best-effort redaction, to Google
-                          Gemini for practice feedback. Google may use
-                          submitted content and responses from unpaid API
-                          usage to improve its products and services; human
-                          reviewers may process them. Do not include
-                          sensitive, confidential, or personal information;
-                          redaction is not guaranteed.
+                          question, with best-effort redaction, to Gemini for
+                          practice feedback. Review Google's Gemini API
+                          terms before consenting. Do not include sensitive,
+                          confidential, or personal information; redaction is
+                          not guaranteed.
                         </span>
                       </label>
                       <p className="muted">
@@ -1203,7 +2024,7 @@ function App() {
                           rel="noreferrer"
                           target="_blank"
                         >
-                          current Gemini API terms
+                          current API terms
                         </a>
                         .
                       </p>
@@ -1228,14 +2049,98 @@ function App() {
               )}
 
               {selectedInterview.status === "COMPLETED" && (
-                <p className="completion-message">
-                  You completed all {interviewQuestions.length} questions in
-                  this session.
-                </p>
+                <>
+                  <p className="completion-message">
+                    You completed all {interviewQuestions.length} questions in
+                    this session.
+                  </p>
+                  {selectedInterview.recording && (
+                    <>
+                      <button
+                        className="secondary-button"
+                        onClick={() =>
+                          handleRecordingPlay(selectedInterview.id)
+                        }
+                        type="button"
+                      >
+                        Play interview recording
+                      </button>
+                      <button
+                        className="secondary-button"
+                        onClick={() =>
+                          handleRecordingDownload(selectedInterview.id)
+                        }
+                        type="button"
+                      >
+                        Download interview recording
+                      </button>
+                    </>
+                  )}
+                  {recordingPlaybackUrl && (
+                    <video
+                      aria-label="Interview recording playback"
+                      controls
+                      src={recordingPlaybackUrl}
+                    />
+                  )}
+                </>
               )}
             </section>
           )}
         </section>
+
+        {(profile?.role === "RECRUITER" || profile?.role === "ADMIN") && (
+          <section className="panel recruiter-panel" id="recruiter">
+            <div className="panel-heading">
+              <div>
+                <p className="eyebrow">RECRUITER INTELLIGENCE</p>
+                <h2>Candidate Assessment Overview</h2>
+              </div>
+              <span className="step-count">{recruiterCandidates.length} candidate(s)</span>
+            </div>
+            <p className="muted">
+              Review mock interview activity, completed assessments, and candidate progress.
+            </p>
+            {recruiterCandidates.length ? (
+              <table className="recruiter-candidates-table">
+                <thead>
+                  <tr>
+                    <th>Candidate</th>
+                    <th>Email</th>
+                    <th>Total Interviews</th>
+                    <th>Completed</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recruiterCandidates.map((cand) => (
+                    <tr key={cand.id}>
+                      <td><strong>{cand.first_name || cand.last_name ? `${cand.first_name} ${cand.last_name}`.trim() : cand.username}</strong></td>
+                      <td>{cand.email}</td>
+                      <td>{cand.total_interviews}</td>
+                      <td>{cand.completed_interviews}</td>
+                      <td>
+                        {cand.latest_interview_id ? (
+                          <button
+                            className="text-button"
+                            type="button"
+                            onClick={() => handleOpenInterview(cand.latest_interview_id)}
+                          >
+                            Inspect Interview #{cand.latest_interview_id}
+                          </button>
+                        ) : (
+                          <span className="muted">No sessions</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p className="muted">No candidate practice sessions registered yet.</p>
+            )}
+          </section>
+        )}
 
         <footer className="page-footer">
           <span>SmartHire AI</span>

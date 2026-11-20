@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.db import models
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 
 
 class Interview(models.Model):
@@ -59,6 +61,14 @@ class Interview(models.Model):
     current_question = models.PositiveIntegerField(default=0)
 
     generation_source = models.CharField(max_length=16, blank=True, default="")
+
+    domain = models.CharField(max_length=60, blank=True, default="")
+
+    time_limit_seconds = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Optional time limit in seconds. Null means no limit.",
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -170,3 +180,9 @@ class Answer(models.Model):
 
     def __str__(self):
         return f"Answer for Question {self.question.order}"
+
+
+@receiver(post_delete, sender=Interview)
+def delete_interview_recording(sender, instance, **kwargs):
+    if instance.recording:
+        instance.recording.delete(save=False)

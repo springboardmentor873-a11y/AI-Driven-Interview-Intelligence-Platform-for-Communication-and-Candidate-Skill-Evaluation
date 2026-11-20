@@ -19,6 +19,7 @@ class InterviewSerializer(serializers.ModelSerializer):
             "candidate_username",
             "resume",
             "target_role",
+            "domain",
             "interview_type",
             "difficulty",
             "status",
@@ -30,6 +31,7 @@ class InterviewSerializer(serializers.ModelSerializer):
             "generation_source",
             "paused_at",
             "elapsed_seconds",
+            "time_limit_seconds",
             "recording",
         ]
 
@@ -38,6 +40,7 @@ class InterviewSerializer(serializers.ModelSerializer):
             "candidate",
             "resume",
             "target_role",
+            "domain",
             "status",
             "current_question",
             "created_at",
@@ -46,6 +49,7 @@ class InterviewSerializer(serializers.ModelSerializer):
             "generation_source",
             "paused_at",
             "elapsed_seconds",
+            "time_limit_seconds",
             "recording",
         ]
 
@@ -62,6 +66,19 @@ class InterviewGenerationSerializer(serializers.Serializer):
         allow_null=True,
     )
     target_role = serializers.CharField(max_length=120, default="General")
+    domain = serializers.CharField(
+        max_length=60,
+        required=False,
+        default="",
+        allow_blank=True,
+    )
+    time_limit_seconds = serializers.IntegerField(
+        required=False,
+        allow_null=True,
+        min_value=60,
+        max_value=7200,
+        default=None,
+    )
     interview_type = serializers.ChoiceField(
         choices=Interview.InterviewType.choices,
     )

@@ -11,13 +11,22 @@ practice, and consent-based answer feedback.
 - **Database:** PostgreSQL, configured through environment variables.
 - **Authentication:** Candidate registration and JWT login, with profile access.
 - **Resumes:** Authenticated candidates can upload, list, download, and delete
-  PDF resumes. Uploads are limited to 10 MB. Profile extraction is local if
-  Gemini consent is declined; candidates can opt in to send resume text for
-  Gemini extraction of skills, qualifications, work experience, and projects.
+  structurally validated PDF resumes. Uploads are limited to 10 MB and show
+  transfer progress. Candidate name, email, and phone are extracted locally;
+  profile extraction is local if Gemini consent is declined. Candidates can
+  opt in to send resume text for Gemini extraction of skills, qualifications,
+  work experience, and projects. The extracted profile summary is saved with
+  the resume.
 - **Interviews:** Candidates can generate role-specific questions from their
   resume skills, choose interview type and difficulty, start sessions, submit
-  answers, and track session progress. Declining Gemini consent uses local
-  question templates and heuristic answer feedback instead.
+  answers, pause or resume sessions, abandon unfinished sessions, track elapsed
+  time, and review session progress. The browser interview room supports
+  optional camera and microphone preview plus session recording; recordings are
+  stored privately by the candidate and can be downloaded or deleted later.
+  Deleting a session permanently removes its questions, answers, and recording.
+  Declining Gemini consent uses local question templates and heuristic answer
+  feedback instead. Local question templates are tailored to technical, HR,
+  behavioral, and aptitude practice.
 - **AI provider:** The backend uses Google's `google-genai` SDK and Gemini
   Developer API. Its API key is backend-only and never exposed to the frontend.
   API responses identify whether Gemini or the deterministic local fallback
@@ -68,7 +77,7 @@ database credentials and a development secret key:
 ```dotenv
 SECRET_KEY=replace-with-a-long-random-secret
 DEBUG=True
-DB_NAME=smarthire
+DB_NAME=smarthire_db
 DB_USER=your_postgres_user
 DB_PASSWORD=your_postgres_password
 DB_HOST=localhost
@@ -230,10 +239,11 @@ objective or definitive measures of candidate ability.
 
 ## Tests
 
-From the `backend/` directory, run the Django test suite:
+From the `backend/` directory, run the Django test suite with its explicit
+SQLite-only test settings (the configured PostgreSQL database is not reset):
 
 ```powershell
-python manage.py test
+python manage.py test --settings=config.test_settings
 ```
 
 The tests cover account authentication, resume handling/profile extraction,
@@ -241,3 +251,6 @@ Gemini structured output, local fallback behavior, interview generation,
 answer evaluation, consent, session progress, and candidate access rules.
 Provider calls are mocked in tests; using the live provider requires your own
 `GEMINI_API_KEY`. Do not paste the key into chat or commit it.
+
+The frontend has no automated test runner configured. From `frontend/`, run
+`npm run build` to validate the production bundle.
