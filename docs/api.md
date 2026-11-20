@@ -30,6 +30,7 @@ Base URL: `http://localhost:8000`. Send `Authorization: Bearer <access token>` o
 | POST | /api/interviews/sessions/{id}/start/ | Candidate (owner) | Start the interview |
 | GET | /api/interviews/sessions/{id}/next-question/ | Candidate (owner) | The current question |
 | POST | /api/interviews/sessions/{id}/answer/ | Candidate (owner) | Submit an answer to the current question |
+| POST | /api/interviews/sessions/{id}/analyze/ | Candidate (owner) | Finish the speech analysis of a completed interview (one Gemini review of all answers) |
 | POST | /api/interviews/sessions/{id}/finish/ | Candidate (owner) | End the interview early |
 | POST | /api/interviews/sessions/{id}/cancel/ | Candidate (owner) | Cancel an interview that is not finished |
 | POST | /api/interviews/sessions/{id}/recording/ | Candidate (owner) | Upload the interview's video and/or audio (finished interviews only) |
@@ -61,9 +62,11 @@ A session moves through `scheduled` -> `in_progress` -> `completed`, or ends as 
    You can have up to 5 unfinished sessions at a time.
 2. `POST .../start/` begins the interview. Calling it again on a running session is harmless.
 3. `GET .../next-question/` returns the current question with `answered` and `total`.
-4. `POST .../answer/` takes `question_id` (must be the current question), `transcript` and
-   `duration_seconds`. An empty transcript counts as a skipped question. The response includes the
-   next question. Answering the last question completes the session.
+4. `POST .../answer/` takes `question_id` (must be the current question), `transcript`,
+   `duration_seconds`, `transcript_source` (`speech` by default, or `typed`) and `speech_confidence`
+   (0 to 1, optional). No time spent and no transcript counts as a skipped question. The response
+   includes the next question. Answering the last question completes the session. Each answer is
+   saved with a quick rule-based `analysis` (see Speech analysis below).
 5. `POST .../finish/` ends early. Unanswered questions stay unanswered.
 
 Question text is hidden until the session is over, so the interview room only ever sees the current
@@ -108,3 +111,27 @@ uploads both when the interview ends: `POST .../recording/` as `multipart/form-d
   download or delete them, and anyone else gets 404.
 - Session details include `has_video` and `has_audio`. Deleting a session or a user also deletes
   their recording files.
+
+## Speech analysis
+
+`POST /api/interviews/sessions/{id}/analyze/` works on a completed interview. It sends all answers to
+Gemini in one call for a grammar and completeness review and saves the results. The response is the
+session detail plus `analysis_source`: `ai` (every answer reviewed), `basic` (the AI review failed or is
+not configured, rule-based numbers kept) or `none` (nothing to review). Calling it again only retries
+answers that still lack the AI review.
+
+Each answer's `analysis` (returned with the questions of a finished session):
+
+| Field | Meaning |
+|---|---|
+| status | `analyzed`, `skipped` (no time spent) or `no_transcript` (time spent but no words captured) |
+| input | `source` (`speech`, `typed`, `none`) and the browser's `speech_confidence` |
+| word_count, duration_seconds | Size of the answer and time spent |
+| pace | Words per minute, a `label` and a 0-100 `score`. Ideal range is 120 to 170 wpm. Speech only |
+| fillers | `total`, `per_100_words`, `counts` and a `score`. Speech only |
+| clarity | Estimate from the browser's recognition confidence. Speech only |
+| grammar | `score`, up to 5 `issues` (`text`, `suggestion`) and `source` (`ai` or `basic`) |
+| completeness | `score` and `source`. Basic = answer length against the time allowed |
+| communication_score | Weighted 0-100 average of the parts that apply (clarity 15, grammar 25, fillers 20, pace 20, completeness 20) |
+
+A part is `null` when it does not apply, for example pace for a typed answer.

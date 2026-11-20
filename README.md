@@ -56,11 +56,12 @@ docs/              Scope and workflows, database schema, API reference, wirefram
 - [API reference](docs/api.md)
 - [UI wireframes](docs/wireframes.md)
 - [Milestone 2 guide](docs/milestone-2.md)
+- [Milestone 3 guide](docs/milestone-3.md)
 
 ## Milestone status
 | Milestone | Status |
 |---|---|
 | 1. Requirements, database design and core setup | Complete |
 | 2. Resume parsing and interview engine | Complete |
-| 3. Speech analysis and AI monitoring | Planned |
+| 3. Speech analysis and AI monitoring | In progress (Days 1-2 done) |
 | 4. Analytics, testing and deployment | Planned |

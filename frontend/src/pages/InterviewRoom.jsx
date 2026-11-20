@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
 import Button from "../components/ui/Button";
 import CameraPreview from "../components/CameraPreview";
+import AnswerAnalysis from "../components/AnswerAnalysis";
 import QuestionCard from "../components/QuestionCard";
 import useAudioLevel from "../hooks/useAudioLevel";
 import useMediaStream from "../hooks/useMediaStream";
@@ -24,6 +25,7 @@ export default function InterviewRoom() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [upload, setUpload] = useState({ state: "idle", percent: 0, message: "" });
+  const [analysis, setAnalysis] = useState({ state: "idle", source: "" }); // idle | running | done | failed
   const busyRef = useRef(false);
   const filesRef = useRef(null); // the recording, kept until it is safely uploaded
   const media = useMediaStream();
@@ -44,6 +46,18 @@ export default function InterviewRoom() {
     return () => {
       alive = false;
     };
+  }, [id]);
+
+  const runAnalysis = useCallback(async () => {
+    setAnalysis({ state: "running", source: "" });
+    try {
+      const { data } = await client.post(url(id, "analyze/"));
+      // Only the questions change: the recording upload may be updating the rest at the same time
+      setSession((s) => ({ ...s, questions: data.questions }));
+      setAnalysis({ state: "done", source: data.analysis_source });
+    } catch {
+      setAnalysis({ state: "failed", source: "" });
+    }
   }, [id]);
 
   const begin = async () => {
@@ -94,6 +108,7 @@ export default function InterviewRoom() {
     setSession(data);
     setProgress({ answered: data.answered_count, total: data.question_total });
     setPhase("done");
+    runAnalysis(); // runs alongside the recording upload
     const files = await recorder.stop(); // stop recording before the camera is switched off
     media.stop();
     if (files) {
@@ -102,13 +117,13 @@ export default function InterviewRoom() {
     }
   };
 
-  const submit = async (seconds) => {
+  const submit = async (seconds, extra = {}) => {
     if (busyRef.current) return; // ignore a second click or a timer firing while saving
     busyRef.current = true;
     setBusy(true);
     setError("");
     try {
-      const { data } = await client.post(url(id, "answer/"), { question_id: question.id, duration_seconds: seconds });
+      const { data } = await client.post(url(id, "answer/"), { question_id: question.id, duration_seconds: seconds, ...extra });
       setProgress({ answered: data.answered, total: data.total });
       if (data.next_question) {
         setQuestion(data.next_question);
@@ -218,6 +233,7 @@ export default function InterviewRoom() {
               index={question.order}
               total={progress.total}
               busy={busy}
+              micReady={Boolean(media.stream)}
               onSubmit={submit}
             />
             {error && <p className="mt-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-300">{error}</p>}
@@ -242,7 +258,20 @@ export default function InterviewRoom() {
       {!cancelled && (
         <p className="mt-2 text-white/60">
           You answered {progress.answered} of {progress.total} questions in about {Math.max(1, Math.round(seconds / 60))} minute(s).
-          Scores and feedback will appear here in the next release.
+          Below is the speech analysis of each answer. Your overall score and feedback arrive in the next release.
+        </p>
+      )}
+      {analysis.state === "running" && <p className="mt-3 text-sm text-white/60">Analysing your answers...</p>}
+      {analysis.state === "failed" && (
+        <p className="mt-3 text-sm text-red-300">
+          Could not analyse your answers.{" "}
+          <button type="button" onClick={runAnalysis} className="font-semibold underline">Try again</button>
+        </p>
+      )}
+      {analysis.state === "done" && analysis.source === "basic" && (
+        <p className="mt-3 text-sm text-white/50">
+          The AI review was not available, so grammar and completeness are basic estimates.{" "}
+          <button type="button" onClick={runAnalysis} className="font-semibold underline">Try the AI review again</button>
         </p>
       )}
       {error && <p className="mt-4 text-red-300">{error}</p>}
@@ -280,6 +309,7 @@ export default function InterviewRoom() {
                 {q.answer ? (q.answer.duration_seconds ? `${q.answer.duration_seconds}s` : "Skipped") : "Not answered"}
               </span>
             </div>
+            {q.answer && <AnswerAnalysis answer={q.answer} />}
           </div>
         ))}
       </div>
