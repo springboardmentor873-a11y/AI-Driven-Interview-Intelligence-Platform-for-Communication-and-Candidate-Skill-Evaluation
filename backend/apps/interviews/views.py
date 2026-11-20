@@ -15,7 +15,7 @@ from rest_framework.views import APIView
 
 from apps.accounts.permissions import IsCandidate, IsRecruiter
 
-from . import recordings
+from . import recordings, speech_analysis
 from .models import Answer, InterviewSession, InterviewTemplate, Question
 from .question_gen import generate_questions
 from .serializers import (
@@ -180,6 +180,11 @@ class SessionViewSet(
                 raise ValidationError({"question_id": "This is not the current question."})
             Answer.objects.create(
                 question=current, transcript=data["transcript"], duration_seconds=data["duration_seconds"],
+                # Quick rule-based numbers now; the AI review is added by analyze/ after the interview
+                analysis=speech_analysis.build_analysis(
+                    data["transcript"], data["duration_seconds"], current.time_limit_seconds,
+                    data["transcript_source"], data["speech_confidence"],
+                ),
             )
             following = self._current_question(session)
             if following is None:  # that was the last question
@@ -204,6 +209,21 @@ class SessionViewSet(
                 session.ended_at = timezone.now()
                 session.save(update_fields=["status", "ended_at"])
         return self._detail(session)
+
+    @action(detail=True, methods=["post"])
+    def analyze(self, request, pk=None):
+        """Finish the speech analysis of a completed interview: one Gemini review of all answers.
+
+        Safe to call again. Answers that already have their AI review are not sent a second time,
+        so repeating the call only retries the ones that could not be reviewed. The AI call runs
+        with no database lock held, because it can take a while.
+        """
+        session = get_object_or_404(self.get_queryset(), pk=pk)
+        self._require(session, "completed")
+        updates, source = speech_analysis.analyze_session(session)
+        for answer_id, analysis in updates.items():
+            Answer.objects.filter(pk=answer_id, question__session=session).update(analysis=analysis)
+        return self._detail(session, analysis_source=source)
 
     @action(detail=True, methods=["post"])
     def cancel(self, request, pk=None):

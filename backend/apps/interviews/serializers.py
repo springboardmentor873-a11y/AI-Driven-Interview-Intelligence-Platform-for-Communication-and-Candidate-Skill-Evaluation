@@ -44,7 +44,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 class AnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answer
-        fields = ("transcript", "duration_seconds", "submitted_at")
+        fields = ("transcript", "duration_seconds", "analysis", "submitted_at")
         read_only_fields = fields
 
 
@@ -139,6 +139,13 @@ class SubmitAnswerSerializer(serializers.Serializer):
     question_id = serializers.IntegerField()
     transcript = serializers.CharField(required=False, allow_blank=True, max_length=10000, default="")
     duration_seconds = serializers.IntegerField(min_value=0, max_value=3600, default=0)
+    # "speech" = recognised from the microphone in the browser, "typed" = the candidate typed it
+    transcript_source = serializers.ChoiceField(choices=("speech", "typed"), default="speech")
+    # The browser's average confidence (0 to 1) for the words it recognised, when it reports one
+    speech_confidence = serializers.FloatField(required=False, allow_null=True, min_value=0, max_value=1, default=None)
+
+    def validate_transcript(self, value):
+        return " ".join(value.split())  # one clean line of text, whatever the browser sent
 
 
 class TemplateSerializer(serializers.ModelSerializer):
