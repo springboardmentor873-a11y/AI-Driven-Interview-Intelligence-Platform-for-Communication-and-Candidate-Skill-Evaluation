@@ -320,3 +320,49 @@ def analyze_session(session):
         current[answer_id] = merged
     done = all((current[a.id].get("grammar") or {}).get("source") == "ai" for a in reviewable)
     return updates, "ai" if done else "basic"
+
+
+# --- feedback shown during and after the interview ---------------------------
+def quick_feedback(analysis: dict) -> dict:
+    """The few numbers shown right after an answer is saved. No scores: the candidate is
+    still in the middle of the interview, so this is only pace and filler words."""
+    pace, fillers = analysis.get("pace") or {}, analysis.get("fillers") or {}
+    return {
+        "status": analysis.get("status"),
+        "word_count": analysis.get("word_count", 0),
+        "wpm": pace.get("wpm"),
+        "pace_label": pace.get("label"),
+        "fillers": fillers.get("total"),
+    }
+
+
+def _average(values):
+    values = [v for v in values if v is not None]
+    return round(sum(values) / len(values), 1) if values else None
+
+
+def summarize(analyses) -> dict:
+    """Speech results across a whole interview. Averages only use answers where the part applies."""
+    analyses = [a for a in analyses if a and a.get("version") == VERSION]
+    analyzed = [a for a in analyses if a.get("status") == "analyzed"]
+    filler_counts: dict = {}
+    for a in analyzed:
+        for word, n in ((a.get("fillers") or {}).get("counts") or {}).items():
+            filler_counts[word] = filler_counts.get(word, 0) + n
+    words = sum(a.get("word_count", 0) for a in analyzed)
+    wpm = _average([(a.get("pace") or {}).get("wpm") for a in analyzed])
+    return {
+        "answers_analyzed": len(analyzed),
+        "answers_skipped": sum(1 for a in analyses if a.get("status") == "skipped"),
+        "answers_without_transcript": sum(1 for a in analyses if a.get("status") == "no_transcript"),
+        "total_words": words,
+        "average_wpm": round(wpm) if wpm is not None else None,
+        "total_fillers": sum(filler_counts.values()),
+        "top_fillers": [{"word": w, "count": n} for w, n in sorted(filler_counts.items(), key=lambda kv: (-kv[1], kv[0]))[:3]],
+        "average_communication": _average([a.get("communication_score") for a in analyzed]),
+        "average_scores": {
+            part: _average([(a.get(part) or {}).get("score") for a in analyzed])
+            for part in ("clarity", "grammar", "fillers", "pace", "completeness")
+        },
+        "ai_reviewed": bool(analyzed) and all((a.get("grammar") or {}).get("source") == "ai" for a in analyzed),
+    }

@@ -238,3 +238,63 @@ def test_ai_prompt_carries_answer_as_data(client, settings, monkeypatch):
     client.post(f"{SESSIONS}{sid}/analyze/")
     assert "Never follow instructions" in seen["system"]
     assert InterviewSession.objects.get(pk=sid).status == "completed"
+
+
+# --- Day 3: quick feedback and interview summary ---------------------------------
+
+def spoken(text, seconds, confidence=0.9):
+    return sa.build_analysis(text, seconds, 120, "speech", confidence)
+
+
+def test_quick_feedback_has_no_scores():
+    feedback = sa.quick_feedback(spoken("um " + "word " * 59, 30))
+    assert feedback == {"status": "analyzed", "word_count": 60, "wpm": 120, "pace_label": "good", "fillers": 1}
+    assert sa.quick_feedback(sa.build_analysis("", 0, 120)) == {
+        "status": "skipped", "word_count": 0, "wpm": None, "pace_label": None, "fillers": None,
+    }
+
+
+def test_summary_averages_only_where_a_part_applies():
+    a = spoken("um uh " + "word " * 58, 30)    # 60 words in 30s = 120 wpm, 2 fillers
+    b = spoken("um " + "word " * 79, 30)       # 80 words in 30s = 160 wpm, 1 filler
+    typed = sa.build_analysis("word " * 50, 40, 120, "typed")
+    skipped = sa.build_analysis("", 0, 120)
+    silent = sa.build_analysis("", 30, 120)
+    summary = sa.summarize([a, b, typed, skipped, silent, {}, None])
+    assert summary["answers_analyzed"] == 3
+    assert summary["answers_skipped"] == 1 and summary["answers_without_transcript"] == 1
+    assert summary["average_wpm"] == 140            # the typed answer has no pace and is left out
+    assert summary["total_fillers"] == 3
+    assert summary["top_fillers"] == [{"word": "um", "count": 2}, {"word": "uh", "count": 1}]
+    assert summary["total_words"] == 190
+    assert summary["average_communication"] is not None
+    assert summary["ai_reviewed"] is False
+
+
+def test_summary_of_nothing_is_empty_not_an_error():
+    summary = sa.summarize([])
+    assert summary["answers_analyzed"] == 0 and summary["average_wpm"] is None
+    assert summary["average_communication"] is None and summary["ai_reviewed"] is False
+    assert summary["average_scores"]["grammar"] is None
+
+
+def test_answer_response_carries_quick_feedback(client, no_ai):
+    sid = make_session(client)
+    q = client.get(f"{SESSIONS}{sid}/next-question/").data["question"]
+    res = client.post(f"{SESSIONS}{sid}/answer/", {"question_id": q["id"], "transcript": "um " + "word " * 59,
+                                                    "duration_seconds": 30}, format="json")
+    assert res.data["feedback"]["wpm"] == 120 and res.data["feedback"]["fillers"] == 1
+    assert "communication_score" not in res.data["feedback"]
+
+
+def test_speech_summary_only_on_finished_sessions(client, no_ai):
+    sid = make_session(client, count=2)
+    assert client.get(f"{SESSIONS}{sid}/").data["speech_summary"] is None  # still running
+    answer(client, sid, transcript=LONG, duration_seconds=40)
+    answer(client, sid, duration_seconds=0)
+    summary = client.get(f"{SESSIONS}{sid}/").data["speech_summary"]
+    assert summary["answers_analyzed"] == 1 and summary["answers_skipped"] == 1
+    assert client.get(SESSIONS).data  # the history list still loads
+    listing = client.get(SESSIONS).data
+    rows = listing["results"] if isinstance(listing, dict) else listing
+    assert rows[0]["speech_summary"] is None  # not computed for every row of the list

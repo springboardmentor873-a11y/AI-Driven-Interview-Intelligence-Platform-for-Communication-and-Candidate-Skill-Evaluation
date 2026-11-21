@@ -178,13 +178,13 @@ class SessionViewSet(
             current = self._current_question(session)
             if current is None or current.id != data["question_id"]:
                 raise ValidationError({"question_id": "This is not the current question."})
+            # Quick rule-based numbers now; the AI review is added by analyze/ after the interview
+            analysis = speech_analysis.build_analysis(
+                data["transcript"], data["duration_seconds"], current.time_limit_seconds,
+                data["transcript_source"], data["speech_confidence"],
+            )
             Answer.objects.create(
-                question=current, transcript=data["transcript"], duration_seconds=data["duration_seconds"],
-                # Quick rule-based numbers now; the AI review is added by analyze/ after the interview
-                analysis=speech_analysis.build_analysis(
-                    data["transcript"], data["duration_seconds"], current.time_limit_seconds,
-                    data["transcript_source"], data["speech_confidence"],
-                ),
+                question=current, transcript=data["transcript"], duration_seconds=data["duration_seconds"], analysis=analysis,
             )
             following = self._current_question(session)
             if following is None:  # that was the last question
@@ -196,6 +196,7 @@ class SessionViewSet(
             "answered": Answer.objects.filter(question__session=session).count(),
             "total": session.questions.count(),
             "next_question": _question_payload(following),
+            "feedback": speech_analysis.quick_feedback(analysis),
         })
 
     @action(detail=True, methods=["post"])

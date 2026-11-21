@@ -20,10 +20,13 @@ export const speechSupported = () => Boolean(getCtor());
  *   stop()     stop and wait briefly for the last words (returns a promise)
  *   snapshot() { transcript, confidence } of everything heard so far
  *   abort()    stop at once (used when the page is left)
+ *
+ * heard = { final, interim, firstWordSeconds }: firstWordSeconds is how long after listening
+ * began the first words were heard, so speaking pace can ignore the thinking time.
  */
 export default function useSpeechRecognition() {
   const supported = speechSupported();
-  const [heard, setHeard] = useState({ final: "", interim: "" });
+  const [heard, setHeard] = useState({ final: "", interim: "", firstWordSeconds: null });
   const [status, setStatus] = useState("idle"); // idle | listening | error
   const [error, setError] = useState("");
   const recRef = useRef(null);
@@ -32,6 +35,8 @@ export default function useSpeechRecognition() {
   const interimRef = useRef("");
   const confRef = useRef({ sum: 0, count: 0 });
   const startedAtRef = useRef(0);
+  const beganRef = useRef(0); // when listening first began
+  const firstWordRef = useRef(null); // seconds from beginning until the first words were heard
   const rapidRef = useRef(0);
   const waitersRef = useRef([]);
 
@@ -52,6 +57,7 @@ export default function useSpeechRecognition() {
     if (!Ctor || wantRef.current) return;
     wantRef.current = true;
     rapidRef.current = 0;
+    beganRef.current = Date.now();
     const rec = new Ctor();
     rec.continuous = true;
     rec.interimResults = true;
@@ -73,7 +79,10 @@ export default function useSpeechRecognition() {
       }
       interimRef.current = interim.trim();
       rapidRef.current = 0;
-      setHeard({ final: finalRef.current, interim: interimRef.current });
+      if (firstWordRef.current === null && (finalRef.current || interimRef.current)) {
+        firstWordRef.current = Math.round((Date.now() - beganRef.current) / 1000);
+      }
+      setHeard({ final: finalRef.current, interim: interimRef.current, firstWordSeconds: firstWordRef.current });
     };
     rec.onerror = (event) => {
       if (FATAL[event.error]) fail(FATAL[event.error]);

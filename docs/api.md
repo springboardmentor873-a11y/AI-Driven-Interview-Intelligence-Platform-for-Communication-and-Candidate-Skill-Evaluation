@@ -66,7 +66,9 @@ A session moves through `scheduled` -> `in_progress` -> `completed`, or ends as 
    `duration_seconds`, `transcript_source` (`speech` by default, or `typed`) and `speech_confidence`
    (0 to 1, optional). No time spent and no transcript counts as a skipped question. The response
    includes the next question. Answering the last question completes the session. Each answer is
-   saved with a quick rule-based `analysis` (see Speech analysis below).
+   saved with a quick rule-based `analysis` (see Speech analysis below). The response also has
+   `feedback`: `status`, `word_count`, `wpm`, `pace_label` and `fillers` for the answer just saved,
+   with no scores, so the room can show a one-line note before the next question.
 5. `POST .../finish/` ends early. Unanswered questions stay unanswered.
 
 Question text is hidden until the session is over, so the interview room only ever sees the current
@@ -135,3 +137,17 @@ Each answer's `analysis` (returned with the questions of a finished session):
 | communication_score | Weighted 0-100 average of the parts that apply (clarity 15, grammar 25, fillers 20, pace 20, completeness 20) |
 
 A part is `null` when it does not apply, for example pace for a typed answer.
+
+### Speech summary
+
+A finished session (`GET /api/interviews/sessions/{id}/`) also has `speech_summary`, and so does the
+response of `analyze/`. It is `null` while the interview is running and in the history list.
+
+| Field | Meaning |
+|---|---|
+| answers_analyzed, answers_skipped, answers_without_transcript | How many answers fall in each state |
+| total_words, average_wpm | Over analysed answers (pace only counts answers where pace applies) |
+| total_fillers, top_fillers | Up to 3 most used, as `{word, count}` |
+| average_communication | Average of the per-answer communication scores |
+| average_scores | Average 0-100 per part: clarity, grammar, fillers, pace, completeness (`null` if none apply) |
+| ai_reviewed | `true` when every analysed answer has its Gemini review |

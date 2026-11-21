@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Button from "./ui/Button";
 import useSpeechRecognition from "../hooks/useSpeechRecognition";
+import { countLiveFillers, countWords, paceHint } from "../utils/liveSpeech";
 
 const mmss = (seconds) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 
@@ -29,6 +30,13 @@ export default function QuestionCard({ question, index, total, busy, micReady = 
   const typing = !micReady || !speech.supported || speech.status === "error" || forceTyping;
   const spoken = `${speech.heard.final} ${speech.heard.interim}`.trim();
   const typedValue = typed ?? spoken; // words heard before switching to typing are kept
+
+  // Live estimate of speaking pace, counted from the first words so thinking time does not slow it down
+  const words = countWords(spoken);
+  const speakingFor = limit - remaining - (speech.heard.firstWordSeconds ?? 0);
+  const livePace = words >= 10 && speakingFor >= 8 ? Math.round(words / (speakingFor / 60)) : null;
+  const hint = livePace ? paceHint(livePace) : null;
+  const liveFillers = countLiveFillers(spoken);
 
   const sendRef = useRef(null);
   const send = async (seconds, skip = false) => {
@@ -139,6 +147,16 @@ export default function QuestionCard({ question, index, total, busy, micReady = 
               <span className="text-white/30">Start speaking. Your words appear here.</span>
             )}
           </p>
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/10 pt-2 text-xs text-white/50" aria-label="Live estimates">
+            <span>{words} words</span>
+            {hint ? (
+              <span className={hint.ok ? "text-green-300" : "text-amber-300"}>{livePace} wpm: {hint.text}</span>
+            ) : (
+              <span>Pace shows after a few sentences</span>
+            )}
+            <span className={liveFillers ? "text-amber-300" : ""}>{liveFillers} um/uh</span>
+            <span className="text-white/30">live estimate</span>
+          </div>
           <p className="mt-2 text-[11px] text-white/30">Chrome and Edge may send your voice to their speech service to turn it into text.</p>
         </div>
       )}

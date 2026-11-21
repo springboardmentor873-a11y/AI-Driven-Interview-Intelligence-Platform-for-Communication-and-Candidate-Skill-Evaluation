@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from apps.resumes.models import Resume
 
+from . import speech_analysis
 from .models import Answer, Difficulty, InterviewSession, InterviewTemplate, InterviewType, Question
 
 MAX_QUESTIONS = 20
@@ -76,13 +77,14 @@ class SessionSerializer(serializers.ModelSerializer):
     questions = serializers.SerializerMethodField()
     has_video = serializers.SerializerMethodField()
     has_audio = serializers.SerializerMethodField()
+    speech_summary = serializers.SerializerMethodField()
 
     class Meta:
         model = InterviewSession
         fields = (
             "id", "interview_type", "difficulty", "domain", "status", "question_source",
             "resume", "resume_name", "template", "template_title", "question_total", "answered_count",
-            "created_at", "started_at", "ended_at", "has_video", "has_audio", "questions",
+            "created_at", "started_at", "ended_at", "has_video", "has_audio", "questions", "speech_summary",
         )
         read_only_fields = fields
 
@@ -101,6 +103,12 @@ class SessionSerializer(serializers.ModelSerializer):
 
     def get_has_audio(self, obj):
         return bool(obj.audio_file)
+
+    def get_speech_summary(self, obj):
+        if not self.context.get("include_questions") or obj.status not in FINISHED_STATUSES:
+            return None
+        analyses = Answer.objects.filter(question__session=obj).values_list("analysis", flat=True)
+        return speech_analysis.summarize(analyses)
 
     def get_questions(self, obj):
         if not self.context.get("include_questions") or obj.status not in FINISHED_STATUSES:

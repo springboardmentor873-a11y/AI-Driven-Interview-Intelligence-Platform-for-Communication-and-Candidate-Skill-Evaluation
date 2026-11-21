@@ -5,6 +5,7 @@ import Button from "../components/ui/Button";
 import CameraPreview from "../components/CameraPreview";
 import AnswerAnalysis from "../components/AnswerAnalysis";
 import QuestionCard from "../components/QuestionCard";
+import SpeechSummary from "../components/SpeechSummary";
 import useAudioLevel from "../hooks/useAudioLevel";
 import useMediaStream from "../hooks/useMediaStream";
 import useRecorder, { extensionFor } from "../hooks/useRecorder";
@@ -14,6 +15,26 @@ import { parseError } from "../utils/errors";
 const TYPES = { hr: "HR", technical: "Technical", behavioral: "Behavioral", aptitude: "Aptitude" };
 const LEVELS = { easy: "Easy", medium: "Medium", hard: "Hard" };
 const url = (id, action = "") => `/api/interviews/sessions/${id}/${action}`;
+
+/** One line about the answer that was just saved. Shown above the next question for a few seconds. */
+function AnswerNote({ feedback }) {
+  if (feedback.status === "no_transcript") {
+    return (
+      <p role="status" className="mb-4 rounded-xl bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+        No words were captured for your last answer. Check your microphone, or press "Type instead" for the next one.
+      </p>
+    );
+  }
+  const parts = [];
+  if (feedback.wpm) parts.push(`${feedback.wpm} wpm (${feedback.pace_label})`);
+  if (feedback.fillers != null) parts.push(feedback.fillers === 1 ? "1 filler word" : `${feedback.fillers} filler words`);
+  if (!parts.length) parts.push(`${feedback.word_count} words`);
+  return (
+    <p role="status" className="mb-4 rounded-xl bg-white/5 px-4 py-3 text-sm text-white/70">
+      Answer saved. Last answer: {parts.join(" - ")}.
+    </p>
+  );
+}
 
 export default function InterviewRoom() {
   const { id } = useParams();
@@ -26,11 +47,15 @@ export default function InterviewRoom() {
   const [busy, setBusy] = useState(false);
   const [upload, setUpload] = useState({ state: "idle", percent: 0, message: "" });
   const [analysis, setAnalysis] = useState({ state: "idle", source: "" }); // idle | running | done | failed
+  const [feedback, setFeedback] = useState(null); // quick numbers about the answer just saved
+  const feedbackTimer = useRef(null);
   const busyRef = useRef(false);
   const filesRef = useRef(null); // the recording, kept until it is safely uploaded
   const media = useMediaStream();
   const recorder = useRecorder();
   const level = useAudioLevel(media.stream);
+
+  useEffect(() => () => clearTimeout(feedbackTimer.current), []);
 
   useEffect(() => {
     let alive = true;
@@ -53,7 +78,7 @@ export default function InterviewRoom() {
     try {
       const { data } = await client.post(url(id, "analyze/"));
       // Only the questions change: the recording upload may be updating the rest at the same time
-      setSession((s) => ({ ...s, questions: data.questions }));
+      setSession((s) => ({ ...s, questions: data.questions, speech_summary: data.speech_summary }));
       setAnalysis({ state: "done", source: data.analysis_source });
     } catch {
       setAnalysis({ state: "failed", source: "" });
@@ -127,6 +152,9 @@ export default function InterviewRoom() {
       setProgress({ answered: data.answered, total: data.total });
       if (data.next_question) {
         setQuestion(data.next_question);
+        clearTimeout(feedbackTimer.current);
+        setFeedback(data.feedback?.status === "skipped" ? null : data.feedback);
+        feedbackTimer.current = setTimeout(() => setFeedback(null), 9000);
       } else {
         showResult((await client.get(url(id))).data); // runs in the background: the recording uploads after
       }
@@ -227,6 +255,7 @@ export default function InterviewRoom() {
         </div>
         <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
           <div>
+            {feedback && <AnswerNote feedback={feedback} />}
             <QuestionCard
               key={question.id}
               question={question}
@@ -274,6 +303,7 @@ export default function InterviewRoom() {
           <button type="button" onClick={runAnalysis} className="font-semibold underline">Try the AI review again</button>
         </p>
       )}
+      {!cancelled && <SpeechSummary summary={session.speech_summary} />}
       {error && <p className="mt-4 text-red-300">{error}</p>}
       {upload.state === "uploading" && (
         <div className="mt-4 rounded-xl bg-white/5 px-4 py-3 text-sm text-white/70">
