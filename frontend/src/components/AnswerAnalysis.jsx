@@ -34,9 +34,22 @@ export default function AnswerAnalysis({ answer }) {
         {a.clarity && <Stat label="Clarity" value={`${a.clarity.score} / 100`} score={a.clarity.score} hint="Estimated from how confidently your browser recognised your words" />}
         {a.grammar && <Stat label="Grammar" value={`${a.grammar.score} / 100`} score={a.grammar.score} />}
         {a.completeness && <Stat label="Completeness" value={`${a.completeness.score} / 100`} score={a.completeness.score} />}
+        {a.attention && (
+          <Stat
+            label="Eye contact"
+            value={`${Math.round(a.attention.eye_contact_pct)}%`}
+            score={a.attention.score}
+            hint={`Face visible ${Math.round(a.attention.face_visible_pct)}% of the time. Around 70% is natural.`}
+          />
+        )}
         <Stat label="Words" value={a.word_count} />
       </div>
       {fillerList && <p className="text-xs text-white/50">Filler words: {fillerList}</p>}
+      {a.attention?.look_away_events > 0 && (
+        <p className="text-xs text-white/50">
+          You looked away from the camera {a.attention.look_away_events} time(s) for 2 seconds or more (longest {a.attention.longest_look_away_seconds} s).
+        </p>
+      )}
       {a.pace && a.pace.label !== "good" && <p className="text-xs text-white/50">Your pace was {a.pace.label}. Aim for about 120 to 170 words per minute.</p>}
       {a.grammar?.issues?.length > 0 && (
         <ul className="space-y-1 text-xs text-white/60">

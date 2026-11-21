@@ -20,17 +20,25 @@ export default function SpeechSummary({ summary }) {
       </p>
     ) : null;
   }
-  const scores = summary.average_scores;
+  const scores = { ...summary.average_scores, "eye contact": summary.average_attention_score };
   const best = Object.entries(scores).filter(([, v]) => v != null).sort((a, b) => b[1] - a[1]);
   const weakest = best.length > 1 ? best[best.length - 1] : null;
   const fillerNote = summary.top_fillers.map((f) => `${f.word} x${f.count}`).join(", ");
   return (
-    <section className="mt-6" aria-label="Speech summary">
-      <h2 className="text-lg font-bold">Speech summary</h2>
-      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <section className="mt-6" aria-label="Delivery summary">
+      <h2 className="text-lg font-bold">Delivery summary</h2>
+      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
         <Tile label="Communication" value={summary.average_communication != null ? `${Math.round(summary.average_communication)} / 100` : "-"} score={summary.average_communication} note={`${summary.answers_analyzed} answer(s) analysed`} />
         <Tile label="Average pace" value={summary.average_wpm ? `${summary.average_wpm} wpm` : "-"} note="Ideal: 120 to 170" />
         <Tile label="Filler words" value={summary.total_fillers} note={fillerNote || "None found"} />
+        {summary.average_eye_contact_pct != null && (
+          <Tile
+            label="Eye contact"
+            value={`${Math.round(summary.average_eye_contact_pct)}%`}
+            score={summary.average_attention_score}
+            note={summary.look_away_events ? `${summary.look_away_events} long look-away(s)` : "Around 70% is natural"}
+          />
+        )}
         <Tile label="Words spoken" value={summary.total_words} />
       </div>
       {weakest && weakest[1] < 75 && (

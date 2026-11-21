@@ -248,9 +248,11 @@ def spoken(text, seconds, confidence=0.9):
 
 def test_quick_feedback_has_no_scores():
     feedback = sa.quick_feedback(spoken("um " + "word " * 59, 30))
-    assert feedback == {"status": "analyzed", "word_count": 60, "wpm": 120, "pace_label": "good", "fillers": 1}
+    assert feedback == {"status": "analyzed", "word_count": 60, "wpm": 120, "pace_label": "good", "fillers": 1,
+                        "eye_contact_pct": None}
     assert sa.quick_feedback(sa.build_analysis("", 0, 120)) == {
         "status": "skipped", "word_count": 0, "wpm": None, "pace_label": None, "fillers": None,
+        "eye_contact_pct": None,
     }
 
 

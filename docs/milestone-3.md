@@ -65,3 +65,43 @@ Results live in `Answer.analysis` (JSON), so there is no database migration.
 - The after-answer note never shows a score. Scores are shown after the interview.
 - `speech_analysis.summarize()` builds the summary from the stored answers. The scoring engine
   (Day 6) will reuse it.
+
+## Day 4: eye-contact and attention tracking
+
+### What a user can do now
+
+1. With the camera on, the room shows a live badge next to the camera picture, on the camera check
+   screen and during the interview: "Eye contact: good", "Looking away: look at the camera" or
+   "Face not visible: move into the frame".
+2. Each answer is saved with its eye-contact numbers: share of time the face was visible, share of
+   time looking at the camera, and how many times they looked away for 2 seconds or more.
+3. The result screen shows eye contact per answer and in the delivery summary, and the note after
+   each answer includes it. Skipped questions and interviews without a camera have no eye-contact data.
+
+### How it works
+
+```
+camera stream -> hidden video -> MediaPipe Face Landmarker (about 5 frames a second, in the browser)
+  -> analyzeFace (head turn, head tilt, iris position)   frontend/src/utils/attention.js
+  -> AttentionTracker (steady states, blink handling, time-weighted totals)
+  -> one summary per answer -> POST .../answer/ -> analysis.attention   apps/interviews/attention.py
+```
+
+### Decisions and limits
+
+- **Privacy:** frames are processed in the browser and discarded. Only five summary numbers per answer
+  are sent.
+- **What counts as eye contact:** face found, head turned less than about 25 degrees, head not tilted
+  far up or down, and both irises near the middle of the eyes. Blinks are ignored. A state has to hold
+  for 3 frames (about 0.6 s) before it changes, so one odd frame does not flip it.
+- **Scoring:** about 70% eye contact is a full score, because people naturally look away to think. The
+  attention score is not part of the communication score. It feeds the confidence score (Day 5-6).
+- **The limits are not tuned on real faces yet.** They are in `LIMITS` in `utils/attention.js`. Test
+  with a few people and cameras and adjust if the badge is too strict or too forgiving. Glancing down
+  at notes with the eyes only (head still) is detected only weakly.
+- **Files loaded at runtime:** the MediaPipe WebAssembly files from `cdn.jsdelivr.net` and the face model
+  (about 4 MB) from `storage.googleapis.com`, once per browser session. To host them yourself, set
+  `VITE_MEDIAPIPE_WASM_URL` and `VITE_FACE_MODEL_URL`. If they cannot load, the badge says tracking is
+  not available and the interview carries on.
+- **Trust:** numbers come from the candidate's browser, so they suit practice feedback, not proof.
+- **Tests:** `npm test` in `frontend` runs the geometry and tracker tests with made-up landmarks.

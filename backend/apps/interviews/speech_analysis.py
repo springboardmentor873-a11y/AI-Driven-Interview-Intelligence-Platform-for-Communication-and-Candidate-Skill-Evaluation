@@ -18,10 +18,15 @@ The result is stored in ``Answer.analysis`` (no database change needed). Shape::
       "clarity":      {"confidence": 0.93, "score": 97, "source": "speech_recognition"} | null,
       "grammar":      {"score": 90, "issues": [{"text": "", "suggestion": ""}], "source": "ai"},
       "completeness": {"score": 80, "source": "ai"},
-      "communication_score": 84.3 | null
+      "communication_score": 84.3 | null,
+      "attention": {"tracked_seconds": 42.0, "face_visible_pct": 98.0, "eye_contact_pct": 66.5,
+                    "look_away_events": 1, "longest_look_away_seconds": 3.4,
+                    "score": 95, "label": "good", "source": "browser"} | null
     }
 
-A section is ``null`` when it does not apply (typed answers have no pace, fillers or clarity).
+A section is ``null`` when it does not apply (typed answers have no pace, fillers or clarity,
+and ``attention`` is ``null`` when the camera was off or eye-contact tracking was not available).
+``attention`` is not part of the communication score: it feeds the confidence score later.
 """
 import json
 import logging
@@ -29,6 +34,7 @@ import re
 
 from apps.ai import gemini
 
+from .attention import attention_info
 from .models import Answer
 
 logger = logging.getLogger(__name__)
@@ -185,7 +191,7 @@ def communication_score(analysis: dict):
 
 
 # --- one answer, rule-based --------------------------------------------------
-def build_analysis(transcript, duration_seconds, time_limit_seconds, source="speech", speech_confidence=None) -> dict:
+def build_analysis(transcript, duration_seconds, time_limit_seconds, source="speech", speech_confidence=None, attention=None) -> dict:
     transcript = (transcript or "").strip()
     duration_seconds = int(duration_seconds or 0)
     if not transcript:
@@ -197,6 +203,7 @@ def build_analysis(transcript, duration_seconds, time_limit_seconds, source="spe
             "input": {"source": "none", "speech_confidence": None},
             "word_count": 0, "duration_seconds": duration_seconds,
             "communication_score": None,
+            "attention": attention_info(attention),
         }
 
     spoken = source != "typed"
@@ -212,6 +219,7 @@ def build_analysis(transcript, duration_seconds, time_limit_seconds, source="spe
         "clarity": clarity_info(confidence) if spoken else None,
         "grammar": basic_grammar(tokens),
         "completeness": basic_completeness(word_count, time_limit_seconds),
+        "attention": attention_info(attention),
     }
     analysis["communication_score"] = communication_score(analysis)
     return analysis
@@ -333,12 +341,30 @@ def quick_feedback(analysis: dict) -> dict:
         "wpm": pace.get("wpm"),
         "pace_label": pace.get("label"),
         "fillers": fillers.get("total"),
+        "eye_contact_pct": (analysis.get("attention") or {}).get("eye_contact_pct"),
     }
 
 
 def _average(values):
     values = [v for v in values if v is not None]
     return round(sum(values) / len(values), 1) if values else None
+
+
+def _attention_summary(analyses) -> dict:
+    """Eye-contact totals over every answer that was tracked, weighted by how long each was."""
+    tracked = [a["attention"] for a in analyses if a.get("attention")]
+    seconds = sum(t["tracked_seconds"] for t in tracked)
+
+    def weighted(key):
+        return round(sum(t[key] * t["tracked_seconds"] for t in tracked) / seconds, 1) if seconds else None
+
+    return {
+        "answers_tracked": len(tracked),
+        "average_eye_contact_pct": weighted("eye_contact_pct"),
+        "average_face_visible_pct": weighted("face_visible_pct"),
+        "average_attention_score": weighted("score"),
+        "look_away_events": sum(t["look_away_events"] for t in tracked),
+    }
 
 
 def summarize(analyses) -> dict:
@@ -364,5 +390,6 @@ def summarize(analyses) -> dict:
             part: _average([(a.get(part) or {}).get("score") for a in analyzed])
             for part in ("clarity", "grammar", "fillers", "pace", "completeness")
         },
+        **_attention_summary(analyses),
         "ai_reviewed": bool(analyzed) and all((a.get("grammar") or {}).get("source") == "ai" for a in analyzed),
     }

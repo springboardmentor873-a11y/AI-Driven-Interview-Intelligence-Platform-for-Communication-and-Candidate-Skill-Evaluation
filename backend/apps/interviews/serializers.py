@@ -143,6 +143,24 @@ class CreateSessionSerializer(GenerateQuestionsSerializer):
         return attrs
 
 
+class AttentionSerializer(serializers.Serializer):
+    """Eye-contact summary measured in the browser for one answer."""
+
+    tracked_seconds = serializers.FloatField(min_value=0, max_value=3700)
+    face_visible_pct = serializers.FloatField(min_value=0, max_value=100)
+    eye_contact_pct = serializers.FloatField(min_value=0, max_value=100)
+    look_away_events = serializers.IntegerField(min_value=0, max_value=1000)
+    longest_look_away_seconds = serializers.FloatField(min_value=0, max_value=3700)
+
+    def validate(self, attrs):
+        # Eye contact needs a visible face, and nothing can last longer than the measurement
+        if attrs["eye_contact_pct"] > attrs["face_visible_pct"] + 0.5:
+            raise serializers.ValidationError("Eye contact cannot be more than the time the face was visible.")
+        if attrs["longest_look_away_seconds"] > attrs["tracked_seconds"] + 0.5:
+            raise serializers.ValidationError("A look away cannot be longer than the measured time.")
+        return attrs
+
+
 class SubmitAnswerSerializer(serializers.Serializer):
     question_id = serializers.IntegerField()
     transcript = serializers.CharField(required=False, allow_blank=True, max_length=10000, default="")
@@ -152,8 +170,17 @@ class SubmitAnswerSerializer(serializers.Serializer):
     # The browser's average confidence (0 to 1) for the words it recognised, when it reports one
     speech_confidence = serializers.FloatField(required=False, allow_null=True, min_value=0, max_value=1, default=None)
 
+    attention = AttentionSerializer(required=False, allow_null=True, default=None)
+
     def validate_transcript(self, value):
         return " ".join(value.split())  # one clean line of text, whatever the browser sent
+
+    def validate(self, attrs):
+        attention = attrs.get("attention")
+        # The measurement is for this answer, so it cannot be much longer than the time spent on it
+        if attention and attention["tracked_seconds"] > attrs.get("duration_seconds", 0) + 5:
+            raise serializers.ValidationError({"attention": "The eye-contact measurement is longer than the answer."})
+        return attrs
 
 
 class TemplateSerializer(serializers.ModelSerializer):

@@ -2,12 +2,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
 import Button from "../components/ui/Button";
+import AttentionBadge from "../components/AttentionBadge";
 import CameraPreview from "../components/CameraPreview";
 import AnswerAnalysis from "../components/AnswerAnalysis";
 import QuestionCard from "../components/QuestionCard";
 import SpeechSummary from "../components/SpeechSummary";
 import useAudioLevel from "../hooks/useAudioLevel";
 import useMediaStream from "../hooks/useMediaStream";
+import useAttentionTracker from "../hooks/useAttentionTracker";
 import useRecorder, { extensionFor } from "../hooks/useRecorder";
 import client from "../api/client";
 import { parseError } from "../utils/errors";
@@ -28,6 +30,7 @@ function AnswerNote({ feedback }) {
   const parts = [];
   if (feedback.wpm) parts.push(`${feedback.wpm} wpm (${feedback.pace_label})`);
   if (feedback.fillers != null) parts.push(feedback.fillers === 1 ? "1 filler word" : `${feedback.fillers} filler words`);
+  if (feedback.eye_contact_pct != null) parts.push(`eye contact ${Math.round(feedback.eye_contact_pct)}%`);
   if (!parts.length) parts.push(`${feedback.word_count} words`);
   return (
     <p role="status" className="mb-4 rounded-xl bg-white/5 px-4 py-3 text-sm text-white/70">
@@ -52,6 +55,7 @@ export default function InterviewRoom() {
   const busyRef = useRef(false);
   const filesRef = useRef(null); // the recording, kept until it is safely uploaded
   const media = useMediaStream();
+  const attention = useAttentionTracker(media.stream);
   const recorder = useRecorder();
   const level = useAudioLevel(media.stream);
 
@@ -92,6 +96,7 @@ export default function InterviewRoom() {
       setSession(data);
       setQuestion(data.next_question);
       setProgress({ answered: data.answered_count, total: data.question_total });
+      attention.reset(); // eye-contact numbers count from the first question, not from the camera check
       setPhase("live");
       recorder.start(media.stream); // nothing happens if there is no camera or this browser cannot record
     } catch (err) {
@@ -148,7 +153,11 @@ export default function InterviewRoom() {
     setBusy(true);
     setError("");
     try {
-      const { data } = await client.post(url(id, "answer/"), { question_id: question.id, duration_seconds: seconds, ...extra });
+      const body = { question_id: question.id, duration_seconds: seconds, ...extra };
+      const measured = seconds > 0 ? attention.snapshot() : null; // a skipped question has nothing to measure
+      if (measured && measured.tracked_seconds >= 5) body.attention = measured;
+      const { data } = await client.post(url(id, "answer/"), body);
+      attention.reset(); // the next question starts a fresh measurement
       setProgress({ answered: data.answered, total: data.total });
       if (data.next_question) {
         setQuestion(data.next_question);
@@ -216,7 +225,10 @@ export default function InterviewRoom() {
           starts, the clock does not stop.
         </p>
         <div className="mt-8 grid gap-6 md:grid-cols-2">
-          <CameraPreview stream={media.stream} level={level} />
+          <div className="space-y-3">
+            <CameraPreview stream={media.stream} level={level} />
+            <AttentionBadge status={attention.status} state={attention.state} />
+          </div>
           <div className="space-y-4">
             <ol className="space-y-2 text-sm text-white/70">
               <li>1. Allow your camera and microphone.</li>
@@ -269,6 +281,7 @@ export default function InterviewRoom() {
           </div>
           <div className="space-y-4">
             <CameraPreview stream={media.stream} level={level} />
+            <AttentionBadge status={attention.status} state={attention.state} />
             <Button variant="ghost" className="w-full !text-red-300" onClick={endEarly}>End interview</Button>
           </div>
         </div>

@@ -63,12 +63,14 @@ A session moves through `scheduled` -> `in_progress` -> `completed`, or ends as 
 2. `POST .../start/` begins the interview. Calling it again on a running session is harmless.
 3. `GET .../next-question/` returns the current question with `answered` and `total`.
 4. `POST .../answer/` takes `question_id` (must be the current question), `transcript`,
-   `duration_seconds`, `transcript_source` (`speech` by default, or `typed`) and `speech_confidence`
-   (0 to 1, optional). No time spent and no transcript counts as a skipped question. The response
+   `duration_seconds`, `transcript_source` (`speech` by default, or `typed`), `speech_confidence`
+   (0 to 1, optional) and `attention` (optional, the eye-contact summary measured in the browser: see
+   Eye contact below). No time spent and no transcript counts as a skipped question. The response
    includes the next question. Answering the last question completes the session. Each answer is
    saved with a quick rule-based `analysis` (see Speech analysis below). The response also has
    `feedback`: `status`, `word_count`, `wpm`, `pace_label` and `fillers` for the answer just saved,
-   with no scores, so the room can show a one-line note before the next question.
+   with no scores (plus `eye_contact_pct` when it was measured), so the room can show a one-line note
+   before the next question.
 5. `POST .../finish/` ends early. Unanswered questions stay unanswered.
 
 Question text is hidden until the session is over, so the interview room only ever sees the current
@@ -134,6 +136,7 @@ Each answer's `analysis` (returned with the questions of a finished session):
 | clarity | Estimate from the browser's recognition confidence. Speech only |
 | grammar | `score`, up to 5 `issues` (`text`, `suggestion`) and `source` (`ai` or `basic`) |
 | completeness | `score` and `source`. Basic = answer length against the time allowed |
+| attention | Eye-contact numbers (see Eye contact below), or `null` when the camera was off or tracking was not available |
 | communication_score | Weighted 0-100 average of the parts that apply (clarity 15, grammar 25, fillers 20, pace 20, completeness 20) |
 
 A part is `null` when it does not apply, for example pace for a typed answer.
@@ -151,3 +154,23 @@ response of `analyze/`. It is `null` while the interview is running and in the h
 | average_communication | Average of the per-answer communication scores |
 | average_scores | Average 0-100 per part: clarity, grammar, fillers, pace, completeness (`null` if none apply) |
 | ai_reviewed | `true` when every analysed answer has its Gemini review |
+| answers_tracked, look_away_events | Answers with eye-contact data, and long look-aways in total |
+| average_eye_contact_pct, average_face_visible_pct, average_attention_score | Averages weighted by how long each answer was tracked (`null` if none) |
+
+## Eye contact
+
+The browser measures eye contact itself (MediaPipe Face Landmarker, video never leaves the computer)
+and sends this with each answer as `attention`:
+
+| Field | Meaning |
+|---|---|
+| tracked_seconds | How long the measurement ran (at least 5 to be kept, and not more than 5 seconds over `duration_seconds`) |
+| face_visible_pct | Share of that time the face was in the picture, 0-100 |
+| eye_contact_pct | Share of that time the person looked at the camera, 0-100 (cannot exceed face_visible_pct) |
+| look_away_events | Times they looked away or left the frame for 2 seconds or more |
+| longest_look_away_seconds | The longest such stretch |
+
+Impossible combinations are rejected with 400. Stored as `analysis.attention` with the extra fields
+`score` (0-100, where about 70% eye contact is a full score), `label` (`good` 80+, `fair` 50+, else
+`low`) and `source` (`browser`). Because the browser does the measuring, treat it as practice feedback,
+not as proof.
