@@ -105,3 +105,41 @@ camera stream -> hidden video -> MediaPipe Face Landmarker (about 5 frames a sec
   not available and the interview carries on.
 - **Trust:** numbers come from the candidate's browser, so they suit practice feedback, not proof.
 - **Tests:** `npm test` in `frontend` runs the geometry and tracker tests with made-up landmarks.
+
+## Day 5: expression, engagement, hesitation and confidence
+
+### What a user can do now
+
+1. The live badge also shows the current expression ("smiling", "neutral", "tense or very serious",
+   "eyebrows raised").
+2. Each spoken answer is saved with how its face looked (shares of smile, tense, raised, neutral), how
+   long it took to start speaking and how many long pauses there were.
+3. These are combined with eye contact and the speech numbers into a **confidence score** per answer,
+   built from the five signals in the SRS: eye-contact consistency, facial engagement, response
+   hesitation, speaking confidence and attention level.
+4. The result screen shows confidence, hesitation and expression per answer, and confidence in the
+   delivery summary. "Work on first" now also points at hesitation, expressiveness or eye contact.
+
+### How it works
+
+```
+face blendshapes (MediaPipe, same camera loop as Day 4) -> smoothed expression -> shares over face time
+speech recognizer timing -> PauseTracker (first word, long pauses)             frontend/src/utils/pauses.js
+both sent with the answer -> apps/interviews/behavior.py -> analysis.expression / hesitation / confidence
+```
+
+### Decisions and limits
+
+- **Expression is not emotion.** The browser can only see facial movement. "Tense" also appears when
+  someone concentrates, and people show feelings differently. The screen says these are rough practice
+  hints, and no single signal decides the confidence score.
+- **Not tuned on real faces yet.** The thresholds (`EXPRESSION` in `utils/attention.js`) are first
+  values: test with a few people and adjust.
+- **Hesitation depends on the recognizer.** A "pause" is a gap of 2.5 seconds or more with no words
+  reported. A slow network connection to the browser's speech service can look like a pause.
+- **Only spoken answers get a confidence score.** Typed answers have no voice or pauses, and answers
+  where no words were captured are never scored (looking at the camera in silence is not confidence).
+- **Confidence is separate from the communication score.** Day 6 combines them with technical relevance
+  and professionalism.
+- **Naming:** the logic is in `behavior.py`. `signals.py` is the existing file that deletes recordings
+  when a session or user is deleted.

@@ -1,5 +1,14 @@
 const mark = (score) => (score >= 75 ? "text-green-300" : score >= 50 ? "text-amber-300" : "text-red-300");
 
+const AREA_NAMES = {
+  fillers: "filler words",
+  eye_contact: "eye contact",
+  attention_level: "staying in the frame",
+  facial_engagement: "facial expressiveness",
+  hesitation: "hesitation (slow starts and long pauses)",
+  speaking_confidence: "speaking confidence",
+};
+
 function Tile({ label, value, score, note }) {
   return (
     <div className="rounded-xl bg-white/5 px-4 py-3">
@@ -20,7 +29,7 @@ export default function SpeechSummary({ summary }) {
       </p>
     ) : null;
   }
-  const scores = { ...summary.average_scores, "eye contact": summary.average_attention_score };
+  const scores = { ...summary.average_scores, ...summary.average_confidence_parts };
   const best = Object.entries(scores).filter(([, v]) => v != null).sort((a, b) => b[1] - a[1]);
   const weakest = best.length > 1 ? best[best.length - 1] : null;
   const fillerNote = summary.top_fillers.map((f) => `${f.word} x${f.count}`).join(", ");
@@ -39,11 +48,24 @@ export default function SpeechSummary({ summary }) {
             note={summary.look_away_events ? `${summary.look_away_events} long look-away(s)` : "Around 70% is natural"}
           />
         )}
+        {summary.average_confidence != null && (
+          <Tile
+            label="Confidence"
+            value={`${Math.round(summary.average_confidence)} / 100`}
+            score={summary.average_confidence}
+            note={`${summary.answers_with_confidence} spoken answer(s)`}
+          />
+        )}
         <Tile label="Words spoken" value={summary.total_words} />
       </div>
       {weakest && weakest[1] < 75 && (
         <p className="mt-3 text-sm text-white/60">
-          Work on first: <span className="font-semibold text-white">{weakest[0] === "fillers" ? "filler words" : weakest[0]}</span> (average {Math.round(weakest[1])} / 100).
+          Work on first: <span className="font-semibold text-white">{AREA_NAMES[weakest[0]] || weakest[0]}</span> (average {Math.round(weakest[1])} / 100).
+        </p>
+      )}
+      {summary.average_confidence != null && (
+        <p className="mt-1 text-xs text-white/40">
+          Confidence, expression and eye contact are rough practice hints measured by your browser. A tense-looking face can simply mean you were concentrating.
         </p>
       )}
       {(summary.answers_skipped > 0 || summary.answers_without_transcript > 0) && (

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { PauseTracker } from "../utils/pauses";
 
 const FATAL = {
   "not-allowed": "Microphone access was blocked for speech recognition.",
@@ -18,7 +19,7 @@ export const speechSupported = () => Boolean(getCtor());
  *
  *   start()    begin listening
  *   stop()     stop and wait briefly for the last words (returns a promise)
- *   snapshot() { transcript, confidence } of everything heard so far
+ *   snapshot() { transcript, confidence, hesitation } of everything heard so far
  *   abort()    stop at once (used when the page is left)
  *
  * heard = { final, interim, firstWordSeconds }: firstWordSeconds is how long after listening
@@ -35,8 +36,7 @@ export default function useSpeechRecognition() {
   const interimRef = useRef("");
   const confRef = useRef({ sum: 0, count: 0 });
   const startedAtRef = useRef(0);
-  const beganRef = useRef(0); // when listening first began
-  const firstWordRef = useRef(null); // seconds from beginning until the first words were heard
+  const [pauses] = useState(() => new PauseTracker()); // delay before the first word and long pauses
   const rapidRef = useRef(0);
   const waitersRef = useRef([]);
 
@@ -57,7 +57,7 @@ export default function useSpeechRecognition() {
     if (!Ctor || wantRef.current) return;
     wantRef.current = true;
     rapidRef.current = 0;
-    beganRef.current = Date.now();
+    pauses.begin(Date.now());
     const rec = new Ctor();
     rec.continuous = true;
     rec.interimResults = true;
@@ -79,10 +79,8 @@ export default function useSpeechRecognition() {
       }
       interimRef.current = interim.trim();
       rapidRef.current = 0;
-      if (firstWordRef.current === null && (finalRef.current || interimRef.current)) {
-        firstWordRef.current = Math.round((Date.now() - beganRef.current) / 1000);
-      }
-      setHeard({ final: finalRef.current, interim: interimRef.current, firstWordSeconds: firstWordRef.current });
+      if (finalRef.current || interimRef.current) pauses.activity(Date.now());
+      setHeard({ final: finalRef.current, interim: interimRef.current, firstWordSeconds: pauses.firstWord });
     };
     rec.onerror = (event) => {
       if (FATAL[event.error]) fail(FATAL[event.error]);
@@ -115,7 +113,7 @@ export default function useSpeechRecognition() {
     } catch {
       fail("Could not start speech recognition. Please type your answer instead.");
     }
-  }, [fail, release]);
+  }, [fail, pauses, release]);
 
   const stop = useCallback(
     () =>
@@ -160,8 +158,9 @@ export default function useSpeechRecognition() {
       // words the browser had heard but not yet finalised still count
       transcript: `${finalRef.current} ${interimRef.current}`.trim(),
       confidence: count ? Math.round((sum / count) * 100) / 100 : null,
+      hesitation: pauses.snapshot(), // delay before the first word and long pauses; null if nothing was heard
     };
-  }, []);
+  }, [pauses]);
 
   useEffect(() => abort, [abort]); // stop listening when the question or page goes away
 

@@ -161,6 +161,35 @@ class AttentionSerializer(serializers.Serializer):
         return attrs
 
 
+class ExpressionSerializer(serializers.Serializer):
+    """How the face looked during one answer, measured in the browser. Shares are of the time the face was visible."""
+
+    face_seconds = serializers.FloatField(min_value=0, max_value=3700)
+    smile_pct = serializers.FloatField(min_value=0, max_value=100)
+    tense_pct = serializers.FloatField(min_value=0, max_value=100)
+    raised_pct = serializers.FloatField(min_value=0, max_value=100)
+    neutral_pct = serializers.FloatField(min_value=0, max_value=100)
+
+    def validate(self, attrs):
+        if attrs["smile_pct"] + attrs["tense_pct"] + attrs["raised_pct"] + attrs["neutral_pct"] > 100.5:
+            raise serializers.ValidationError("The expression shares add up to more than 100%.")
+        return attrs
+
+
+class HesitationSerializer(serializers.Serializer):
+    """Pauses and delay while speaking one answer, measured from the speech recognizer in the browser."""
+
+    response_delay_seconds = serializers.FloatField(min_value=0, max_value=3600)
+    long_pauses = serializers.IntegerField(min_value=0, max_value=1000)
+    longest_pause_seconds = serializers.FloatField(min_value=0, max_value=3600)
+    total_pause_seconds = serializers.FloatField(min_value=0, max_value=3600)
+
+    def validate(self, attrs):
+        if attrs["longest_pause_seconds"] > attrs["total_pause_seconds"] + 0.5:
+            raise serializers.ValidationError("The longest pause cannot be longer than all pauses together.")
+        return attrs
+
+
 class SubmitAnswerSerializer(serializers.Serializer):
     question_id = serializers.IntegerField()
     transcript = serializers.CharField(required=False, allow_blank=True, max_length=10000, default="")
@@ -171,15 +200,22 @@ class SubmitAnswerSerializer(serializers.Serializer):
     speech_confidence = serializers.FloatField(required=False, allow_null=True, min_value=0, max_value=1, default=None)
 
     attention = AttentionSerializer(required=False, allow_null=True, default=None)
+    expression = ExpressionSerializer(required=False, allow_null=True, default=None)
+    hesitation = HesitationSerializer(required=False, allow_null=True, default=None)
 
     def validate_transcript(self, value):
         return " ".join(value.split())  # one clean line of text, whatever the browser sent
 
     def validate(self, attrs):
-        attention = attrs.get("attention")
-        # The measurement is for this answer, so it cannot be much longer than the time spent on it
-        if attention and attention["tracked_seconds"] > attrs.get("duration_seconds", 0) + 5:
-            raise serializers.ValidationError({"attention": "The eye-contact measurement is longer than the answer."})
+        # Each measurement is for this one answer, so none can be much longer than the time spent on it
+        limit = attrs.get("duration_seconds", 0) + 5
+        checks = (
+            ("attention", "tracked_seconds"), ("expression", "face_seconds"),
+            ("hesitation", "response_delay_seconds"), ("hesitation", "total_pause_seconds"),
+        )
+        for name, field in checks:
+            if attrs.get(name) and attrs[name][field] > limit:
+                raise serializers.ValidationError({name: "This measurement is longer than the answer."})
         return attrs
 
 

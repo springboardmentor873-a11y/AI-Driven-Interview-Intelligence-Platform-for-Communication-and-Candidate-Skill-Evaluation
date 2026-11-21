@@ -156,6 +156,8 @@ export default function InterviewRoom() {
       const body = { question_id: question.id, duration_seconds: seconds, ...extra };
       const measured = seconds > 0 ? attention.snapshot() : null; // a skipped question has nothing to measure
       if (measured && measured.tracked_seconds >= 5) body.attention = measured;
+      const look = seconds > 0 ? attention.expressionSnapshot() : null;
+      if (look && look.face_seconds >= 5) body.expression = look;
       const { data } = await client.post(url(id, "answer/"), body);
       attention.reset(); // the next question starts a fresh measurement
       setProgress({ answered: data.answered, total: data.total });
@@ -227,7 +229,7 @@ export default function InterviewRoom() {
         <div className="mt-8 grid gap-6 md:grid-cols-2">
           <div className="space-y-3">
             <CameraPreview stream={media.stream} level={level} />
-            <AttentionBadge status={attention.status} state={attention.state} />
+            <AttentionBadge status={attention.status} state={attention.state} expression={attention.expression} />
           </div>
           <div className="space-y-4">
             <ol className="space-y-2 text-sm text-white/70">
@@ -281,7 +283,7 @@ export default function InterviewRoom() {
           </div>
           <div className="space-y-4">
             <CameraPreview stream={media.stream} level={level} />
-            <AttentionBadge status={attention.status} state={attention.state} />
+            <AttentionBadge status={attention.status} state={attention.state} expression={attention.expression} />
             <Button variant="ghost" className="w-full !text-red-300" onClick={endEarly}>End interview</Button>
           </div>
         </div>

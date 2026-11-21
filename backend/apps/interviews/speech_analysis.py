@@ -26,7 +26,9 @@ The result is stored in ``Answer.analysis`` (no database change needed). Shape::
 
 A section is ``null`` when it does not apply (typed answers have no pace, fillers or clarity,
 and ``attention`` is ``null`` when the camera was off or eye-contact tracking was not available).
-``attention`` is not part of the communication score: it feeds the confidence score later.
+``attention`` is not part of the communication score. ``expression`` (smile / tense / raised / neutral
+shares of face time), ``hesitation`` (delay before the first word, long pauses) and ``confidence``
+(five parts and their weighted score, spoken answers only) are described in ``behavior.py``.
 """
 import json
 import logging
@@ -36,6 +38,7 @@ from apps.ai import gemini
 
 from .attention import attention_info
 from .models import Answer
+from .behavior import confidence_info, expression_info, hesitation_info
 
 logger = logging.getLogger(__name__)
 
@@ -191,7 +194,8 @@ def communication_score(analysis: dict):
 
 
 # --- one answer, rule-based --------------------------------------------------
-def build_analysis(transcript, duration_seconds, time_limit_seconds, source="speech", speech_confidence=None, attention=None) -> dict:
+def build_analysis(transcript, duration_seconds, time_limit_seconds, source="speech", speech_confidence=None, attention=None,
+                   expression=None, hesitation=None) -> dict:
     transcript = (transcript or "").strip()
     duration_seconds = int(duration_seconds or 0)
     if not transcript:
@@ -204,6 +208,9 @@ def build_analysis(transcript, duration_seconds, time_limit_seconds, source="spe
             "word_count": 0, "duration_seconds": duration_seconds,
             "communication_score": None,
             "attention": attention_info(attention),
+            "expression": expression_info(expression),
+            "hesitation": None,
+            "confidence": None,
         }
 
     spoken = source != "typed"
@@ -220,8 +227,11 @@ def build_analysis(transcript, duration_seconds, time_limit_seconds, source="spe
         "grammar": basic_grammar(tokens),
         "completeness": basic_completeness(word_count, time_limit_seconds),
         "attention": attention_info(attention),
+        "expression": expression_info(expression),
+        "hesitation": hesitation_info(hesitation, duration_seconds) if spoken else None,
     }
     analysis["communication_score"] = communication_score(analysis)
+    analysis["confidence"] = confidence_info(analysis)
     return analysis
 
 
@@ -367,6 +377,26 @@ def _attention_summary(analyses) -> dict:
     }
 
 
+def _behavior_summary(analyses) -> dict:
+    """Confidence, expression and hesitation over the whole interview."""
+    confident = [a["confidence"] for a in analyses if a.get("confidence")]
+    faces = [a["expression"] for a in analyses if a.get("expression")]
+    pauses = [a["hesitation"] for a in analyses if a.get("hesitation")]
+    face_seconds = sum(f["face_seconds"] for f in faces)
+    parts = ("eye_contact", "attention_level", "facial_engagement", "hesitation", "speaking_confidence")
+    return {
+        "answers_with_confidence": len(confident),
+        "average_confidence": _average([c["score"] for c in confident]),
+        "average_confidence_parts": {p: _average([c["parts"].get(p) for c in confident]) for p in parts},
+        "expression_shares": {
+            name: round(sum(f[f"{name}_pct"] * f["face_seconds"] for f in faces) / face_seconds, 1) if face_seconds else None
+            for name in ("smile", "tense", "raised", "neutral")
+        },
+        "average_response_delay": _average([h["response_delay_seconds"] for h in pauses]),
+        "long_pauses": sum(h["long_pauses"] for h in pauses),
+    }
+
+
 def summarize(analyses) -> dict:
     """Speech results across a whole interview. Averages only use answers where the part applies."""
     analyses = [a for a in analyses if a and a.get("version") == VERSION]
@@ -391,5 +421,6 @@ def summarize(analyses) -> dict:
             for part in ("clarity", "grammar", "fillers", "pace", "completeness")
         },
         **_attention_summary(analyses),
+        **_behavior_summary(analyses),
         "ai_reviewed": bool(analyzed) and all((a.get("grammar") or {}).get("source") == "ai" for a in analyzed),
     }

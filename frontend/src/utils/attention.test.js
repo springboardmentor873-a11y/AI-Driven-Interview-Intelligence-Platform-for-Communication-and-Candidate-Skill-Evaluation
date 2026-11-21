@@ -121,3 +121,70 @@ test("nothing measured gives null, and reset clears everything", () => {
   t.reset();
   assert.equal(t.snapshot(), null);
 });
+
+// --- Day 5: expression ---------------------------------------------------------------
+import { expressionLabel, expressionScores } from "./attention.js";
+
+const cats = (obj) => Object.entries(obj).map(([categoryName, score]) => ({ categoryName, score }));
+
+test("no blendshapes means no expression", () => {
+  assert.equal(expressionScores(undefined), null);
+  assert.equal(expressionScores([]), null);
+  assert.equal(analyzeFace(face()).expression, null);
+});
+
+test("expression strengths come from the right blendshapes", () => {
+  const smile = expressionScores(cats({ mouthSmileLeft: 0.7, mouthSmileRight: 0.5 }));
+  assert.ok(Math.abs(smile.smile - 0.6) < 1e-9 && smile.tense === 0);
+  const tense = expressionScores(cats({ browDownLeft: 0.8, browDownRight: 0.6, mouthSmileLeft: 0.1 }));
+  assert.ok(Math.abs(tense.tense - 0.7) < 1e-9);
+  assert.equal(expressionScores(cats({ browInnerUp: 0.8 })).raised, 0.8);
+  assert.ok(Math.abs(expressionScores(cats({ eyeWideLeft: 0.6, eyeWideRight: 0.6 })).raised - 0.6) < 1e-9);
+});
+
+test("labels: tense wins over smile, then smile, then raised, else neutral", () => {
+  assert.equal(expressionLabel({ smile: 0.9, tense: 0.5, raised: 0 }), "tense");
+  assert.equal(expressionLabel({ smile: 0.5, tense: 0.1, raised: 0.9 }), "smile");
+  assert.equal(expressionLabel({ smile: 0.1, tense: 0.1, raised: 0.6 }), "raised");
+  assert.equal(expressionLabel({ smile: 0.1, tense: 0.1, raised: 0.1 }), "neutral");
+});
+
+test("analyzeFace passes the expression through", () => {
+  const r = analyzeFace(face(), cats({ mouthSmileLeft: 0.8, mouthSmileRight: 0.8 }));
+  assert.ok(r.expression.smile > 0.7);
+});
+
+const withLook = (expression) => ({ ...contact, expression });
+const smiling = { smile: 0.8, tense: 0, raised: 0 };
+const calm = { smile: 0, tense: 0, raised: 0 };
+const tenseLook = { smile: 0, tense: 0.8, raised: 0 };
+
+test("expression shares are time-weighted and only count while the face is visible", () => {
+  const t = new AttentionTracker();
+  const now = run(t, [...Array(20).fill(withLook(smiling)), ...Array(20).fill(withLook(calm))]);
+  run(t, Array(10).fill({ ...gone, expression: null }), now);   // out of the picture: not part of the shares
+  const e = t.expressionSnapshot();
+  assert.ok(e.smile_pct > 40 && e.smile_pct < 65, String(e.smile_pct));
+  assert.equal(e.smile_pct + e.tense_pct + e.raised_pct + e.neutral_pct > 99.5, true);
+  assert.ok(e.face_seconds > 6 && e.face_seconds < 9);
+});
+
+test("a sudden change in expression is smoothed, not instant", () => {
+  const t = new AttentionTracker();
+  run(t, Array(10).fill(withLook(calm)));
+  t.add(withLook(tenseLook), 3000);                // one tense frame: 0.4 * 0.8 = 0.32 after smoothing
+  assert.equal(t.expressionLabel, "neutral");
+  for (let i = 0; i < 4; i += 1) t.add(withLook(tenseLook), 3200 + i * 200);
+  assert.equal(t.expressionLabel, "tense");
+});
+
+test("no expression data gives null, and reset clears it", () => {
+  const t = new AttentionTracker();
+  run(t, Array(10).fill(contact));
+  assert.equal(t.expressionSnapshot(), null);
+  run(t, Array(10).fill(withLook(smiling)), 5000);
+  assert.ok(t.expressionSnapshot());
+  t.reset();
+  assert.equal(t.expressionSnapshot(), null);
+  assert.equal(t.expressionLabel, null);
+});

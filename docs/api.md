@@ -64,8 +64,8 @@ A session moves through `scheduled` -> `in_progress` -> `completed`, or ends as 
 3. `GET .../next-question/` returns the current question with `answered` and `total`.
 4. `POST .../answer/` takes `question_id` (must be the current question), `transcript`,
    `duration_seconds`, `transcript_source` (`speech` by default, or `typed`), `speech_confidence`
-   (0 to 1, optional) and `attention` (optional, the eye-contact summary measured in the browser: see
-   Eye contact below). No time spent and no transcript counts as a skipped question. The response
+   (0 to 1, optional), and three optional measurements taken in the browser: `attention` (eye contact,
+   see Eye contact below), `expression` and `hesitation` (see Confidence signals below). No time spent and no transcript counts as a skipped question. The response
    includes the next question. Answering the last question completes the session. Each answer is
    saved with a quick rule-based `analysis` (see Speech analysis below). The response also has
    `feedback`: `status`, `word_count`, `wpm`, `pace_label` and `fillers` for the answer just saved,
@@ -137,6 +137,7 @@ Each answer's `analysis` (returned with the questions of a finished session):
 | grammar | `score`, up to 5 `issues` (`text`, `suggestion`) and `source` (`ai` or `basic`) |
 | completeness | `score` and `source`. Basic = answer length against the time allowed |
 | attention | Eye-contact numbers (see Eye contact below), or `null` when the camera was off or tracking was not available |
+| expression, hesitation, confidence | See Confidence signals below |
 | communication_score | Weighted 0-100 average of the parts that apply (clarity 15, grammar 25, fillers 20, pace 20, completeness 20) |
 
 A part is `null` when it does not apply, for example pace for a typed answer.
@@ -156,6 +157,9 @@ response of `analyze/`. It is `null` while the interview is running and in the h
 | ai_reviewed | `true` when every analysed answer has its Gemini review |
 | answers_tracked, look_away_events | Answers with eye-contact data, and long look-aways in total |
 | average_eye_contact_pct, average_face_visible_pct, average_attention_score | Averages weighted by how long each answer was tracked (`null` if none) |
+| answers_with_confidence, average_confidence, average_confidence_parts | Confidence over spoken answers, and the average of each of its five parts |
+| expression_shares | `smile`, `tense`, `raised`, `neutral`: average share of face time, weighted by time |
+| average_response_delay, long_pauses | Average seconds before the first word, and long pauses in total |
 
 ## Eye contact
 
@@ -174,3 +178,34 @@ Impossible combinations are rejected with 400. Stored as `analysis.attention` wi
 `score` (0-100, where about 70% eye contact is a full score), `label` (`good` 80+, `fair` 50+, else
 `low`) and `source` (`browser`). Because the browser does the measuring, treat it as practice feedback,
 not as proof.
+
+## Confidence signals
+
+Two more measurements are sent with each answer from the browser. Impossible values are rejected with 400
+(shares above 100%, a longest pause longer than all pauses, a measurement longer than the answer).
+
+`expression`: how the face looked, as shares of the time the face was visible.
+
+| Field | Meaning |
+|---|---|
+| face_seconds | Face-visible time measured (at least 5 to be kept) |
+| smile_pct, tense_pct, raised_pct, neutral_pct | Shares of that time, 0-100, adding up to at most 100 |
+
+`hesitation`: from the speech recognizer's timing (spoken answers only).
+
+| Field | Meaning |
+|---|---|
+| response_delay_seconds | Seconds from the question appearing to the first word |
+| long_pauses | Stops of 2.5 seconds or more in the middle of the answer |
+| longest_pause_seconds, total_pause_seconds | Longest, and all long pauses together |
+
+Stored in `analysis` with extra fields:
+
+- `expression`: `dominant` (`smile`, `tense`, `raised` or `neutral`), `expressiveness` (0-100, 40% smile or
+  raised brows time is full) and `composure` (0-100, loses 2.5 points per 1% tense time).
+- `hesitation`: `score` and `label`. A delay up to 3 s and no long pauses is full marks. Pauses are counted per
+  minute over at least a minute, so one pause in a short answer is not punished hard.
+- `confidence` (spoken, analysed answers only, at least two parts available): `score`, `label` and `parts`,
+  the five parts from the SRS with these weights: `eye_contact` 25, `hesitation` 25, `speaking_confidence` 20
+  (fillers 40, pace 30, composure 30), `attention_level` 15 (face visible minus 8 per long look-away) and
+  `facial_engagement` 15 (expressiveness). Missing parts are left out and the rest rescaled.

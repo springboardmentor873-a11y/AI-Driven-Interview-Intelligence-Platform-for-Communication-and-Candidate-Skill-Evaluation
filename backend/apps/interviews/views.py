@@ -182,6 +182,7 @@ class SessionViewSet(
             analysis = speech_analysis.build_analysis(
                 data["transcript"], data["duration_seconds"], current.time_limit_seconds,
                 data["transcript_source"], data["speech_confidence"], data["attention"],
+                data["expression"], data["hesitation"],
             )
             Answer.objects.create(
                 question=current, transcript=data["transcript"], duration_seconds=data["duration_seconds"], analysis=analysis,

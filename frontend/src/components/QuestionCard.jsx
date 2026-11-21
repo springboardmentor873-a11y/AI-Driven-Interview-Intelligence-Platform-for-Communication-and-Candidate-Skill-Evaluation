@@ -61,7 +61,12 @@ export default function QuestionCard({ question, index, total, busy, micReady = 
       if (typing) return { transcript: typedValue.trim(), transcript_source: "typed" };
       await speech.stop(); // give the recognizer a moment to finish the last words
       const heard = speech.snapshot();
-      return { transcript: heard.transcript, transcript_source: "speech", speech_confidence: heard.confidence };
+      return {
+        transcript: heard.transcript,
+        transcript_source: "speech",
+        speech_confidence: heard.confidence,
+        ...(heard.hesitation ? { hesitation: heard.hesitation } : {}),
+      };
     };
   });
 

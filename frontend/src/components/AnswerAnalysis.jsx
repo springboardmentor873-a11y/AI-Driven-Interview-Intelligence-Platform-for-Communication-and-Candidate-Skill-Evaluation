@@ -1,5 +1,7 @@
 const mark = (score) => (score >= 75 ? "text-green-300" : score >= 50 ? "text-amber-300" : "text-red-300");
 
+const EXPRESSION_NAMES = { smile: "Smiling", tense: "Tense / serious", raised: "Brows raised", neutral: "Neutral" };
+
 function Stat({ label, value, score, hint }) {
   return (
     <div className="rounded-lg bg-white/5 px-3 py-2" title={hint}>
@@ -42,9 +44,29 @@ export default function AnswerAnalysis({ answer }) {
             hint={`Face visible ${Math.round(a.attention.face_visible_pct)}% of the time. Around 70% is natural.`}
           />
         )}
+        {a.confidence && (
+          <Stat
+            label="Confidence"
+            value={`${Math.round(a.confidence.score)} / 100`}
+            score={a.confidence.score}
+            hint="From eye contact, staying in frame, facial expressiveness, hesitation and speaking confidence"
+          />
+        )}
+        {a.hesitation && (
+          <Stat
+            label="Hesitation"
+            value={a.hesitation.long_pauses ? `${a.hesitation.long_pauses} long pause(s)` : "None"}
+            score={a.hesitation.score}
+            hint={`First word after ${a.hesitation.response_delay_seconds} s. A long pause is 2.5 s or more.`}
+          />
+        )}
+        {a.expression && <Stat label="Expression" value={EXPRESSION_NAMES[a.expression.dominant]} hint={`Smiling ${Math.round(a.expression.smile_pct)}%, tense ${Math.round(a.expression.tense_pct)}%, eyebrows raised ${Math.round(a.expression.raised_pct)}%, neutral ${Math.round(a.expression.neutral_pct)}% of the time`} />}
         <Stat label="Words" value={a.word_count} />
       </div>
       {fillerList && <p className="text-xs text-white/50">Filler words: {fillerList}</p>}
+      {a.hesitation && a.hesitation.response_delay_seconds > 3 && (
+        <p className="text-xs text-white/50">You started speaking {a.hesitation.response_delay_seconds} seconds after the question appeared. Under 3 seconds feels natural.</p>
+      )}
       {a.attention?.look_away_events > 0 && (
         <p className="text-xs text-white/50">
           You looked away from the camera {a.attention.look_away_events} time(s) for 2 seconds or more (longest {a.attention.longest_look_away_seconds} s).

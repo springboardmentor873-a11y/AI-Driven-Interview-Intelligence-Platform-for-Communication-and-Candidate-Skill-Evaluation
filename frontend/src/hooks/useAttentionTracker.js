@@ -16,6 +16,7 @@ async function createLandmarker() {
     baseOptions: { modelAssetPath: MODEL_URL, delegate },
     runningMode: "VIDEO",
     numFaces: 1,
+    outputFaceBlendshapes: true, // expression strengths: smile, brows, lips
   });
   try {
     return await FaceLandmarker.createFromOptions(fileset, options("GPU"));
@@ -30,6 +31,8 @@ async function createLandmarker() {
  *
  *   status    "off" (no camera) | "loading" | "tracking" | "unavailable"
  *   state     what is seen right now: "contact" | "away" | "absent" | null
+ *   expression  the look right now: "smile" | "tense" | "raised" | "neutral" | null
+ *   expressionSnapshot()  how the face looked since the last reset (see AttentionTracker)
  *   snapshot()  numbers since the last reset (or null if too little was measured)
  *   reset()     start a new measurement window (one per question)
  *
@@ -40,6 +43,7 @@ export default function useAttentionTracker(stream) {
   const [tracker] = useState(() => new AttentionTracker());
   const [status, setStatus] = useState("loading");
   const [state, setState] = useState(null);
+  const [expression, setExpression] = useState(null);
   const hasCamera = Boolean(stream) && stream.getVideoTracks().length > 0;
 
   useEffect(() => {
@@ -48,6 +52,7 @@ export default function useAttentionTracker(stream) {
     let timer = null;
     let landmarker = null;
     let lastState = null;
+    let lastExpression = null;
     let lastVideoTime = -1;
     const video = document.createElement("video");
     video.muted = true;
@@ -69,7 +74,8 @@ export default function useAttentionTracker(stream) {
           lastVideoTime = video.currentTime;
           let frame;
           try {
-            frame = analyzeFace(landmarker.detectForVideo(video, performance.now()).faceLandmarks?.[0]);
+            const result = landmarker.detectForVideo(video, performance.now());
+            frame = analyzeFace(result.faceLandmarks?.[0], result.faceBlendshapes?.[0]?.categories);
           } catch {
             return; // one bad frame is not worth stopping for
           }
@@ -77,6 +83,10 @@ export default function useAttentionTracker(stream) {
           if (now !== lastState) {
             lastState = now;
             setState(now);
+          }
+          if (tracker.expressionLabel !== lastExpression) {
+            lastExpression = tracker.expressionLabel;
+            setExpression(lastExpression);
           }
         }, FRAME_MS);
       } catch {
@@ -98,7 +108,8 @@ export default function useAttentionTracker(stream) {
   }, [hasCamera, stream, tracker]);
 
   const snapshot = useCallback(() => tracker.snapshot(performance.now()), [tracker]);
+  const expressionSnapshot = useCallback(() => tracker.expressionSnapshot(), [tracker]);
   const reset = useCallback(() => tracker.reset(), [tracker]);
 
-  return { status: hasCamera ? status : "off", state, snapshot, reset };
+  return { status: hasCamera ? status : "off", state, expression, snapshot, expressionSnapshot, reset };
 }
