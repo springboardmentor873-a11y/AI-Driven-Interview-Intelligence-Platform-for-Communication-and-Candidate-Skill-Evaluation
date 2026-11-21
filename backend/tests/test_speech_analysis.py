@@ -191,6 +191,7 @@ def test_analyze_adds_ai_review_in_one_call(client, settings, monkeypatch):
         calls.append(prompt)
         return {"results": [
             {"id": answer_id, "grammar_score": 92.4, "completeness_score": 150,
+             "technical_score": 71, "organization_score": 64.6, "tone_score": 88, "note": "  Gives a real example.  ",
              "grammar_issues": [{"text": "we was", "suggestion": "we were"}, {"text": 5, "suggestion": "x"}]},
             {"id": 99999, "grammar_score": 10, "completeness_score": 10, "grammar_issues": []},  # not ours
         ]}
@@ -201,6 +202,9 @@ def test_analyze_adds_ai_review_in_one_call(client, settings, monkeypatch):
     result = res.data["questions"][0]["answer"]["analysis"]
     assert result["grammar"] == {"score": 92, "issues": [{"text": "we was", "suggestion": "we were"}], "source": "ai"}
     assert result["completeness"] == {"score": 100, "source": "ai"}  # clamped
+    assert result["technical"] == {"score": 71, "note": "Gives a real example.", "source": "ai"}
+    assert result["organization"] == {"score": 65, "source": "ai"} and result["tone"] == {"score": 88, "source": "ai"}
+    assert '"interview_type": "hr"' in calls[0]  # the review knows what kind of interview it is
     assert res.data["questions"][1]["answer"]["analysis"]["status"] == "skipped"
 
     # A second call does not ask Gemini again

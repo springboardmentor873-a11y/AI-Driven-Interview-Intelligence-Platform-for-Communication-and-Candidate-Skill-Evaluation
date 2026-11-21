@@ -31,6 +31,7 @@ Base URL: `http://localhost:8000`. Send `Authorization: Bearer <access token>` o
 | GET | /api/interviews/sessions/{id}/next-question/ | Candidate (owner) | The current question |
 | POST | /api/interviews/sessions/{id}/answer/ | Candidate (owner) | Submit an answer to the current question |
 | POST | /api/interviews/sessions/{id}/analyze/ | Candidate (owner) | Finish the speech analysis of a completed interview (one Gemini review of all answers) |
+| POST | /api/interviews/sessions/{id}/score/ | Candidate (owner) | Score a completed interview: finishes the analysis (one Gemini review), then computes and saves the four scores and the overall score |
 | POST | /api/interviews/sessions/{id}/finish/ | Candidate (owner) | End the interview early |
 | POST | /api/interviews/sessions/{id}/cancel/ | Candidate (owner) | Cancel an interview that is not finished |
 | POST | /api/interviews/sessions/{id}/recording/ | Candidate (owner) | Upload the interview's video and/or audio (finished interviews only) |
@@ -209,3 +210,36 @@ Stored in `analysis` with extra fields:
   the five parts from the SRS with these weights: `eye_contact` 25, `hesitation` 25, `speaking_confidence` 20
   (fillers 40, pace 30, composure 30), `attention_level` 15 (face visible minus 8 per long look-away) and
   `facial_engagement` 15 (expressiveness). Missing parts are left out and the rest rescaled.
+
+## Scoring
+
+`POST /api/interviews/sessions/{id}/score/` works on a completed interview and is the call the interview room
+makes when it ends. It runs the analysis from `analyze/` first (the Gemini review now also rates technical
+relevance, organization and professional tone, still in one call), then computes the score and saves one `Score`
+row per session. Calling it again recomputes that row. The response is the session detail with a `score`
+object, plus `analysis_source`. `score` is also in `GET .../sessions/{id}/` for scored sessions, and is `null`
+in the history list, for unscored sessions, and when no answer could be scored.
+
+| Field | Meaning |
+|---|---|
+| communication, confidence, technical_relevance, professionalism | The four parts, 0-100. `null` when that part could not be measured |
+| overall | Weighted score, 0-100. Weights: communication 30%, confidence 25%, technical relevance 30%, professionalism 15% (also returned as `weights`) |
+| rating, rating_label | `excellent` 90+, `good` 75+, `average` 60+, `needs_improvement` 40+, `poor` |
+| complete, missing | `complete` is `false` when a part is `null`: the overall score then uses the other parts, rescaled |
+| counts | `questions_total`, `answered`, `skipped` (including unanswered), `excluded_no_transcript` |
+| per_answer | One row per question: `order`, `status`, the four parts and `overall` |
+
+How the parts are built (see `apps/scoring/engine.py`):
+
+- **Communication**: the answers' communication scores averaged.
+- **Confidence**: the answers' confidence scores averaged (spoken answers only).
+- **Technical relevance**: per answer, 80% Gemini's rating of the content and 20% completeness. Needs the AI review.
+- **Professionalism**: per answer, time management (25), organization (25), professional communication (30) and
+  etiquette = staying in the picture (20). At least three of these four must be known.
+- **Skipped or unanswered questions count as 0** in every part. Answers where no words were captured are left out,
+  because the cause is often the microphone, not the candidate. If every answer is like that there is no score.
+- **Time management**: 40% to 95% of the time limit used is full marks, a very short answer scores low, and
+  running to the limit scores 70.
+
+New answer `analysis` fields (Gemini only, absent until reviewed): `technical` (`score`, one-sentence `note`),
+`organization` and `tone` (`score`).

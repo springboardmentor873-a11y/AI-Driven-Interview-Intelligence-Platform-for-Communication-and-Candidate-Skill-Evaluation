@@ -15,6 +15,8 @@ from rest_framework.views import APIView
 
 from apps.accounts.permissions import IsCandidate, IsRecruiter
 
+from apps.scoring import engine
+
 from . import recordings, speech_analysis
 from .models import Answer, InterviewSession, InterviewTemplate, Question
 from .question_gen import generate_questions
@@ -225,6 +227,19 @@ class SessionViewSet(
         updates, source = speech_analysis.analyze_session(session)
         for answer_id, analysis in updates.items():
             Answer.objects.filter(pk=answer_id, question__session=session).update(analysis=analysis)
+        return self._detail(session, analysis_source=source)
+
+    @action(detail=True, methods=["post"])
+    def score(self, request, pk=None):
+        """Score a completed interview: finish the analysis (one Gemini review), then compute and save
+        the four scores and the overall score. Safe to call again: it recomputes the one Score row, and
+        only answers still missing their AI review are sent to Gemini."""
+        session = get_object_or_404(self.get_queryset(), pk=pk)
+        self._require(session, "completed")
+        updates, source = speech_analysis.analyze_session(session)
+        for answer_id, analysis in updates.items():
+            Answer.objects.filter(pk=answer_id, question__session=session).update(analysis=analysis)
+        engine.score_session(session)
         return self._detail(session, analysis_source=source)
 
     @action(detail=True, methods=["post"])

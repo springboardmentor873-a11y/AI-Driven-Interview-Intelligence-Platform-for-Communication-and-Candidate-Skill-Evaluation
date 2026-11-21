@@ -143,3 +143,40 @@ both sent with the answer -> apps/interviews/behavior.py -> analysis.expression 
   and professionalism.
 - **Naming:** the logic is in `behavior.py`. `signals.py` is the existing file that deletes recordings
   when a session or user is deleted.
+
+## Day 6: the scoring engine
+
+### What a user can do now
+
+1. When an interview ends, the room calls `score/`. The result screen shows the overall score, the rating and
+   the four SRS parts (communication 30%, confidence 25%, technical relevance 30%, professionalism 15%) as bars.
+2. Each answer shows three more details from the Gemini review: relevance to the question, organization and
+   professional tone, with a one-sentence note about the content.
+3. If the AI review was unavailable, the score is shown as partial: technical relevance says "Not measured",
+   the overall score uses the other parts, and a "try again" link retries only what is missing.
+
+### How it fits together
+
+```
+interview ends -> POST .../score/
+   -> analyze_session: ONE Gemini call per interview (grammar, completeness, technical, organization, tone)
+   -> apps/scoring/engine.py: per-answer parts -> per-interview parts -> Score.combine (SRS weights) -> Score row
+```
+
+### Decisions and limits
+
+- **A missing part is `null`, never 0.** The `Score` fields are now nullable (migration `0002_nullable_scores`;
+  Docker runs it for you, otherwise run `python manage.py migrate`).
+- **Skipping cannot help a candidate.** Skipped and unanswered questions count as 0 in every part. Answers with
+  no captured words are excluded instead, since a failing microphone should not cost anyone points.
+- **Technical relevance depends on Gemini.** It is a language model's judgement of the answer against the
+  question, with the interview type, difficulty and domain as context. It can be wrong, especially on narrow
+  technical topics, and there is no basic fallback because keyword counting would mislead. No Gemini means a
+  partial score, not an invented one.
+- **Professionalism** mixes Gemini's ratings with time use and staying in the picture. It is never computed from
+  those two alone.
+- **The weights and time-management curve are our choices** (the SRS gives the four weights only for the overall
+  formula). They are constants at the top of `apps/scoring/engine.py` and `behavior.py`.
+- **Practice tool, not a hiring verdict.** Several inputs come from the candidate's own browser and from
+  AI judgement, so the score is for practice feedback.
+- Written feedback (strengths, weaknesses, suggestions) is Day 7.

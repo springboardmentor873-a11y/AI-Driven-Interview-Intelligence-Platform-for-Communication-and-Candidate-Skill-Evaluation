@@ -1,7 +1,8 @@
 """Speech and communication analysis for interview answers (Milestone 3, Day 2).
 
 Every answer gets a quick rule-based analysis the moment it is submitted. After the
-interview, ``analyze_session`` adds a Gemini review (grammar and completeness) for all
+interview, ``analyze_session`` adds a Gemini review (grammar, completeness, technical relevance, organization
+and professional tone) for all
 answers in ONE call. If Gemini is not available the rule-based numbers stay and every
 section says where it came from (``source``: ``ai`` or ``basic``), so nothing pretends to
 be more accurate than it is.
@@ -18,6 +19,9 @@ The result is stored in ``Answer.analysis`` (no database change needed). Shape::
       "clarity":      {"confidence": 0.93, "score": 97, "source": "speech_recognition"} | null,
       "grammar":      {"score": 90, "issues": [{"text": "", "suggestion": ""}], "source": "ai"},
       "completeness": {"score": 80, "source": "ai"},
+      "technical":    {"score": 75, "note": "", "source": "ai"}   (Gemini only; absent until reviewed)
+      "organization": {"score": 70, "source": "ai"},               (Gemini only)
+      "tone":         {"score": 90, "source": "ai"},               (Gemini only)
       "communication_score": 84.3 | null,
       "attention": {"tracked_seconds": 42.0, "face_visible_pct": 98.0, "eye_contact_pct": 66.5,
                     "look_away_events": 1, "longest_look_away_seconds": 3.4,
@@ -245,19 +249,32 @@ SYSTEM_PROMPT = (
 )
 
 
-def _prompt(items) -> str:
+def _prompt(items, context) -> str:
     return (
-        "Review each answer.\n"
+        "Review each answer for this interview. The context says what kind of interview it is.\n"
         "- grammar_score: 0-100 for grammar and sentence structure (tense, agreement, word choice). "
         "Ignore missing punctuation or capital letters and speech-recognition mistakes. "
         "90+ means almost no errors.\n"
         "- grammar_issues: up to 5 real mistakes. text is a short exact quote from the answer, "
         "suggestion is the corrected wording. Use an empty list if there are none.\n"
         "- completeness_score: 0-100 for how fully the answer addresses what the question asked. "
-        "Do not judge technical correctness here. A very short, vague or off-topic answer scores low.\n\n"
+        "A very short, vague or off-topic answer scores low.\n"
+        "- technical_score: 0-100 for the substance of the answer to THIS question. For technical questions: "
+        "accuracy, correct use of key terms, problem-solving approach and domain knowledge. For HR or behavioral "
+        "questions: specific, relevant content (a real example, what they did, the result) instead of generalities. "
+        "For aptitude questions: whether the reasoning and result are correct. Wrong, vague or off-topic "
+        "answers score low, however confident they sound.\n"
+        "- organization_score: 0-100 for structure: a direct opening, logical order, a clear ending. "
+        "Rambling or jumping between points scores low.\n"
+        "- tone_score: 0-100 for professional communication: respectful, suitable vocabulary for a job "
+        "interview, no slang or complaints about others.\n"
+        "- note: one sentence (at most 200 characters) naming the main strength or the main gap in the "
+        "content of the answer.\n\n"
         'Return {"results": [{"id": <id>, "grammar_score": <0-100>, '
-        '"grammar_issues": [{"text": "", "suggestion": ""}], "completeness_score": <0-100>}]} '
+        '"grammar_issues": [{"text": "", "suggestion": ""}], "completeness_score": <0-100>, '
+        '"technical_score": <0-100>, "organization_score": <0-100>, "tone_score": <0-100>, "note": ""}]} '
         "with one result per id.\n\n"
+        f"Context: {json.dumps(context, ensure_ascii=False)}\n"
         f"Items:\n{json.dumps(items, ensure_ascii=False)}"
     )
 
@@ -285,7 +302,25 @@ def _clean_review(raw, wanted_ids):
             "grammar": {"score": round(_clamp(grammar)), "issues": issues[:MAX_ISSUES], "source": "ai"},
             "completeness": {"score": round(_clamp(completeness)), "source": "ai"},
         }
+        # These three are optional: an answer without them is reviewed again next time
+        technical = _number(row.get("technical_score"))
+        if technical is not None:
+            note = row.get("note")
+            reviews[answer_id]["technical"] = {
+                "score": round(_clamp(technical)),
+                "note": note.strip()[:200] if isinstance(note, str) else "",
+                "source": "ai",
+            }
+        for key, field in (("organization", "organization_score"), ("tone", "tone_score")):
+            value = _number(row.get(field))
+            if value is not None:
+                reviews[answer_id][key] = {"score": round(_clamp(value)), "source": "ai"}
     return reviews
+
+
+def _fully_reviewed(analysis: dict) -> bool:
+    """True once Gemini has reviewed grammar, completeness and the three content parts of an answer."""
+    return (analysis.get("grammar") or {}).get("source") == "ai" and all(analysis.get(k) for k in ("technical", "organization", "tone"))
 
 
 def _ensure_base(answer: Answer) -> dict:
@@ -312,7 +347,7 @@ def analyze_session(session):
         if base is not answer.analysis:
             updates[answer.id] = base
         if base.get("status") == "analyzed" and base.get("word_count", 0) >= MIN_WORDS_FOR_AI:
-            if (base.get("grammar") or {}).get("source") != "ai":
+            if not _fully_reviewed(base):
                 pending.append(answer)
 
     reviewable = [a for a in answers if current[a.id].get("status") == "analyzed" and current[a.id].get("word_count", 0) >= MIN_WORDS_FOR_AI]
@@ -325,8 +360,9 @@ def analyze_session(session):
         {"id": a.id, "question": a.question.text[:500], "answer": a.transcript[:MAX_AI_CHARS]}
         for a in pending[:MAX_AI_ANSWERS]
     ]
+    context = {"interview_type": session.interview_type, "difficulty": session.difficulty, "domain": session.domain or "general"}
     try:
-        reviews = _clean_review(gemini.generate_json(_prompt(items), system=SYSTEM_PROMPT, temperature=0.2), {i["id"] for i in items})
+        reviews = _clean_review(gemini.generate_json(_prompt(items, context), system=SYSTEM_PROMPT, temperature=0.2), {i["id"] for i in items})
     except (gemini.AIUnavailable, gemini.AIError) as exc:
         logger.info("Speech review used the basic check only: %s", exc)
         return updates, "basic"
@@ -336,7 +372,7 @@ def analyze_session(session):
         merged["communication_score"] = communication_score(merged)
         updates[answer_id] = merged
         current[answer_id] = merged
-    done = all((current[a.id].get("grammar") or {}).get("source") == "ai" for a in reviewable)
+    done = all(_fully_reviewed(current[a.id]) for a in reviewable)
     return updates, "ai" if done else "basic"
 
 

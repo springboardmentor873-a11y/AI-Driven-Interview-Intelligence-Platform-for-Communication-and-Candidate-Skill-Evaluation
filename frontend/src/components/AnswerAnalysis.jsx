@@ -44,6 +44,9 @@ export default function AnswerAnalysis({ answer }) {
             hint={`Face visible ${Math.round(a.attention.face_visible_pct)}% of the time. Around 70% is natural.`}
           />
         )}
+        {a.technical && <Stat label="Relevance" value={`${a.technical.score} / 100`} score={a.technical.score} hint="How well the answer deals with this question: accuracy, keywords, problem solving, domain knowledge" />}
+        {a.organization && <Stat label="Organization" value={`${a.organization.score} / 100`} score={a.organization.score} hint="Clear opening, logical order, clear ending" />}
+        {a.tone && <Stat label="Professional tone" value={`${a.tone.score} / 100`} score={a.tone.score} hint="Respectful, suitable language for an interview" />}
         {a.confidence && (
           <Stat
             label="Confidence"
@@ -63,6 +66,7 @@ export default function AnswerAnalysis({ answer }) {
         {a.expression && <Stat label="Expression" value={EXPRESSION_NAMES[a.expression.dominant]} hint={`Smiling ${Math.round(a.expression.smile_pct)}%, tense ${Math.round(a.expression.tense_pct)}%, eyebrows raised ${Math.round(a.expression.raised_pct)}%, neutral ${Math.round(a.expression.neutral_pct)}% of the time`} />}
         <Stat label="Words" value={a.word_count} />
       </div>
+      {a.technical?.note && <p className="text-xs text-white/60">About the content: {a.technical.note}</p>}
       {fillerList && <p className="text-xs text-white/50">Filler words: {fillerList}</p>}
       {a.hesitation && a.hesitation.response_delay_seconds > 3 && (
         <p className="text-xs text-white/50">You started speaking {a.hesitation.response_delay_seconds} seconds after the question appeared. Under 3 seconds feels natural.</p>

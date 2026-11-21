@@ -6,6 +6,7 @@ import AttentionBadge from "../components/AttentionBadge";
 import CameraPreview from "../components/CameraPreview";
 import AnswerAnalysis from "../components/AnswerAnalysis";
 import QuestionCard from "../components/QuestionCard";
+import ScoreCard from "../components/ScoreCard";
 import SpeechSummary from "../components/SpeechSummary";
 import useAudioLevel from "../hooks/useAudioLevel";
 import useMediaStream from "../hooks/useMediaStream";
@@ -80,9 +81,9 @@ export default function InterviewRoom() {
   const runAnalysis = useCallback(async () => {
     setAnalysis({ state: "running", source: "" });
     try {
-      const { data } = await client.post(url(id, "analyze/"));
+      const { data } = await client.post(url(id, "score/"));
       // Only the questions change: the recording upload may be updating the rest at the same time
-      setSession((s) => ({ ...s, questions: data.questions, speech_summary: data.speech_summary }));
+      setSession((s) => ({ ...s, questions: data.questions, speech_summary: data.speech_summary, score: data.score }));
       setAnalysis({ state: "done", source: data.analysis_source });
     } catch {
       setAnalysis({ state: "failed", source: "" });
@@ -302,10 +303,10 @@ export default function InterviewRoom() {
       {!cancelled && (
         <p className="mt-2 text-white/60">
           You answered {progress.answered} of {progress.total} questions in about {Math.max(1, Math.round(seconds / 60))} minute(s).
-          Below is the speech analysis of each answer. Your overall score and feedback arrive in the next release.
+          Your score and the analysis of each answer are below. Written feedback arrives in the next release.
         </p>
       )}
-      {analysis.state === "running" && <p className="mt-3 text-sm text-white/60">Analysing your answers...</p>}
+      {analysis.state === "running" && <p className="mt-3 text-sm text-white/60">Scoring your interview...</p>}
       {analysis.state === "failed" && (
         <p className="mt-3 text-sm text-red-300">
           Could not analyse your answers.{" "}
@@ -314,10 +315,11 @@ export default function InterviewRoom() {
       )}
       {analysis.state === "done" && analysis.source === "basic" && (
         <p className="mt-3 text-sm text-white/50">
-          The AI review was not available, so grammar and completeness are basic estimates.{" "}
+          The AI review was not available, so some parts are basic estimates or not measured.{" "}
           <button type="button" onClick={runAnalysis} className="font-semibold underline">Try the AI review again</button>
         </p>
       )}
+      {!cancelled && <ScoreCard score={session.score} />}
       {!cancelled && <SpeechSummary summary={session.speech_summary} />}
       {error && <p className="mt-4 text-red-300">{error}</p>}
       {upload.state === "uploading" && (

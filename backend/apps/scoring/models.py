@@ -10,34 +10,49 @@ class Score(models.Model):
         POOR = "poor", "Poor"
 
     session = models.OneToOneField("interviews.InterviewSession", on_delete=models.CASCADE, related_name="score")
-    communication_score = models.FloatField(default=0)
-    confidence_score = models.FloatField(default=0)
-    technical_relevance_score = models.FloatField(default=0)
-    professionalism_score = models.FloatField(default=0)
-    overall_score = models.FloatField(default=0)
+    communication_score = models.FloatField(null=True, blank=True, default=None)
+    confidence_score = models.FloatField(null=True, blank=True, default=None)
+    technical_relevance_score = models.FloatField(null=True, blank=True, default=None)
+    professionalism_score = models.FloatField(null=True, blank=True, default=None)
+    overall_score = models.FloatField(null=True, blank=True, default=None)
     rating = models.CharField(max_length=20, choices=Rating.choices, blank=True)
     details = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def calculate(self):
-        self.overall_score = round(
-            self.communication_score * 0.30
-            + self.confidence_score * 0.25
-            + self.technical_relevance_score * 0.30
-            + self.professionalism_score * 0.15,
-            2,
-        )
-        s = self.overall_score
-        if s >= 90:
-            self.rating = self.Rating.EXCELLENT
-        elif s >= 75:
-            self.rating = self.Rating.GOOD
-        elif s >= 60:
-            self.rating = self.Rating.AVERAGE
-        elif s >= 40:
-            self.rating = self.Rating.NEEDS_IMPROVEMENT
+    # Share of the overall score for each part (the SRS formula)
+    WEIGHTS = {"communication": 0.30, "confidence": 0.25, "technical_relevance": 0.30, "professionalism": 0.15}
+
+    @classmethod
+    def combine(cls, parts):
+        """Overall score and rating from the four parts (0-100 each, or None if a part could not be measured).
+
+        Parts that are None are left out and the rest are rescaled, so one missing part does not drag the
+        overall score towards zero. Returns (None, "") when no part is available.
+        """
+        present = {name: value for name, value in parts.items() if value is not None}
+        total = sum(cls.WEIGHTS[name] for name in present)
+        if not total:
+            return None, ""
+        overall = round(sum(value * cls.WEIGHTS[name] for name, value in present.items()) / total, 1)
+        if overall >= 90:
+            rating = cls.Rating.EXCELLENT
+        elif overall >= 75:
+            rating = cls.Rating.GOOD
+        elif overall >= 60:
+            rating = cls.Rating.AVERAGE
+        elif overall >= 40:
+            rating = cls.Rating.NEEDS_IMPROVEMENT
         else:
-            self.rating = self.Rating.POOR
+            rating = cls.Rating.POOR
+        return overall, rating
+
+    def calculate(self):
+        self.overall_score, self.rating = self.combine({
+            "communication": self.communication_score,
+            "confidence": self.confidence_score,
+            "technical_relevance": self.technical_relevance_score,
+            "professionalism": self.professionalism_score,
+        })
         return self.overall_score
 
     def __str__(self):
