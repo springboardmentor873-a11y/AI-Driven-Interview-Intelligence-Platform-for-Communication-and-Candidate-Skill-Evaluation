@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.permissions import IsCandidate, IsRecruiter
+from apps.ai.throttles import AIReviewThrottle
 
 from apps.scoring import engine, feedback as feedback_writer
 from apps.scoring.models import Score
@@ -215,7 +216,7 @@ class SessionViewSet(
                 session.save(update_fields=["status", "ended_at"])
         return self._detail(session)
 
-    @action(detail=True, methods=["post"])
+    @action(detail=True, methods=["post"], throttle_classes=[AIReviewThrottle])
     def analyze(self, request, pk=None):
         """Finish the speech analysis of a completed interview: one Gemini review of all answers.
 
@@ -230,7 +231,7 @@ class SessionViewSet(
             Answer.objects.filter(pk=answer_id, question__session=session).update(analysis=analysis)
         return self._detail(session, analysis_source=source)
 
-    @action(detail=True, methods=["post"])
+    @action(detail=True, methods=["post"], throttle_classes=[AIReviewThrottle])
     def score(self, request, pk=None):
         """Score a completed interview: finish the analysis (one Gemini review), then compute and save
         the four scores and the overall score. Safe to call again: it recomputes the one Score row, and
@@ -243,7 +244,7 @@ class SessionViewSet(
         engine.score_session(session)
         return self._detail(session, analysis_source=source)
 
-    @action(detail=True, methods=["post"])
+    @action(detail=True, methods=["post"], throttle_classes=[AIReviewThrottle])
     def feedback(self, request, pk=None):
         """Write the feedback for a scored interview: strengths, weaknesses, suggestions, practice
         recommendations and learning resources. One Gemini call, or rules if Gemini is unavailable.

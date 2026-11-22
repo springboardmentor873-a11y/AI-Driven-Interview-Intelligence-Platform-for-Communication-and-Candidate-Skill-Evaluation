@@ -1,6 +1,66 @@
 # Milestone 3: Speech analysis and AI monitoring
 
-Work is delivered in daily patches. This file grows with each one.
+Milestone 3 turns a recorded interview into scores and feedback. This page starts with the overview and a demo
+checklist. The day-by-day notes below it explain each part in more detail.
+
+## Overview
+
+### What the SRS asked for, and where it is
+
+| SRS deliverable (Milestone 3) | Status | Where |
+|---|---|---|
+| Speech transcription operational | Done, in the browser | Live transcript with the browser's speech recognition, typing as a fallback (Days 1-2) |
+| Filler-word detection, pace, grammar | Done | `apps/interviews/speech_analysis.py` (Day 2) |
+| Emotion detection functional | Done, as facial expression | MediaPipe face blendshapes (Day 5) |
+| Eye-contact tracking implemented | Done | MediaPipe face landmarks (Day 4) |
+| AI scoring engine operational | Done | `apps/scoring/engine.py` (Day 6) |
+| Feedback generation working correctly | Done | `apps/scoring/feedback.py` (Day 7) |
+| Real-time interview analysis | Done | Live pace, filler, eye-contact and expression hints while answering (Days 3-5) |
+
+### The flow
+
+```
+Candidate answers (speech or typing, camera on or off)
+   -> POST .../answer/   saves the answer with quick numbers and the browser's measurements
+Interview ends
+   -> POST .../score/    one Gemini review of all answers, then the four scores and the overall score
+   -> POST .../feedback/ strengths, weaknesses, suggestions, practice plan, learning topics
+Results page (/interview/:id) shows the score, feedback and the analysis of every answer
+```
+
+### Setup
+
+- Backend: `python manage.py migrate` (Docker does this on start). Milestone 3 added two migrations in `apps/scoring`.
+- Frontend: `npm install` in `frontend` (adds `@mediapipe/tasks-vision`).
+- `GEMINI_API_KEY` in `.env` turns on the AI parts. Without it everything still works: scores are partial
+  (technical relevance not measured) and feedback is written by rules.
+- `AI_REVIEW_RATE` (default `30/hour`) limits how many AI reviews one user can trigger.
+- Use Chrome or Edge on a computer for live speech recognition and eye-contact tracking.
+
+### Tests
+
+- Backend: `python -m pytest` in `backend` (includes `tests/test_milestone3_flow.py`, the whole flow through the API).
+- Frontend: `npm test` in `frontend` (geometry, tracker and pause logic).
+
+### Demo checklist
+
+1. Start an interview with the camera and microphone on. The badge shows "Eye contact: good" and the current expression.
+2. Answer a question out loud. The live transcript, pace hint and um/uh count update as you speak.
+3. Submit. A one-line note shows the pace, filler words and eye contact of that answer.
+4. Answer one question by pressing "Type instead", and skip one.
+5. Finish. The page shows the overall score and rating, the four parts, your feedback and the analysis of each answer.
+6. Turn the AI off (empty `GEMINI_API_KEY`) and repeat: the score says it is partial and the feedback says it was written by rules.
+7. Reopen the interview from the dashboard: the saved score and feedback appear without another AI call.
+
+### Known limits (also explained below)
+
+- Transcription uses the browser's speech recognition only. Chrome and Edge may send audio to their speech service,
+  and Firefox is not supported (typing works there). Transcribing the uploaded recording on the server is not built.
+- The eye-contact and expression thresholds were never tuned on real faces. They are constants in `frontend/src/utils/attention.js`.
+- Expression is not emotion, and technical relevance is an AI judgement. The score is practice feedback, not a hiring verdict.
+- Measurements come from the candidate's own browser, so they can be altered.
+- `npm run lint` reports 3 errors in `AuthContext.jsx` and `Resumes.jsx` from earlier milestones (newer React rules). They are not bugs and were left alone.
+- Rate limits are counted per server process unless a shared cache such as Redis is configured.
 
 ## Days 1 and 2: transcripts and speech analysis
 

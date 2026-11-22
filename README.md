@@ -24,12 +24,16 @@ and feedback.
 | backend/.env | DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT | PostgreSQL connection |
 | backend/.env | CORS_ORIGINS | Allowed frontend origin |
 | backend/.env | GOOGLE_CLIENT_ID | Google sign-in |
-| backend/.env | GEMINI_API_KEY, GEMINI_MODEL, GEMINI_FALLBACK_MODEL (optional) | Gemini, for skill extraction and question generation. Without a key the app uses its built-in fallbacks |
+| backend/.env | GEMINI_API_KEY, GEMINI_MODEL, GEMINI_FALLBACK_MODEL (optional) | Gemini, for skill extraction, question generation, answer review (scoring) and feedback. Without a key the app uses its built-in fallbacks: scores are partial and feedback is written by rules |
+| backend/.env | AI_REVIEW_RATE (optional) | Most AI reviews one user can trigger, default `30/hour` |
 | frontend/.env | VITE_API_URL | Backend address |
 | frontend/.env | VITE_GOOGLE_CLIENT_ID | Google sign-in |
+| frontend/.env | VITE_MEDIAPIPE_WASM_URL, VITE_FACE_MODEL_URL (optional) | Host the eye-contact tracking files yourself. By default they load from cdn.jsdelivr.net and storage.googleapis.com |
 
 ## Run the tests
 `docker compose exec backend pytest -q`
+
+Frontend logic tests (no browser needed): `npm test` in `frontend`.
 
 ## Project structure
 ```
@@ -63,5 +67,5 @@ docs/              Scope and workflows, database schema, API reference, wirefram
 |---|---|
 | 1. Requirements, database design and core setup | Complete |
 | 2. Resume parsing and interview engine | Complete |
-| 3. Speech analysis and AI monitoring | In progress (Days 1-7 done) |
+| 3. Speech analysis and AI monitoring | Complete |
 | 4. Analytics, testing and deployment | Planned |

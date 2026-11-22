@@ -20,6 +20,10 @@ const TYPES = { hr: "HR", technical: "Technical", behavioral: "Behavioral", apti
 const LEVELS = { easy: "Easy", medium: "Medium", hard: "Hard" };
 const url = (id, action = "") => `/api/interviews/sessions/${id}/${action}`;
 
+/** A clear message when the server says too many AI reviews were asked for; empty for any other error. */
+const tooManyRequests = (err) =>
+  err?.response?.status === 429 ? "You have asked for a lot of AI reviews in a short time. Please wait a while and try again." : "";
+
 /** One line about the answer that was just saved. Shown above the next question for a few seconds. */
 function AnswerNote({ feedback }) {
   if (feedback.status === "no_transcript") {
@@ -53,6 +57,7 @@ export default function InterviewRoom() {
   const [upload, setUpload] = useState({ state: "idle", percent: 0, message: "" });
   const [analysis, setAnalysis] = useState({ state: "idle", source: "" }); // idle | running | done | failed
   const [feedbackState, setFeedbackState] = useState("idle"); // idle | running | done | failed
+  const [feedbackMessage, setFeedbackMessage] = useState("");
   const [feedback, setFeedback] = useState(null); // quick numbers about the answer just saved
   const feedbackTimer = useRef(null);
   const busyRef = useRef(false);
@@ -86,7 +91,8 @@ export default function InterviewRoom() {
       const { data } = await client.post(url(id, "feedback/"));
       setSession((s) => ({ ...s, feedback: data.feedback }));
       setFeedbackState("done");
-    } catch {
+    } catch (err) {
+      setFeedbackMessage(tooManyRequests(err));
       setFeedbackState("failed");
     }
   }, [id]);
@@ -99,8 +105,8 @@ export default function InterviewRoom() {
       setSession((s) => ({ ...s, questions: data.questions, speech_summary: data.speech_summary, score: data.score }));
       setAnalysis({ state: "done", source: data.analysis_source });
       if (data.score) runFeedback(); // the feedback is written from the score
-    } catch {
-      setAnalysis({ state: "failed", source: "" });
+    } catch (err) {
+      setAnalysis({ state: "failed", source: "", message: tooManyRequests(err) });
     }
   }, [id, runFeedback]);
 
@@ -323,7 +329,7 @@ export default function InterviewRoom() {
       {analysis.state === "running" && <p className="mt-3 text-sm text-white/60">Scoring your interview...</p>}
       {analysis.state === "failed" && (
         <p className="mt-3 text-sm text-red-300">
-          Could not analyse your answers.{" "}
+          {analysis.message || "Could not analyse your answers."}{" "}
           <button type="button" onClick={runAnalysis} className="font-semibold underline">Try again</button>
         </p>
       )}
@@ -343,7 +349,7 @@ export default function InterviewRoom() {
       )}
       {!cancelled && <ScoreCard score={session.score} />}
       {!cancelled && session.score && (
-        <FeedbackPanel feedback={session.feedback} state={feedbackState} canWrite onWrite={runFeedback} />
+        <FeedbackPanel feedback={session.feedback} state={feedbackState} message={feedbackMessage} canWrite onWrite={runFeedback} />
       )}
       {!cancelled && <SpeechSummary summary={session.speech_summary} />}
       {error && <p className="mt-4 text-red-300">{error}</p>}

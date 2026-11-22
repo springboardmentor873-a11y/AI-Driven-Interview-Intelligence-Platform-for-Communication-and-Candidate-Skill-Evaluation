@@ -28,13 +28,13 @@ function List({ title, items, tone, numbered = false }) {
  * The written feedback: summary, strengths, weaknesses, suggestions, practice and resources.
  * state: idle | running | failed | done. onWrite writes (or rewrites) it.
  */
-export default function FeedbackPanel({ feedback, state, canWrite, onWrite }) {
+export default function FeedbackPanel({ feedback, state, message, canWrite, onWrite }) {
   if (state === "running") return <p className="mt-6 text-sm text-white/60">Writing your feedback...</p>;
   if (!feedback) {
     if (state === "failed") {
       return (
         <p className="mt-6 text-sm text-red-300">
-          Could not write your feedback. <button type="button" onClick={onWrite} className="font-semibold underline">Try again</button>
+          {message || "Could not write your feedback."} <button type="button" onClick={onWrite} className="font-semibold underline">Try again</button>
         </p>
       );
     }

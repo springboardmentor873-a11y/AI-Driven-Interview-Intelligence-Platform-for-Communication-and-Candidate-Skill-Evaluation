@@ -99,6 +99,10 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    "DEFAULT_THROTTLE_RATES": {
+        # per user, for the AI-backed interview actions (see apps/ai/throttles.py)
+        "ai_review": os.getenv("AI_REVIEW_RATE", "30/hour"),
+    },
 }
 
 SIMPLE_JWT = {

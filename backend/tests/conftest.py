@@ -1,10 +1,19 @@
 import pytest
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from rest_framework.test import APIClient
 
 User = get_user_model()
 
 PASSWORD = "Str0ng!Pass123"
+
+
+@pytest.fixture(autouse=True)
+def _clear_cache():
+    """Rate-limit counters live in the cache. Start every test with none, because a test database
+    reuses user ids and one test's calls would otherwise count against the next."""
+    cache.clear()
+    yield
 
 
 @pytest.fixture
