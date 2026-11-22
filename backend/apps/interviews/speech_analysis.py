@@ -423,7 +423,7 @@ def _behavior_summary(analyses) -> dict:
     return {
         "answers_with_confidence": len(confident),
         "average_confidence": _average([c["score"] for c in confident]),
-        "average_confidence_parts": {p: _average([c["parts"].get(p) for c in confident]) for p in parts},
+        "average_confidence_parts": {p: _average([(c.get("parts") or {}).get(p) for c in confident]) for p in parts},
         "expression_shares": {
             name: round(sum(f[f"{name}_pct"] * f["face_seconds"] for f in faces) / face_seconds, 1) if face_seconds else None
             for name in ("smile", "tense", "raised", "neutral")

@@ -180,3 +180,40 @@ interview ends -> POST .../score/
 - **Practice tool, not a hiring verdict.** Several inputs come from the candidate's own browser and from
   AI judgement, so the score is for practice feedback.
 - Written feedback (strengths, weaknesses, suggestions) is Day 7.
+
+## Day 7: feedback and the results page
+
+### What a user can do now
+
+1. After scoring, the result screen writes the candidate's feedback automatically: a short summary, strengths,
+   things to improve, what to do next time, a practice plan and things to learn more about.
+2. If the AI is unavailable the feedback is still written, from the numbers, and says so, with a link to try
+   the AI version again.
+3. The result screen is also the results page: the dashboard links every finished interview to it. Interviews
+   finished before scoring existed show a "Score this interview" button, and scored ones without feedback show
+   "Write my feedback".
+
+### How it fits together
+
+```
+score/ finished -> POST .../feedback/ -> apps/scoring/feedback.py
+   build_input: scores + speech/delivery summary + per-answer notes (no transcripts)
+   -> one Gemini call -> _clean (types, lengths, counts)  |  on failure: basic_feedback (rules)
+   -> Feedback row (summary, source, based_on_overall)
+```
+
+### Decisions and limits
+
+- **No transcripts are sent to Gemini** for feedback. It gets numbers and the short content notes written by the
+  review step. Candidate text still reaches the AI in the analysis call (Day 6), as before.
+- **Learning resources are search topics, not links.** Invented web addresses are a known failure of language
+  models, so the AI is told not to write any and the page builds a search link from each topic.
+- **The AI is told not to claim feelings.** Expression readings are rough, so feedback describes what could be
+  observed (pauses, looking away, filler words) and never says the candidate was nervous or anxious.
+- **Honest by design:** the AI is told not to call weak results good and to return fewer strengths rather than
+  invent one. The rules-based version orders weaknesses by cost: skipped questions first, then technical
+  relevance, then delivery.
+- **Saved feedback is reused** while the overall score is unchanged, so reopening the page or retrying never
+  costs another AI call. A new score triggers a rewrite.
+- **Migration** `0003_feedback_summary_source` adds `summary`, `source` and `based_on_overall` to `Feedback`.
+  Docker runs it for you, otherwise run `python manage.py migrate`.

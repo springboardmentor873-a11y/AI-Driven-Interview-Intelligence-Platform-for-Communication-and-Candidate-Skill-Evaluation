@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from apps.resumes.models import Resume
 
-from apps.scoring.serializers import ScoreSerializer
+from apps.scoring.serializers import FeedbackSerializer, ScoreSerializer
 
 from . import speech_analysis
 from .models import Answer, Difficulty, InterviewSession, InterviewTemplate, InterviewType, Question
@@ -81,13 +81,14 @@ class SessionSerializer(serializers.ModelSerializer):
     has_audio = serializers.SerializerMethodField()
     speech_summary = serializers.SerializerMethodField()
     score = serializers.SerializerMethodField()
+    feedback = serializers.SerializerMethodField()
 
     class Meta:
         model = InterviewSession
         fields = (
             "id", "interview_type", "difficulty", "domain", "status", "question_source",
             "resume", "resume_name", "template", "template_title", "question_total", "answered_count",
-            "created_at", "started_at", "ended_at", "has_video", "has_audio", "questions", "speech_summary", "score",
+            "created_at", "started_at", "ended_at", "has_video", "has_audio", "questions", "speech_summary", "score", "feedback",
         )
         read_only_fields = fields
 
@@ -112,6 +113,12 @@ class SessionSerializer(serializers.ModelSerializer):
             return None
         score = getattr(obj, "score", None)  # None when the interview has not been scored yet
         return ScoreSerializer(score).data if score else None
+
+    def get_feedback(self, obj):
+        if not self.context.get("include_questions") or obj.status not in FINISHED_STATUSES:
+            return None
+        feedback = getattr(obj, "feedback", None)
+        return FeedbackSerializer(feedback).data if feedback else None
 
     def get_speech_summary(self, obj):
         if not self.context.get("include_questions") or obj.status not in FINISHED_STATUSES:

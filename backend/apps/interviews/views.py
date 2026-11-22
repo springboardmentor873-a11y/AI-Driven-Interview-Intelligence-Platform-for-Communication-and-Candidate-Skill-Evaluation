@@ -15,7 +15,8 @@ from rest_framework.views import APIView
 
 from apps.accounts.permissions import IsCandidate, IsRecruiter
 
-from apps.scoring import engine
+from apps.scoring import engine, feedback as feedback_writer
+from apps.scoring.models import Score
 
 from . import recordings, speech_analysis
 from .models import Answer, InterviewSession, InterviewTemplate, Question
@@ -241,6 +242,18 @@ class SessionViewSet(
             Answer.objects.filter(pk=answer_id, question__session=session).update(analysis=analysis)
         engine.score_session(session)
         return self._detail(session, analysis_source=source)
+
+    @action(detail=True, methods=["post"])
+    def feedback(self, request, pk=None):
+        """Write the feedback for a scored interview: strengths, weaknesses, suggestions, practice
+        recommendations and learning resources. One Gemini call, or rules if Gemini is unavailable.
+        Repeating it returns the saved AI feedback unless the score has changed."""
+        session = get_object_or_404(self.get_queryset(), pk=pk)
+        self._require(session, "completed")
+        if not Score.objects.filter(session=session).exists():
+            return Response({"detail": "Score the interview first."}, status=status.HTTP_400_BAD_REQUEST)
+        feedback_writer.generate(session)
+        return self._detail(session)
 
     @action(detail=True, methods=["post"])
     def cancel(self, request, pk=None):

@@ -63,5 +63,5 @@ docs/              Scope and workflows, database schema, API reference, wirefram
 |---|---|
 | 1. Requirements, database design and core setup | Complete |
 | 2. Resume parsing and interview engine | Complete |
-| 3. Speech analysis and AI monitoring | In progress (Days 1-6 done) |
+| 3. Speech analysis and AI monitoring | In progress (Days 1-7 done) |
 | 4. Analytics, testing and deployment | Planned |

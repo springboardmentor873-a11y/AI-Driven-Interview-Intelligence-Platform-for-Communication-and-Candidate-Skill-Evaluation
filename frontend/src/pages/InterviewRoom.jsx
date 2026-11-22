@@ -6,6 +6,7 @@ import AttentionBadge from "../components/AttentionBadge";
 import CameraPreview from "../components/CameraPreview";
 import AnswerAnalysis from "../components/AnswerAnalysis";
 import QuestionCard from "../components/QuestionCard";
+import FeedbackPanel from "../components/FeedbackPanel";
 import ScoreCard from "../components/ScoreCard";
 import SpeechSummary from "../components/SpeechSummary";
 import useAudioLevel from "../hooks/useAudioLevel";
@@ -51,6 +52,7 @@ export default function InterviewRoom() {
   const [busy, setBusy] = useState(false);
   const [upload, setUpload] = useState({ state: "idle", percent: 0, message: "" });
   const [analysis, setAnalysis] = useState({ state: "idle", source: "" }); // idle | running | done | failed
+  const [feedbackState, setFeedbackState] = useState("idle"); // idle | running | done | failed
   const [feedback, setFeedback] = useState(null); // quick numbers about the answer just saved
   const feedbackTimer = useRef(null);
   const busyRef = useRef(false);
@@ -78,6 +80,17 @@ export default function InterviewRoom() {
     };
   }, [id]);
 
+  const runFeedback = useCallback(async () => {
+    setFeedbackState("running");
+    try {
+      const { data } = await client.post(url(id, "feedback/"));
+      setSession((s) => ({ ...s, feedback: data.feedback }));
+      setFeedbackState("done");
+    } catch {
+      setFeedbackState("failed");
+    }
+  }, [id]);
+
   const runAnalysis = useCallback(async () => {
     setAnalysis({ state: "running", source: "" });
     try {
@@ -85,10 +98,11 @@ export default function InterviewRoom() {
       // Only the questions change: the recording upload may be updating the rest at the same time
       setSession((s) => ({ ...s, questions: data.questions, speech_summary: data.speech_summary, score: data.score }));
       setAnalysis({ state: "done", source: data.analysis_source });
+      if (data.score) runFeedback(); // the feedback is written from the score
     } catch {
       setAnalysis({ state: "failed", source: "" });
     }
-  }, [id]);
+  }, [id, runFeedback]);
 
   const begin = async () => {
     setError("");
@@ -303,7 +317,7 @@ export default function InterviewRoom() {
       {!cancelled && (
         <p className="mt-2 text-white/60">
           You answered {progress.answered} of {progress.total} questions in about {Math.max(1, Math.round(seconds / 60))} minute(s).
-          Your score and the analysis of each answer are below. Written feedback arrives in the next release.
+          Your score, written feedback and the analysis of each answer are below.
         </p>
       )}
       {analysis.state === "running" && <p className="mt-3 text-sm text-white/60">Scoring your interview...</p>}
@@ -319,7 +333,18 @@ export default function InterviewRoom() {
           <button type="button" onClick={runAnalysis} className="font-semibold underline">Try the AI review again</button>
         </p>
       )}
+      {!cancelled && !session.score && analysis.state === "idle" && (
+        <div className="mt-4"><Button variant="solid" onClick={runAnalysis}>Score this interview</Button></div>
+      )}
+      {!cancelled && !session.score && analysis.state === "done" && (
+        <p className="mt-4 rounded-xl bg-white/5 px-4 py-3 text-sm text-white/60">
+          There was nothing to score: every question was skipped or no words were captured. Check your microphone and use Chrome or Edge, or type your answers.
+        </p>
+      )}
       {!cancelled && <ScoreCard score={session.score} />}
+      {!cancelled && session.score && (
+        <FeedbackPanel feedback={session.feedback} state={feedbackState} canWrite onWrite={runFeedback} />
+      )}
       {!cancelled && <SpeechSummary summary={session.speech_summary} />}
       {error && <p className="mt-4 text-red-300">{error}</p>}
       {upload.state === "uploading" && (

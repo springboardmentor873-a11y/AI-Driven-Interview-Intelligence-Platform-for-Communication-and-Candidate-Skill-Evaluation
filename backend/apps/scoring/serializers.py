@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Score
+from .models import Feedback, Score
 
 
 class ScoreSerializer(serializers.ModelSerializer):
@@ -41,3 +41,12 @@ class ScoreSerializer(serializers.ModelSerializer):
 
     def get_per_answer(self, obj):
         return obj.details.get("per_answer", [])
+
+
+class FeedbackSerializer(serializers.ModelSerializer):
+    """The written feedback. Learning resources are search topics, not links."""
+
+    class Meta:
+        model = Feedback
+        fields = ("summary", "strengths", "weaknesses", "suggestions", "practice_recommendations", "learning_resources", "source", "created_at")
+        read_only_fields = fields

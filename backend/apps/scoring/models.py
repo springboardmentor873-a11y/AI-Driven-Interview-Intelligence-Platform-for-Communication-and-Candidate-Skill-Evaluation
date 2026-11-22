@@ -60,12 +60,19 @@ class Score(models.Model):
 
 
 class Feedback(models.Model):
+    class Source(models.TextChoices):
+        AI = "ai", "AI"
+        BASIC = "basic", "Basic"  # written from the numbers by rules, because the AI was not available
+
     session = models.OneToOneField("interviews.InterviewSession", on_delete=models.CASCADE, related_name="feedback")
+    summary = models.TextField(blank=True)
+    source = models.CharField(max_length=10, choices=Source.choices, default=Source.AI)
+    based_on_overall = models.FloatField(null=True, blank=True)  # the overall score this was written for, to spot stale feedback
     strengths = models.JSONField(default=list, blank=True)
     weaknesses = models.JSONField(default=list, blank=True)
     suggestions = models.JSONField(default=list, blank=True)
     practice_recommendations = models.JSONField(default=list, blank=True)
-    learning_resources = models.JSONField(default=list, blank=True)
+    learning_resources = models.JSONField(default=list, blank=True)  # [{title, type, why, search}], no links: see feedback.py
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

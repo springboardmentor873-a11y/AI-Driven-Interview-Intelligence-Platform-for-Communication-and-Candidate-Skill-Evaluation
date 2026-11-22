@@ -32,6 +32,7 @@ Base URL: `http://localhost:8000`. Send `Authorization: Bearer <access token>` o
 | POST | /api/interviews/sessions/{id}/answer/ | Candidate (owner) | Submit an answer to the current question |
 | POST | /api/interviews/sessions/{id}/analyze/ | Candidate (owner) | Finish the speech analysis of a completed interview (one Gemini review of all answers) |
 | POST | /api/interviews/sessions/{id}/score/ | Candidate (owner) | Score a completed interview: finishes the analysis (one Gemini review), then computes and saves the four scores and the overall score |
+| POST | /api/interviews/sessions/{id}/feedback/ | Candidate (owner) | Write the feedback for a scored interview: strengths, weaknesses, suggestions, practice plan, learning resources |
 | POST | /api/interviews/sessions/{id}/finish/ | Candidate (owner) | End the interview early |
 | POST | /api/interviews/sessions/{id}/cancel/ | Candidate (owner) | Cancel an interview that is not finished |
 | POST | /api/interviews/sessions/{id}/recording/ | Candidate (owner) | Upload the interview's video and/or audio (finished interviews only) |
@@ -243,3 +244,24 @@ How the parts are built (see `apps/scoring/engine.py`):
 
 New answer `analysis` fields (Gemini only, absent until reviewed): `technical` (`score`, one-sentence `note`),
 `organization` and `tone` (`score`).
+
+## Feedback
+
+`POST /api/interviews/sessions/{id}/feedback/` works on a completed interview that has been scored (otherwise
+400 "Score the interview first."). It asks Gemini once to write the feedback from the scores, the speech and
+delivery summary and the per-answer notes. The raw transcripts are not sent. If Gemini is unavailable or
+returns something unusable, the same lists are written from the numbers by simple rules and `source` is `basic`.
+Repeating the call returns the saved AI feedback without calling Gemini again, unless the overall score has
+changed since it was written. Basic feedback is rewritten (and the AI tried again) on every call.
+
+The response is the session detail. `feedback` is also in `GET .../sessions/{id}/` for finished sessions, and is
+`null` in the history list or before it is written.
+
+| Field | Meaning |
+|---|---|
+| summary | Two or three sentences about the whole interview |
+| strengths, weaknesses | Up to 5 short points each, tied to the numbers |
+| suggestions | Up to 6 concrete changes for next time |
+| practice_recommendations | Up to 5 exercises with numbers |
+| learning_resources | Up to 5 of `{title, type, why, search}`. `type` is `article`, `video`, `course` or `practice`. **No web addresses**: `search` is a query, because a language model can invent links that do not exist. The page turns it into a search link |
+| source | `ai` or `basic` |
