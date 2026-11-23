@@ -265,3 +265,44 @@ The response is the session detail. `feedback` is also in `GET .../sessions/{id}
 | practice_recommendations | Up to 5 exercises with numbers |
 | learning_resources | Up to 5 of `{title, type, why, search}`. `type` is `article`, `video`, `course` or `practice`. **No web addresses**: `search` is a query, because a language model can invent links that do not exist. The page turns it into a search link |
 | source | `ai` or `basic` |
+
+## Analytics
+
+### Candidate analytics
+
+`GET /api/analytics/candidate/` (candidates only) returns everything the performance page needs in one call.
+Optional `?type=hr|technical|behavioral|aptitude` limits every section except `ranking` to one interview type
+(anything else is a 400).
+
+Only completed interviews that have a score count. A part that could not be measured is left out of that part's
+history instead of being counted as 0. A new candidate gets the same shape with `has_data: false` and empty lists.
+
+| Field | Meaning |
+|---|---|
+| has_data | `false` until one scored interview exists |
+| summary | `sessions_total`, `completed`, `scored` (all), `in_chart` (the newest 50 used below), `cancelled` |
+| overall | Stats of the overall score (see below) plus `rating` (`{value, label}` of the latest) and `rating_counts` |
+| parts | The four assessment areas, each with `key`, `label`, `weight` (percent) and the stats below |
+| trend | One row per scored interview, **oldest first**: `session_id`, `date`, `title`, `interview_type`, `difficulty`, `domain`, `overall`, `rating`, the four parts (null if not measured) and `complete` |
+| by_type | Per interview type: `interviews`, `average_overall`, `best_overall`, `latest_overall`, `parts` (average of each part) |
+| by_category | Per question topic (weakest first, up to 12): `name`, `answers`, `skipped`, `average` |
+| weak_areas | Areas to work on, see below |
+| ranking | `available`, and when true `percentile`, `candidates_compared`, `your_average`, `cohort_average` |
+| activity | `last_interview_at`, `completed_last_7_days`, `completed_last_30_days` |
+
+**Stats** (used for `overall` and for each part): `samples`, `average`, `latest`, `best`, `recent_average` (last 5),
+`change` (latest minus first), `direction` and `predicted_next`.
+
+- `direction` is `improving` or `declining` when the trend moves more than 1.5 points per interview, otherwise
+  `steady`, and `not_enough_data` with fewer than 3 interviews.
+- `predicted_next` is where a straight line through the latest 6 scores points for the next interview (0-100).
+  It is a trend, not a promise, and it is `null` with fewer than 3 interviews.
+
+**Weak areas** are the four skills plus question topics. A skill is a `high` risk when its recent average, or its
+predicted next score, is under 60. It is `medium` when the recent average is under 75, or when it is falling and the
+prediction is under 75. A topic needs at least 2 answers and uses its average only. Each item has `kind`
+(`skill` or `topic`), `key`, `label`, `risk`, `recent_average`, `predicted_next`, `direction`, a plain `reason` and a
+short `tip`. Order: high before medium, skills before topics, lowest first.
+
+**Ranking** is the candidate's average overall score compared with every candidate's average, as a percentile
+(a tie counts as half). It appears only when at least 5 candidates have scored interviews, and it never names anyone.

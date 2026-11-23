@@ -44,6 +44,7 @@ backend/
   apps/resumes/    Resume upload, text extraction and skill analysis
   apps/interviews/ Templates, question generation, sessions and recordings
   apps/scoring/    Score and feedback schema (used from Milestone 3)
+  apps/analytics/  Score trends, skill-wise results and weak-area outlook (Milestone 4)
   tests/           Pytest tests
 frontend/src/
   api/             Axios client with automatic token refresh
@@ -61,6 +62,7 @@ docs/              Scope and workflows, database schema, API reference, wirefram
 - [UI wireframes](docs/wireframes.md)
 - [Milestone 2 guide](docs/milestone-2.md)
 - [Milestone 3 guide](docs/milestone-3.md)
+- [Milestone 4 guide](docs/milestone-4.md)
 
 ## Milestone status
 | Milestone | Status |
@@ -68,4 +70,4 @@ docs/              Scope and workflows, database schema, API reference, wirefram
 | 1. Requirements, database design and core setup | Complete |
 | 2. Resume parsing and interview engine | Complete |
 | 3. Speech analysis and AI monitoring | Complete |
-| 4. Analytics, testing and deployment | Planned |
+| 4. Analytics, testing and deployment | In progress (Day 1 of 8: candidate analytics API) |
