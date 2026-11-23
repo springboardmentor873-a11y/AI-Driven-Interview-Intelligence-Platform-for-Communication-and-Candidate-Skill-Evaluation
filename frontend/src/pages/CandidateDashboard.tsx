@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   ChevronDown,
+  ClipboardList,
 } from "lucide-react";
 
 import { Link, useNavigate } from "react-router-dom";
@@ -148,6 +149,13 @@ function CandidateDashboard() {
             <Video size={20} />
             Mock Interviews
           </Link>
+          <Link
+            to="/candidate/interview/history"
+            className="flex items-center gap-3 p-3 rounded-lg text-gray-300 hover:bg-white/10 transition"
+          >
+            <ClipboardList size={20} />
+            Interview History
+          </Link>
 
           <a
             href="#"
@@ -243,6 +251,15 @@ function CandidateDashboard() {
             >
               <Video size={20} />
               Mock Interviews
+            </Link>
+
+            <Link
+              to="/candidate/interview/history"
+              onClick={closeSidebar}
+              className="flex items-center gap-3 p-3 rounded-lg text-gray-300 hover:bg-white/10 transition"
+            >
+              <ClipboardList size={20} />
+              Interview History
             </Link>
 
             <a

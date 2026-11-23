@@ -1,4 +1,4 @@
-
+import time
 import json
 import os
 from typing import Literal
@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies import get_current_user
-from app.models import Resume, ResumeSkill
+from app.models import Resume, ResumeSkill, InterviewSession
 
 
 load_dotenv()
@@ -162,7 +162,34 @@ def generate_interview_questions(
             detail="No skills found in your resume"
         )
 
-    # 5. Prepare Gemini prompt
+        # 5. Fetch previously asked questions
+        # 5. Fetch previously asked questions
+    previous_sessions = (
+        db.query(InterviewSession)
+        .filter(
+            InterviewSession.candidate_id == current_user.id,
+            InterviewSession.status == "completed"
+        )
+        .order_by(InterviewSession.created_at.desc())
+        .limit(5)
+        .all()
+    )
+
+    previous_questions = []
+
+    for session in previous_sessions:
+        if isinstance(session.questions, list):
+            for item in session.questions:
+                if isinstance(item, dict):
+                    question = item.get("question")
+
+                    if isinstance(question, str) and question.strip():
+                        previous_questions.append(question.strip())
+
+    print("PREVIOUS QUESTIONS:", previous_questions)
+
+    
+    # 6. Prepare Gemini prompt
     prompt = f"""
 You are an experienced technical interviewer
 and AI interview assessment expert.
@@ -172,6 +199,9 @@ ONLY the candidate skills provided below.
 
 CANDIDATE SKILLS:
 {json.dumps(available_skills, indent=2)}
+
+PREVIOUSLY ASKED QUESTIONS:
+{json.dumps(previous_questions, indent=2)}
 
 INTERVIEW REQUIREMENTS:
 
@@ -186,17 +216,22 @@ INSTRUCTIONS:
 3. Do not assume experience, projects, or knowledge
    that is not supported by the provided skills.
 4. Avoid duplicate or repetitive questions.
-5. Use clear and natural interview language.
-6. For technical questions, test concepts,
+5. Do not repeat any previously asked question.
+6. Avoid questions that test the same concept as previous
+   questions, even if their wording is different.
+7. Explore different topics, concepts, and practical scenarios
+   from the candidate's available skills.
+8. Use clear and natural interview language.
+9. For technical questions, test concepts,
    practical understanding, and problem-solving.
-7. For behavioral questions, use realistic
-   workplace situations.
-8. For mixed questions, include both technical
-   and behavioral questions.
-9. Keep every question at the requested difficulty.
-10. Provide 2-5 short expected answer points
+10. For behavioral questions, use realistic
+    workplace situations.
+11. For mixed questions, include both technical
+    and behavioral questions.
+12. Keep every question at the requested difficulty.
+13. Provide 2-5 short expected answer points
     for each question.
-11. Do not provide the complete answer to a question.
+14. Do not provide the complete answer to a question.
 
 Return ONLY valid JSON in this exact structure:
 
@@ -215,20 +250,50 @@ Return ONLY valid JSON in this exact structure:
 }}
 """
 
-    # 6. Call Gemini AI
+    
+    # 6. Fast Gemini question generation
     try:
         client = genai.Client(api_key=api_key)
+        response = None
 
-        response = client.models.generate_content(
-            model="gemini-3.8-flash",
-            contents=prompt,
-            config={
-                "temperature": 0.4,
-                "response_mime_type": "application/json"
-            }
+        start_time = time.perf_counter()
+
+        # Initial attempt + only one retry for temporary 503 errors
+        for attempt in range(2):
+            try:
+                response = client.models.generate_content(
+                    model="gemini-3.5-flash-lite",
+                    contents=prompt,
+                    config={
+                        "temperature": 0.7,
+                        "response_mime_type": "application/json"
+                    }
+                )
+                break
+
+            except Exception as error:
+                error_message = str(error).upper()
+
+                is_temporary_unavailable = (
+                    "503" in error_message
+                    or "UNAVAILABLE" in error_message
+                )
+
+                if is_temporary_unavailable and attempt == 0:
+                    print("Gemini unavailable. Retrying once...")
+                    time.sleep(1)
+                    continue
+
+                raise
+
+        generation_time = time.perf_counter() - start_time
+
+        print(
+            f"Gemini question generation time: "
+            f"{generation_time:.2f} seconds"
         )
 
-        if not response.text:
+        if response is None or not response.text:
             raise ValueError("Empty response received from Gemini")
 
         generated_data = json.loads(response.text)
@@ -260,10 +325,12 @@ Return ONLY valid JSON in this exact structure:
             detail=f"Unable to validate generated questions: {str(error)}"
         )
 
-    except Exception:
+    except Exception as error:
+        print("GEMINI QUESTION GENERATION ERROR:", repr(error))
         raise HTTPException(
             status_code=502,
-            detail="Unable to generate interview questions using Gemini AI"
+            detail="Unable to generate interview questions using Gemini AI. "
+                   "Please try again in a moment."
         )
 
 
@@ -283,6 +350,7 @@ class InterviewAnswerItem(BaseModel):
 
 
 class EvaluateAnswersRequest(BaseModel):
+    session_id: int
     questions: list[InterviewAnswerItem] = Field(
         min_length=1,
         max_length=20
@@ -426,21 +494,16 @@ def validate_evaluation_response(data, requested_count):
     }
 
 
+
 @router.post("/evaluate-answers")
 def evaluate_interview_answers(
     request: EvaluateAnswersRequest,
+    db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
     """
-    Evaluate candidate answers using Gemini AI.
-
-    Evaluates:
-    - Communication
-    - Technical relevance
-    - Professionalism
-
-    Confidence is not evaluated because only text answers
-    are available.
+    Evaluate candidate answers using Gemini AI
+    and save the evaluation in the interview session.
     """
 
     # 1. Verify candidate role
@@ -450,7 +513,26 @@ def evaluate_interview_answers(
             detail="Only candidates can evaluate interview answers"
         )
 
-    # 2. Check Gemini API key
+    # 2. Verify interview session ownership
+    session = db.query(InterviewSession).filter(
+        InterviewSession.id == request.session_id,
+        InterviewSession.candidate_id == current_user.id
+    ).first()
+
+    if not session:
+        raise HTTPException(
+            status_code=404,
+            detail="Interview session not found"
+        )
+
+    # 3. Evaluation is allowed only for completed sessions
+    if session.status != "completed":
+        raise HTTPException(
+            status_code=400,
+            detail="Complete the interview before evaluating answers"
+        )
+
+    # 4. Check Gemini API key
     api_key = os.getenv("GEMINI_API_KEY")
 
     if not api_key:
@@ -459,7 +541,7 @@ def evaluate_interview_answers(
             detail="Gemini API key is not configured"
         )
 
-    # 3. Prepare compact interview data
+    # 5. Prepare compact interview data
     interview_data = []
 
     for item in request.questions:
@@ -472,7 +554,7 @@ def evaluate_interview_answers(
             "answer": item.answer.strip()
         })
 
-    # 4. Optimized short prompt
+    # 6. Prepare Gemini prompt
     prompt = f"""
 You are a professional technical interviewer.
 
@@ -525,21 +607,45 @@ Keep each improved answer short.
 Do not include Markdown or text outside JSON.
 """
 
-    # 5. Single Gemini API call
+    # 7. Generate and validate AI evaluation
     try:
         client = genai.Client(api_key=api_key)
+        response = None
+        max_attempts = 3
 
-        response = client.models.generate_content(
-            model="gemini-3.8-flash",
-            contents=prompt,
-            config={
-                "temperature": 0.1,
-                "response_mime_type": "application/json",
-                "max_output_tokens": 3072
-            }
-        )
+        for attempt in range(max_attempts):
+            try:
+                response = client.models.generate_content(
+                    model="gemini-3.5-flash-lite",
+                    contents=prompt,
+                    config={
+                        "temperature": 0.1,
+                        "response_mime_type": "application/json",
+                        "max_output_tokens": 3072
+                    }
+                )
+                break
 
-        if not response.text:
+            except Exception as error:
+                error_message = str(error).upper()
+
+                is_temporary_unavailable = (
+                    "503" in error_message
+                    or "UNAVAILABLE" in error_message
+                    or "HIGH DEMAND" in error_message
+                )
+
+                if is_temporary_unavailable and attempt < max_attempts - 1:
+                    print(
+                        "Gemini temporarily unavailable. "
+                        f"Retrying ({attempt + 1}/{max_attempts - 1})..."
+                    )
+                    time.sleep(2)
+                    continue
+
+                raise
+
+        if response is None or not response.text:
             raise ValueError("Empty evaluation response from Gemini")
 
         generated_data = json.loads(response.text)
@@ -549,14 +655,27 @@ Do not include Markdown or text outside JSON.
             len(interview_data)
         )
 
+        # 8. Save evaluation in PostgreSQL
+        session.evaluation = evaluation
+
+        db.commit()
+        db.refresh(session)
+
+        print(
+            f"Interview evaluation saved successfully "
+            f"for session ID: {session.id}"
+        )
+
         return {
-            "message": "Interview answers evaluated successfully",
+            "message": "Interview answers evaluated and saved successfully",
             "candidate_id": current_user.id,
+            "session_id": session.id,
             "total_questions": len(interview_data),
             **evaluation
         }
 
     except json.JSONDecodeError:
+        db.rollback()
         print("GEMINI EVALUATION ERROR: Invalid JSON")
 
         raise HTTPException(
@@ -565,6 +684,7 @@ Do not include Markdown or text outside JSON.
         )
 
     except ValueError as error:
+        db.rollback()
         print("GEMINI EVALUATION VALIDATION ERROR:", repr(error))
 
         raise HTTPException(
@@ -573,6 +693,7 @@ Do not include Markdown or text outside JSON.
         )
 
     except Exception as error:
+        db.rollback()
         print("GEMINI EVALUATION ERROR:", repr(error))
 
         raise HTTPException(

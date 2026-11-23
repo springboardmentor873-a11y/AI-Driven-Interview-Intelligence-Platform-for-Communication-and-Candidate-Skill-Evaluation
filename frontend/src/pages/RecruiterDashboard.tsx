@@ -64,23 +64,23 @@ function RecruiterDashboard() {
   }, []);
 
   // Close profile dropdown when clicking outside
-useEffect(() => {
-  const handleOutsideClick = (event: MouseEvent) => {
-    if (
-      profileRef.current &&
-      event.target instanceof Node &&
-      !profileRef.current.contains(event.target)
-    ) {
-      setIsProfileOpen(false);
-    }
-  };
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (
+        profileRef.current &&
+        event.target instanceof Node &&
+        !profileRef.current.contains(event.target)
+      ) {
+        setIsProfileOpen(false);
+      }
+    };
 
-  document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("mousedown", handleOutsideClick);
 
-  return () => {
-    document.removeEventListener("mousedown", handleOutsideClick);
-  };
-}, []);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("access_token");
@@ -361,9 +361,8 @@ useEffect(() => {
 
                 <ChevronDown
                   size={16}
-                  className={`text-gray-500 transition-transform ${
-                    isProfileOpen ? "rotate-180" : ""
-                  }`}
+                  className={`text-gray-500 transition-transform ${isProfileOpen ? "rotate-180" : ""
+                    }`}
                 />
 
               </button>
@@ -468,7 +467,11 @@ useEffect(() => {
               </p>
             </div>
 
-            <button className="bg-[#0F766E] hover:bg-[#115E59] text-white px-5 py-3 rounded-lg flex items-center gap-2 font-semibold transition">
+            <button
+              type="button"
+              onClick={() => navigate("/recruiter/jobs/post")}
+              className="bg-[#0F766E] hover:bg-[#115E59] text-white px-5 py-3 rounded-lg flex items-center gap-2 font-semibold transition"
+            >
               <Plus size={19} />
               Post a Job
             </button>

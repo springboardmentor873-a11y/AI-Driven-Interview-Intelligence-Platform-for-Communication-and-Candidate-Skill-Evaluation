@@ -1,6 +1,6 @@
 
 import { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate, Link } from "react-router-dom";
+import { useLocation, useNavigate, Link, useSearchParams } from "react-router-dom";
 
 import {
   ArrowLeft,
@@ -20,20 +20,32 @@ import {
 import type {
   GenerateInterviewQuestionsResponse,
   InterviewEvaluationResponse,
+
 } from "../api/interview";
 
-import { evaluateInterviewAnswers } from "../api/interview";
+import { evaluateInterviewAnswers, getInterviewSession } from "../api/interview";
 
 interface InterviewResultState {
   interview: GenerateInterviewQuestionsResponse;
   answers: Record<number, string>;
+  sessionId: number;
 }
 
 function InterviewResult() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const [searchParams] = useSearchParams();
+  const fromHistory = searchParams.get("from") === "history";
+
   const result = location.state as InterviewResultState | null;
+
+  const urlSessionId = Number(searchParams.get("sessionId"));
+
+  const sessionId =
+    Number.isInteger(urlSessionId) && urlSessionId > 0
+      ? urlSessionId
+      : result?.sessionId;
 
   const [evaluation, setEvaluation] =
     useState<InterviewEvaluationResponse | null>(null);
@@ -41,35 +53,110 @@ function InterviewResult() {
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [evaluationError, setEvaluationError] = useState("");
 
+  const [savedSession, setSavedSession] =
+    useState<Awaited<ReturnType<typeof getInterviewSession>> | null>(null);
+
+  const [isLoadingSession, setIsLoadingSession] = useState(true);
+
   const hasStartedEvaluation = useRef(false);
 
-  const interview = result?.interview;
-  const answers = result?.answers || {};
+  useEffect(() => {
+    const loadSession = async () => {
+      if (!sessionId) {
+        setEvaluationError("Interview session ID not found.");
+        setIsLoadingSession(false);
+        return;
+      }
+
+      try {
+        const session = await getInterviewSession(sessionId);
+
+        setSavedSession(session);
+
+        // Restore saved evaluation if it already exists
+        if (session.evaluation) {
+          setEvaluation(session.evaluation);
+        }
+      } catch (error: any) {
+        console.error("Failed to fetch interview session:", error);
+
+        setEvaluationError(
+          error.response?.data?.detail ||
+          error.message ||
+          "Failed to load interview result."
+        );
+      } finally {
+        setIsLoadingSession(false);
+      }
+    };
+
+    loadSession();
+  }, [sessionId]);
+
+  const interview =
+    result?.interview ||
+    (savedSession
+      ? {
+        message: "Interview session restored",
+        candidate_id: savedSession.candidate_id,
+        resume_id: 0,
+        difficulty: savedSession.difficulty as "easy" | "medium" | "hard",
+        question_type: savedSession.interview_type as
+          | "technical"
+          | "behavioral"
+          | "mixed",
+        total_questions: savedSession.questions?.length || 0,
+        questions: savedSession.questions || [],
+      }
+      : undefined);
+
+  const answers =
+    result?.answers ||
+    (savedSession?.answers
+      ? Object.fromEntries(
+        savedSession.answers.map((item) => [
+          item.question_number - 1,
+          item.answer,
+        ])
+      )
+      : {});
+
 
   const totalQuestions = interview?.questions.length || 0;
 
+
+
   const answeredQuestions = interview
     ? interview.questions.filter(
-        (_, index) => (answers[index] || "").trim().length > 0
-      ).length
+      (_, index) => (answers[index] || "").trim().length > 0
+    ).length
     : 0;
 
   const unansweredQuestions = totalQuestions - answeredQuestions;
 
   const runEvaluation = async () => {
-    if (!interview) return;
+    if (!interview || !sessionId) {
+      setEvaluationError("Interview session not found. Please try again.");
+      return;
+    }
 
     setIsEvaluating(true);
     setEvaluationError("");
 
     try {
       const payload = {
+        session_id: sessionId,
         questions: interview.questions.map((question, index) => ({
-          question_number: question.question_number,
+          question_number: question.question_number ?? index + 1,
           question: question.question,
           category: question.category,
-          difficulty: question.difficulty,
-          expected_answer_points: question.expected_answer_points,
+          difficulty: (
+            question.difficulty || interview.difficulty || "medium"
+          ).toLowerCase() as "easy" | "medium" | "hard",
+          expected_answer_points:
+            question.expected_answer_points?.length
+              ? question.expected_answer_points
+              : ["Provide a correct and relevant explanation of the concept."],
           answer: (answers[index] || "").trim(),
         })),
       };
@@ -79,28 +166,81 @@ function InterviewResult() {
       setEvaluation(response);
     } catch (error: any) {
       console.error("Interview evaluation error:", error);
+      console.log("Evaluation API error response:", error?.response?.data);
 
-      setEvaluationError(
-        error?.response?.data?.detail ||
-          error?.message ||
-          "Unable to evaluate your answers. Please try again."
-      );
+      const detail = error?.response?.data?.detail;
+      let errorMessage = "Unable to evaluate your answers. Please try again.";
+
+      if (typeof detail === "string") {
+        errorMessage = detail;
+      } else if (Array.isArray(detail)) {
+        errorMessage = detail
+          .map((item: any) => item.msg || JSON.stringify(item))
+          .join("; ");
+      } else if (detail) {
+        errorMessage = JSON.stringify(detail);
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+
+      setEvaluationError(errorMessage);
     } finally {
       setIsEvaluating(false);
     }
   };
 
   useEffect(() => {
-    if (!interview || hasStartedEvaluation.current) return;
+    // Wait until database session is fetched
+    if (isLoadingSession) {
+      return;
+    }
+
+    if (!savedSession || !interview || !sessionId) {
+      return;
+    }
+
+    // Do not call Gemini if evaluation already exists
+    if (savedSession.evaluation) {
+      setEvaluation(savedSession.evaluation);
+      return;
+    }
+
+    // Evaluation is only allowed for completed sessions
+    if (savedSession.status !== "completed") {
+      return;
+    }
+
+    // Prevent duplicate API calls
+    if (hasStartedEvaluation.current) {
+      return;
+    }
 
     hasStartedEvaluation.current = true;
+
     runEvaluation();
+  }, [
+    isLoadingSession,
+    savedSession,
+    interview,
+    sessionId,
+  ]);
 
-    // Evaluation starts once when the result page opens.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  if (!result?.interview?.questions) {
+  if (isLoadingSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+        <div className="text-center">
+          <Loader2
+            size={35}
+            className="animate-spin text-[#0F766E] mx-auto mb-3"
+          />
+          <p className="text-slate-600 font-medium">
+            Loading your interview result...
+          </p>
+        </div>
+      </div>
+    );
+  }
+  if (!interview?.questions?.length) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 max-w-md w-full text-center">
@@ -125,7 +265,7 @@ function InterviewResult() {
     );
   }
 
-  const { interview: currentInterview } = result;
+  const currentInterview = interview;
 
   const getScoreColor = (score: number) => {
     if (score >= 75) return "text-teal-700";
@@ -154,11 +294,17 @@ function InterviewResult() {
       <header className="bg-white border-b border-slate-200">
         <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
           <Link
-            to="/candidate/dashboard"
+            to={
+              fromHistory
+                ? "/candidate/interview/history"
+                : "/candidate/dashboard"
+            }
             className="flex items-center gap-2 text-slate-600 hover:text-teal-700"
           >
             <ArrowLeft size={18} />
-            <span className="font-medium">Dashboard</span>
+            <span className="font-medium">
+              {fromHistory ? "Interview History" : "Dashboard"}
+            </span>
           </Link>
 
           <div className="flex items-center gap-2">
@@ -636,11 +782,17 @@ function InterviewResult() {
           </button>
 
           <button
-            onClick={() => navigate("/candidate/dashboard")}
+            onClick={() =>
+              navigate(
+                fromHistory
+                  ? "/candidate/interview/history"
+                  : "/candidate/dashboard"
+              )
+            }
             className="flex items-center justify-center gap-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-6 py-3 rounded-xl font-semibold"
           >
             <Home size={18} />
-            Back to Dashboard
+            {fromHistory ? "Back to Interview History" : "Back to Dashboard"}
           </button>
         </div>
       </main>

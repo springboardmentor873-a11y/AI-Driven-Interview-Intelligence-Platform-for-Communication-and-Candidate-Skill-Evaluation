@@ -26,6 +26,8 @@ import Settings from "./pages/Settings";
 import InterviewSetup from "./pages/InterviewSetup";
 import InterviewRoom from "./pages/InterviewRoom";
 import InterviewResult from "./pages/InterviewResult";
+import PostJob from "./pages/PostJob";
+import InterviewHistory from "./pages/InterviewHistory";
 
 function App() {
   return (
@@ -117,12 +119,32 @@ function App() {
           }
         />
 
+        {/* Candidate Interview History */}
+        <Route
+          path="/candidate/interview/history"
+          element={
+            <ProtectedRoute allowedRoles={["candidate"]}>
+              <InterviewHistory />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Recruiter Dashboard */}
         <Route
           path="/recruiter/dashboard"
           element={
             <ProtectedRoute allowedRoles={["recruiter"]}>
               <RecruiterDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Recruiter - Post a Job */}
+        <Route
+          path="/recruiter/jobs/post"
+          element={
+            <ProtectedRoute allowedRoles={["recruiter"]}>
+              <PostJob />
             </ProtectedRoute>
           }
         />

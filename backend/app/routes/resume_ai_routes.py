@@ -1,6 +1,8 @@
 
+import traceback
 import json
 import os
+import time
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -172,19 +174,62 @@ Resume content:
 
         client = genai.Client(api_key=api_key)
 
-        response = client.models.generate_content(
-            model="gemini-3.8-flash",
-            contents=prompt,
-            config={
-                "temperature": 0.1,
-                "response_mime_type": "application/json"
-            }
-        )
+        response = None
 
-        if not response.text:
-            raise ValueError("Empty response received from Gemini")
+        # Retry Gemini API up to 3 times for temporary 503 errors
+        for attempt in range(3):
+            try:
+                print(f"Gemini API attempt: {attempt + 1}/3")
+
+                response = client.models.generate_content(
+                    model="gemini-3.8-flash",
+                    contents=prompt,
+                    config={
+                        "temperature": 0.1,
+                        "response_mime_type": "application/json"
+                    }
+                )
+
+                break
+
+            except Exception as e:
+                error_message = str(e)
+
+                if "503" in error_message or "UNAVAILABLE" in error_message:
+
+                    if attempt < 2:
+                        print(
+                            "Gemini is busy. Retrying after 2 seconds..."
+                        )
+                        time.sleep(2)
+
+                    else:
+                        print(
+                            "Gemini API failed after 3 attempts."
+                        )
+
+                        raise HTTPException(
+                            status_code=503,
+                            detail=(
+                                "Gemini AI is temporarily busy. "
+                                "Please try again later."
+                            )
+                        )
+
+                else:
+                    raise
+
+        if response is None or not response.text:
+            raise ValueError(
+                "Empty response received from Gemini"
+            )
 
         skills_data = json.loads(response.text)
+
+        if not isinstance(skills_data, dict):
+            raise ValueError(
+                "Invalid skills response format"
+            )
 
         required_categories = [
             "programming_languages",
@@ -201,7 +246,9 @@ Resume content:
                 skills_data[category] = []
 
             if not isinstance(skills_data[category], list):
-                raise ValueError("Invalid skills response format")
+                raise ValueError(
+                    f"Invalid skills format for category: {category}"
+                )
 
         # Save or update skills in PostgreSQL
         existing_skills = db.query(ResumeSkill).filter(
@@ -210,6 +257,7 @@ Resume content:
 
         if existing_skills:
             existing_skills.skills = skills_data
+
         else:
             new_skills = ResumeSkill(
                 resume_id=resume.id,
@@ -229,17 +277,28 @@ Resume content:
         }
 
     except HTTPException:
+        db.rollback()
         raise
 
     except json.JSONDecodeError:
         db.rollback()
+
         raise HTTPException(
             status_code=502,
             detail="Gemini returned an invalid JSON response"
         )
 
-    except Exception:
+    except Exception as e:
         db.rollback()
+
+        print(
+            "\n========== RESUME SKILL EXTRACTION ERROR =========="
+        )
+        print(f"Error Type: {type(e).__name__}")
+        print(f"Error Message: {str(e)}")
+        traceback.print_exc()
+        print("===================================================\n")
+
         raise HTTPException(
             status_code=502,
             detail="Unable to analyze resume using Gemini AI"
@@ -251,14 +310,12 @@ def get_my_resume_skills(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    # Only candidates can view their extracted skills
     if current_user.role != "candidate":
         raise HTTPException(
             status_code=403,
             detail="Only candidates can view resume skills"
         )
 
-    # Find candidate's resume
     resume = db.query(Resume).filter(
         Resume.user_id == current_user.id
     ).first()
@@ -269,7 +326,6 @@ def get_my_resume_skills(
             detail="Please upload your resume first"
         )
 
-    # Fetch skills belonging to this candidate and resume
     resume_skills = db.query(ResumeSkill).filter(
         ResumeSkill.resume_id == resume.id,
         ResumeSkill.user_id == current_user.id

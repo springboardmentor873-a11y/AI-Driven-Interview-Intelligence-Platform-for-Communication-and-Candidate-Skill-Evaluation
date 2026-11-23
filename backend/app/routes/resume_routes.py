@@ -1,6 +1,7 @@
 
 import uuid
 from pathlib import Path
+from sqlalchemy import func
 
 from fastapi import (
     APIRouter,
@@ -129,6 +130,7 @@ async def upload_resume(
             # Update existing resume record
             existing_resume.file_name = original_file_name
             existing_resume.file_path = new_file_path
+            existing_resume.uploaded_at = func.now()           
 
             # Remove old AI skills because resume has changed
             db.query(ResumeSkill).filter(

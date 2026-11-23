@@ -1,6 +1,9 @@
-
-import { useState } from "react";
-import { useLocation, useNavigate, Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate, Link , useSearchParams} from "react-router-dom";
+import {
+  createInterviewSession,
+  updateInterviewSession,
+} from "../api/interview";
 
 import {
   ArrowLeft,
@@ -25,8 +28,8 @@ function InterviewRoom() {
 
   const interview =
     location.state?.interview as
-      | GenerateInterviewQuestionsResponse
-      | undefined;
+    | GenerateInterviewQuestionsResponse
+    | undefined;
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -36,6 +39,49 @@ function InterviewRoom() {
 
   const [showFinishConfirmation, setShowFinishConfirmation] =
     useState(false);
+
+  const [sessionId, setSessionId] = useState<number | null>(null);
+
+  const [sessionError, setSessionError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  const sessionCreationStarted = useRef(false);
+
+  useEffect(() => {
+    if (!interview || !interview.questions?.length) {
+      return;
+    }
+
+    if (sessionCreationStarted.current) {
+      return;
+    }
+
+    sessionCreationStarted.current = true;
+
+    const startSession = async () => {
+      try {
+        const session = await createInterviewSession({
+          interview_type: interview.question_type,
+          difficulty: interview.difficulty,
+          questions: interview.questions,
+        });
+
+        setSessionId(session.id);
+
+        console.log("Interview session created:", session.id);
+      } catch (error: any) {
+        console.error("Session creation failed:", error);
+
+        setSessionError(
+          error.response?.data?.detail ||
+          error.message ||
+          "Failed to create interview session"
+        );
+      }
+    };
+
+    startSession();
+  }, [interview]);
 
 
   // Prevent direct access without generated questions
@@ -104,16 +150,56 @@ function InterviewRoom() {
   };
 
 
-  const handleFinish = () => {
-    // Temporary summary only.
-    // Database persistence will be implemented in Feature 5.
-    navigate("/candidate/interview/result", {
+
+const handleFinish = async () => {
+  if (!sessionId) {
+    setSessionError("Interview session is not ready. Please try again.");
+    return;
+  }
+
+  setIsSaving(true);
+  setSessionError("");
+
+  try {
+    const formattedAnswers = questions.map((question, index) => ({
+      question_number: question.question_number,
+      answer: (answers[index] || "").trim(),
+    }));
+
+    // Verify actual answers before saving
+    console.log("Questions:", questions);
+    console.log("Current answers state:", answers);
+    console.log("Formatted answers to save:", formattedAnswers);
+
+    await updateInterviewSession(sessionId, {
+      answers: formattedAnswers,
+      status: "completed",
+    });
+
+    console.log("Interview answers saved successfully.");
+
+    setShowFinishConfirmation(false);
+
+    navigate(`/candidate/interview/result?sessionId=${sessionId}`, {
       state: {
         interview,
         answers,
+        sessionId,
       },
     });
-  };
+  } catch (error: any) {
+    console.error("Failed to save interview:", error);
+
+    setSessionError(
+      error.response?.data?.detail ||
+      error.message ||
+      "Failed to save interview answers. Please try again."
+    );
+  } finally {
+    setIsSaving(false);
+  }
+};
+
 
 
   const answeredCount = Object.values(answers).filter(
@@ -163,7 +249,17 @@ function InterviewRoom() {
 
         </div>
 
+
       </header>
+
+
+      {sessionError && (
+        <p className="text-red-500 text-sm text-center mt-3">
+          {sessionError}
+        </p>
+      )}
+
+
 
 
       {/* Main */}
@@ -371,13 +467,12 @@ function InterviewRoom() {
               <button
                 key={question.question_number}
                 onClick={() => setCurrentIndex(index)}
-                className={`w-10 h-10 rounded-lg text-sm font-bold transition ${
-                  currentIndex === index
-                    ? "bg-[#172554] text-white"
-                    : answers[index]?.trim()
+                className={`w-10 h-10 rounded-lg text-sm font-bold transition ${currentIndex === index
+                  ? "bg-[#172554] text-white"
+                  : answers[index]?.trim()
                     ? "bg-teal-100 text-[#0F766E]"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
+                  }`}
               >
                 {index + 1}
               </button>
@@ -417,7 +512,11 @@ function InterviewRoom() {
               will remain blank.
             </p>
 
-
+            {sessionError && (
+              <p className="text-red-500 text-sm mt-2 text-center">
+                {sessionError}
+              </p>
+            )}
             <div className="flex gap-3">
 
               <button
@@ -430,9 +529,10 @@ function InterviewRoom() {
 
               <button
                 onClick={handleFinish}
-                className="flex-1 bg-[#0F766E] text-white py-3 rounded-xl font-semibold text-sm"
+                disabled={isSaving || !sessionId}
+                className="flex-1 bg-[#0F766E] text-white py-3 rounded-xl font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Finish
+                {isSaving ? "Saving..." : "Finish"}
               </button>
 
             </div>

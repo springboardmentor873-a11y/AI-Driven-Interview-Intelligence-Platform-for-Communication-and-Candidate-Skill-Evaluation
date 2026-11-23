@@ -11,7 +11,9 @@ from app.models import (
     Resume,
     UserSession,
     PasswordReset,
-    ResumeSkill
+    ResumeSkill,
+    Job,
+    InterviewSession
 )
 
 # Import routers
@@ -19,6 +21,8 @@ from app.routes.auth_routes import router as auth_router
 from app.routes.resume_routes import router as resume_router
 from app.routes.resume_ai_routes import router as resume_ai_router
 from app.routes.interview_ai_routes import router as interview_ai_router
+from app.routes.jobs_routes import router as jobs_router
+from app.routes.interview_sessions_routes import router as interview_sessions_router
 
 
 app = FastAPI(
@@ -52,6 +56,8 @@ app.include_router(auth_router)
 app.include_router(resume_router)
 app.include_router(resume_ai_router)
 app.include_router(interview_ai_router)
+app.include_router(jobs_router)
+app.include_router(interview_sessions_router)
 
 
 @app.get("/models-check")
