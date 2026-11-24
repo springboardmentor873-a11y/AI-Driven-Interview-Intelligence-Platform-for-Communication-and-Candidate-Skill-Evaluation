@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_blank" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={"darkMode":"class","theme":{"extend":{"colors":{"outline":"#707976","surface-bright":"#f8f9ff","tertiary":"#665d57","surface-container-highest":"#d3e4fe","surface-tint":"#2f685c","secondary-fixed":"#e4e1ee","on-error-container":"#93000a","primary-fixed":"#b3eedf","on-secondary":"#ffffff","primary":"#2f685c","surface":"#f8f9ff","primary-fixed-dim":"#98d2c3","on-primary-fixed":"#00201a","surface-container-low":"#eff4ff","on-surface":"#0b1c2f","on-tertiary-fixed":"#211a16","surface-container":"#e5eeff","inverse-surface":"#213145","tertiary-fixed-dim":"#d1c4bd","on-tertiary":"#ffffff","surface-variant":"#d3e4fe","secondary-container":"#e4e1ee","on-primary":"#ffffff","on-secondary-fixed":"#1b1b24","on-error":"#ffffff","on-secondary-container":"#64636e","secondary-fixed-dim":"#c7c5d1","on-tertiary-container":"#3b332e","background":"#f8f9ff","secondary":"#5e5d68","inverse-on-surface":"#eaf1ff","inverse-primary":"#98d2c3","primary-container":"#6fa89a","surface-container-high":"#dce9ff","on-tertiary-fixed-variant":"#4e4540","surface-container-lowest":"#ffffff","tertiary-container":"#a69b94","on-secondary-fixed-variant":"#464650","on-background":"#0b1c2f","surface-dim":"#cbdbf5","on-primary-fixed-variant":"#115044","on-primary-container":"#003c33","outline-variant":"#bfc9c5","tertiary-fixed":"#eee0d8","error-container":"#ffdad6","error":"#ba1a1a","on-surface-variant":"#404946"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-sm":"0.5rem","margin":"2rem","space-lg":"1.5rem","space-xl":"2rem","space-md":"1rem","gutter-mobile":"1rem","margin-mobile":"1rem","gutter":"1.5rem","space-xs":"0.25rem"},"fontFamily":{"display-mobile":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"display":["Plus Jakarta Sans"],"caption":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"body-medium":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"label-md":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"]},"fontSize":{"display-mobile":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-lg-mobile":["26px",{"lineHeight":"34px","letterSpacing":"-0.015em","fontWeight":"700"}],"headline-sm":["18px",{"lineHeight":"26px","letterSpacing":"-0.005em","fontWeight":"600"}],"label-sm":["12px",{"lineHeight":"16px","letterSpacing":"0.02em","fontWeight":"500"}],"display":["40px",{"lineHeight":"48px","letterSpacing":"-0.02em","fontWeight":"700"}],"caption":["12px",{"lineHeight":"16px","fontWeight":"400"}],"headline-lg":["30px",{"lineHeight":"38px","letterSpacing":"-0.015em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"body-medium":["14px",{"lineHeight":"22px","fontWeight":"500"}],"body-md":["14px",{"lineHeight":"22px","fontWeight":"400"}],"label-md":["13px",{"lineHeight":"18px","letterSpacing":"0.01em","fontWeight":"600"}],"headline-md":["22px",{"lineHeight":"30px","letterSpacing":"-0.01em","fontWeight":"600"}]}}}};</script></head><body class="bg-surface font-body-md text-on-surface min-h-screen flex flex-col"><header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 w-full px-margin-mobile md:px-margin flex items-center justify-between"><a class="flex items-center gap-space-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="home" href="#"><span class="material-symbols-outlined text-[20px]">arrow_back</span><span class="font-label-md text-label-md">Back to SmartHire AI</span></a><div class="flex items-center gap-space-md"><a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="help" href="#">Help Center</a></div></div></header><main class="w-full flex-1 pt-16 flex flex-col justify-center items-center bg-surface"><div class="flex flex-col w-full">
+<!-- Subtle decorative ambient blobs (contained) -->
+<div class="relative w-full max-w-7xl mx-auto px-margin-mobile md:px-margin py-8 md:py-12">
+<div class="absolute -top-16 left-12 w-96 h-96 bg-primary-fixed/30 rounded-full blur-3xl pointer-events-none -z-10"></div>
+<div class="absolute top-1/2 right-4 w-[28rem] h-[28rem] bg-secondary-container/40 rounded-full blur-3xl pointer-events-none -z-10"></div>
+<!-- Main Registration Shell Container -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
+<!-- LEFT COLUMN: Brand Story, Visual Mockup & Social Proof (5 cols) -->
+<section class="lg:col-span-5 flex flex-col gap-y-space-lg lg:sticky lg:top-24">
+<!-- Brand & Badges Header -->
+<div class="flex flex-col gap-y-space-sm">
+<div class="flex items-center gap-space-sm flex-wrap">
+<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary shadow-sm">
+<span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">psychology_alt</span>
+</div>
+<div>
+<div class="font-headline-sm text-headline-sm tracking-tight text-on-surface flex items-center gap-1.5">
+                SmartHire<span class="text-primary font-bold">.ai</span>
+</div>
+<p class="font-caption text-caption uppercase tracking-wider text-secondary">Interview Intelligence Platform</p>
+</div>
+</div>
+<div class="inline-flex items-center gap-space-xs px-3 py-1.5 rounded-full bg-surface-container-lowest shadow-sm w-fit mt-2">
+<span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-label-sm text-label-sm text-primary font-semibold">Join 15,000+ Prepared Candidates</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight mt-1">
+            Empower your next career milestone.
+          </h1>
+<p class="font-body-md text-body-md text-secondary">
+            Practice realistic AI mock interviews with real-time biometric vocal pacing feedback, dynamic follow-ups, and standardized STAR framework rubrics.
+          </p>
+</div>
+<!-- Rich Visual Card: Candidate Dashboard Simulator Preview -->
+<div class="bg-surface-container-lowest rounded-2xl p-space-md shadow-sm relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary-fixed/20 rounded-full blur-xl pointer-events-none"></div>
+<!-- Mini Top Status Bar -->
+<div class="flex items-center justify-between pb-3">
+<div class="flex items-center gap-space-xs">
+<span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-primary font-semibold">Simulated Session Active</span>
+</div>
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-secondary-fixed text-[11px] font-semibold font-caption">
+              Behavioral Track
+            </span>
+</div>
+<!-- Video / Simulation Placeholder with Ambient Metrics Overlay -->
+<div class="relative w-full h-44 rounded-xl overflow-hidden shadow-inner flex items-end p-3">
+<img class="absolute inset-0 w-full h-full object-cover" data-alt="A confident young professional woman seated in a sunlit modern minimalist office during a high-stakes video interview, soft teal studio lighting, natural expression, warm pastel teal and soft lavender atmosphere, professional 4k portrait style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPSKSUI84NMaCiI6pdaSHAZ6m5Hi9Zrigdhxo82hBOVOJ7VyxbH-b7LX00P-SyCQhF8ztDNQO3WKLm5hH7XQ2xw0nPfmQhmULSRNiUGmrhne22yLdkjWVj2I3gV1ER1k0PFTcMx7UjoxziIqPzWNWhBlf_qGHYQjjV1tE9jpYY2Eunzjorjwx3fwhySFzOxJU8C9OKLGa5y5-dTf-9jK-5cv4kNfZE24SfoQUrlrU"/>
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/80 via-inverse-surface/20 to-transparent"></div>
+<div class="relative z-10 w-full flex items-center justify-between">
+<!-- Live Feedback Chip -->
+<div class="flex items-center gap-2 bg-surface-container-lowest/95 backdrop-blur-md px-2.5 py-1.5 rounded-lg shadow-sm">
+<span class="material-symbols-outlined text-[18px] text-primary" style="font-variation-settings: 'FILL' 1;">mic</span>
+<div class="flex flex-col">
+<span class="text-[10px] font-caption text-secondary">Speech Cadence</span>
+<span class="text-[11px] font-label-md text-on-surface">142 WPM • Clear &amp; Composed</span>
+</div>
+</div>
+<!-- Readiness Score Pill -->
+<div class="flex items-center gap-1.5 bg-primary/95 text-on-primary backdrop-blur-md px-3 py-1.5 rounded-lg shadow-sm">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+<div class="text-right">
+<span class="text-[10px] block font-caption text-surface-bright leading-none">Readiness</span>
+<span class="text-label-md font-label-md font-bold">94%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Metric Sparkline / STAR Rubrics Summary -->
+<div class="grid grid-cols-3 gap-2 mt-3 pt-3">
+<div class="bg-surface-container-low rounded-xl p-2.5">
+<span class="text-[11px] font-caption text-secondary block">Situation &amp; Task</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">9.4 / 10</span>
+<div class="w-full bg-surface-dim h-1 rounded-full mt-1.5 overflow-hidden">
+<div class="bg-primary h-full w-[94%] rounded-full"></div>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-xl p-2.5">
+<span class="text-[11px] font-caption text-secondary block">Action Articulation</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">8.9 / 10</span>
+<div class="w-full bg-surface-dim h-1 rounded-full mt-1.5 overflow-hidden">
+<div class="bg-primary h-full w-[89%] rounded-full"></div>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-xl p-2.5">
+<span class="text-[11px] font-caption text-secondary block">Measured Results</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">9.6 / 10</span>
+<div class="w-full bg-surface-dim h-1 rounded-full mt-1.5 overflow-hidden">
+<div class="bg-primary h-full w-[96%] rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Social Proof Testimonial Card -->
+<div class="bg-surface-container-lowest rounded-2xl p-space-md shadow-sm">
+<div class="flex items-center gap-1 text-primary-container mb-2">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-caption text-caption text-secondary ml-1 font-semibold">5.0 Candidate Rating</span>
+</div>
+<blockquote class="font-body-md text-body-md text-on-surface italic">
+            “SmartHire AI completely took away my technical interview anxiety. The real-time pacing feedback and STAR prompt analysis allowed me to secure my offer at Stripe with total confidence.”
+          </blockquote>
+<div class="flex items-center gap-space-sm mt-3 pt-3">
+<div class="w-9 h-9 rounded-full overflow-hidden shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Close up professional smiling headshot portrait of an engineer woman with glasses wearing navy sweater, clean soft studio lighting, authentic and warm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9eS23K8PraMEss-az-gQRfLp2F30zioQqoCPXWaecdNmox2FD3S-cH0au3AwKdJ7W2RTETXaPsp7PKTHALcxQ9vs_Ho5yjAUSM6sDS4vFhuM2WYyKLJTPkUVJAJAAGF6CgCLouWQJ8vtDqxDq-u5L-hxKkhUfhOwP-ZJGqqE-Tb1RB6rD9ahiql90E_jTqZFMAZEp50WZDNgMHE80uSHmcEW2gjWFRozSnBgRYNY"/>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Sarah Chen</p>
+<p class="font-caption text-caption text-secondary">Incoming Solutions Engineer • Class of 2024</p>
+</div>
+</div>
+</div>
+<!-- Security & Trust Badges -->
+<div class="flex flex-wrap items-center gap-y-2 gap-x-4 pt-1">
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="font-caption text-caption font-medium">SOC2 Type II Certified</span>
+</div>
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">lock</span>
+<span class="font-caption text-caption font-medium">256-bit AES Encryption</span>
+</div>
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">psychology</span>
+<span class="font-caption text-caption font-medium">STAR Framework Rubrics</span>
+</div>
+</div>
+</section>
+<!-- RIGHT COLUMN: Registration Form Card (7 cols) -->
+<section class="lg:col-span-7">
+<div class="bg-surface-container-lowest rounded-2xl p-space-md md:p-space-xl shadow-md">
+<!-- Dismissible University / Enterprise Callout Banner -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex items-start gap-space-sm relative mb-space-lg transition-all duration-300" id="cohortBanner">
+<div class="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">school</span>
+</div>
+<div class="flex-1 pr-6">
+<h2 class="font-label-md text-label-md text-on-surface font-semibold">University or Enterprise Cohort?</h2>
+<p class="font-caption text-caption text-secondary mt-0.5">
+                Sign up with your academic (<code class="bg-surface-container-highest px-1 py-0.5 rounded text-[11px] text-on-surface">.edu</code>) or corporate domain to automatically unlock university benchmark percentiles and tailored technical question tracks.
+              </p>
+</div>
+<button aria-label="Dismiss banner" class="absolute top-2.5 right-2.5 text-secondary hover:text-on-surface transition-colors p-1" onclick="document.getElementById('cohortBanner').style.display='none'" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Form Header -->
+<div class="mb-space-lg">
+<h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">Create Your Account</h2>
+<p class="font-body-md text-body-md text-secondary mt-1">
+              Join SmartHire AI to immediately initiate personalized, real-time AI mock interviews.
+            </p>
+</div>
+<!-- Quick SSO Action -->
+<div class="flex flex-col gap-space-sm mb-space-lg">
+<button class="w-full flex items-center justify-center gap-space-sm py-2.5 px-space-md rounded-xl bg-surface-container-lowest shadow-sm hover:bg-surface-container-low transition-all duration-200 text-on-surface font-label-md text-label-md active:scale-[0.99]" type="button">
+<!-- Google G Logo SVG -->
+<svg class="w-5 h-5 shrink-0" viewbox="0 0 24 24">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"></path>
+</svg>
+<span>Continue with Google</span>
+</button>
+<!-- SSO Divider -->
+<div class="relative flex items-center justify-center my-2">
+<div class="w-full bg-surface-container h-px"></div>
+<span class="absolute px-3 bg-surface-container-lowest font-caption text-[11px] uppercase tracking-wider text-secondary">
+                Or register with email
+              </span>
+</div>
+</div>
+<!-- FORM START -->
+<form class="flex flex-col gap-y-space-md" onsubmit="event.preventDefault();">
+<!-- ROLE SELECTION MODULE (Candidate selected by default, Recruiter available, Admin locked) -->
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md text-on-surface">Select Your Role</label>
+<span class="font-caption text-caption text-secondary">Determines tailored dashboard features</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 pt-1" id="roleSelectorGroup">
+<!-- 1. Candidate Role (Active / Pre-selected) -->
+<label class="relative flex flex-col p-3 rounded-xl bg-surface-container-low shadow-sm cursor-pointer transition-all duration-200" id="roleCandidateLabel">
+<input checked="" class="sr-only" name="userRole" onchange="updateRoleStyles('candidate')" type="radio" value="candidate"/>
+<div class="flex items-center justify-between mb-2">
+<div class="w-8 h-8 rounded-lg bg-primary-fixed flex items-center justify-center text-on-primary-fixed">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">school</span>
+</div>
+<span class="w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center text-[13px]" id="candidateCheckBadge">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Candidate</span>
+<span class="font-caption text-caption text-secondary mt-1 leading-snug">
+                    Simulate mock interviews, analyze resumes &amp; get AI scoring.
+                  </span>
+</label>
+<!-- 2. Recruiter Role (Selectable) -->
+<label class="relative flex flex-col p-3 rounded-xl bg-surface-container-lowest shadow-sm hover:bg-surface-container-low cursor-pointer transition-all duration-200" id="roleRecruiterLabel">
+<input class="sr-only" name="userRole" onchange="updateRoleStyles('recruiter')" type="radio" value="recruiter"/>
+<div class="flex items-center justify-between mb-2">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[18px]">business_center</span>
+</div>
+<span class="w-5 h-5 rounded-full bg-surface-container text-transparent flex items-center justify-center text-[13px]" id="recruiterCheckBadge">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Recruiter</span>
+<span class="font-caption text-caption text-secondary mt-1 leading-snug">
+                    Assess candidate recordings, custom rubrics &amp; talent pipelines.
+                  </span>
+</label>
+<!-- 3. Admin Role (LOCKED / Disabled / Provisioned Only) -->
+<div class="relative flex flex-col p-3 rounded-xl bg-surface-container-low/60 opacity-70 cursor-not-allowed select-none group">
+<div class="flex items-center justify-between mb-2">
+<div class="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-outline">
+<span class="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+</div>
+<span class="px-1.5 py-0.5 rounded bg-surface-variant text-on-surface-variant text-[10px] font-semibold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[11px]">lock</span>
+                      Locked
+                    </span>
+</div>
+<div class="flex items-center gap-1">
+<span class="font-label-md text-label-md text-on-surface-variant font-semibold">Admin</span>
+</div>
+<span class="font-caption text-caption text-secondary mt-1 leading-snug">
+                    Organization provision only. Cannot self-register.
+                  </span>
+<!-- Floating Hover Explainer Tooltip -->
+<div class="absolute -top-12 left-1/2 -translate-x-1/2 hidden group-hover:flex w-52 p-2 bg-inverse-surface text-inverse-on-surface text-[11px] rounded-lg shadow-xl z-20 text-center leading-tight pointer-events-none">
+                    Admin access must be provisioned by your enterprise workspace owner.
+                  </div>
+</div>
+</div>
+</div>
+<!-- Full Name Field -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-on-surface" for="regFullName">Full Name</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3.5 text-secondary text-[20px] pointer-events-none">person</span>
+<input class="w-full pl-11 pr-4 py-2.5 rounded-xl bg-surface-container-lowest shadow-sm font-body-md text-on-surface placeholder:text-secondary focus:outline-none focus:bg-surface-container-lowest focus:shadow-md transition-all" id="regFullName" placeholder="e.g. Elena Vance" required="" type="text"/>
+</div>
+</div>
+<!-- Email Address Field -->
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md text-on-surface" for="regEmail">Work or Academic Email</label>
+<span class="font-caption text-caption text-primary font-medium">Use .edu for automatic perks</span>
+</div>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3.5 text-secondary text-[20px] pointer-events-none">mail</span>
+<input class="w-full pl-11 pr-4 py-2.5 rounded-xl bg-surface-container-lowest shadow-sm font-body-md text-on-surface placeholder:text-secondary focus:outline-none focus:bg-surface-container-lowest focus:shadow-md transition-all" id="regEmail" placeholder="elena.vance@university.edu" required="" type="email"/>
+</div>
+</div>
+<!-- Phone Number Field (Optional) -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-on-surface" for="regPhone">
+                Phone Number <span class="text-secondary font-normal font-caption text-caption">(Optional for SMS session reminders)</span>
+</label>
+<div class="flex items-center gap-2">
+<!-- Country Selector Dropdown -->
+<div class="relative shrink-0">
+<select class="appearance-none bg-surface-container-lowest shadow-sm rounded-xl py-2.5 pl-3 pr-8 font-label-md text-label-md text-on-surface focus:outline-none focus:shadow-md transition-all cursor-pointer">
+<option value="+1">🇺🇸 +1</option>
+<option value="+44">🇬🇧 +44</option>
+<option value="+1-ca">🇨🇦 +1</option>
+<option value="+61">🇦🇺 +61</option>
+<option value="+91">🇮🇳 +91</option>
+<option value="+49">🇩🇪 +49</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-secondary text-[16px] pointer-events-none">expand_more</span>
+</div>
+<!-- Phone input -->
+<div class="relative flex-1 flex items-center">
+<span class="material-symbols-outlined absolute left-3.5 text-secondary text-[19px] pointer-events-none">call</span>
+<input class="w-full pl-11 pr-4 py-2.5 rounded-xl bg-surface-container-lowest shadow-sm font-body-md text-on-surface placeholder:text-secondary focus:outline-none focus:bg-surface-container-lowest focus:shadow-md transition-all" id="regPhone" placeholder="(555) 019-2834" type="tel"/>
+</div>
+</div>
+</div>
+<!-- Password & Confirmation Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<!-- Password Field -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-on-surface" for="regPassword">Password</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3.5 text-secondary text-[20px] pointer-events-none">lock</span>
+<input class="w-full pl-11 pr-10 py-2.5 rounded-xl bg-surface-container-lowest shadow-sm font-body-md text-on-surface placeholder:text-secondary focus:outline-none focus:bg-surface-container-lowest focus:shadow-md transition-all" id="regPassword" placeholder="Create a strong password" required="" type="password" value="Passphrase#992"/>
+<button aria-label="Toggle password visibility" class="absolute right-3 text-secondary hover:text-on-surface p-1 transition-colors" onclick="togglePasswordVisibility('regPassword', this)" type="button">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+</div>
+</div>
+<!-- Confirm Password Field -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-on-surface" for="regConfirmPassword">Confirm Password</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3.5 text-secondary text-[20px] pointer-events-none">lock_clock</span>
+<input class="w-full pl-11 pr-10 py-2.5 rounded-xl bg-surface-container-lowest shadow-sm font-body-md text-on-surface placeholder:text-secondary focus:outline-none focus:bg-surface-container-lowest focus:shadow-md transition-all" id="regConfirmPassword" placeholder="Re-enter password" required="" type="password" value="Passphrase#992"/>
+<button aria-label="Toggle confirm password visibility" class="absolute right-3 text-secondary hover:text-on-surface p-1 transition-colors" onclick="togglePasswordVisibility('regConfirmPassword', this)" type="button">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Password Strength Bar & Match Status -->
+<div class="bg-surface-container-low/60 rounded-xl p-3 flex flex-col gap-2">
+<div class="flex items-center justify-between text-[12px] font-caption">
+<span class="text-secondary">Password Security Rating:</span>
+<span class="text-primary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                  Strong (Mixed case, numbers &amp; symbols)
+                </span>
+</div>
+<!-- 4-segment Strength Bar -->
+<div class="grid grid-cols-4 gap-1.5">
+<div class="h-1.5 rounded-full bg-primary"></div>
+<div class="h-1.5 rounded-full bg-primary"></div>
+<div class="h-1.5 rounded-full bg-primary"></div>
+<div class="h-1.5 rounded-full bg-primary"></div>
+</div>
+<div class="flex items-center justify-between text-[11px] font-caption text-secondary">
+<span>Minimum 8 characters</span>
+<span class="text-primary font-medium">✓ Passwords match</span>
+</div>
+</div>
+<!-- Legal & Consent Agreement Checkbox -->
+<div class="flex items-start gap-3 pt-1">
+<input checked="" class="mt-1 w-4 h-4 rounded text-primary focus:ring-0 cursor-pointer accent-primary shrink-0" id="termsCheck" required="" type="checkbox"/>
+<label class="font-caption text-caption text-secondary leading-relaxed cursor-pointer select-none" for="termsCheck">
+                I agree to the <a class="text-primary underline font-medium hover:text-on-surface-variant transition-colors" href="#">Terms of Service</a> and <a class="text-primary underline font-medium hover:text-on-surface-variant transition-colors" href="#">Privacy Policy</a>, and consent to AI audio analysis and transcript generation for mock interview evaluations.
+              </label>
+</div>
+<!-- Primary Action Button -->
+<button class="w-full mt-2 py-3.5 px-6 rounded-xl bg-primary hover:bg-on-primary-container text-on-primary font-label-md text-label-md font-semibold shadow-md active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer" type="submit">
+<span>Create Account &amp; Start Interviewing</span>
+<span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+<!-- Bottom Navigation Prompts: Login and Institutional SSO -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-3">
+<span class="font-body-md text-body-md text-secondary">
+                Already have an account? 
+                <a class="text-primary font-semibold hover:underline ml-1" data-path="login" href="#">Log In</a>
+</span>
+<a class="font-label-md text-label-md text-secondary hover:text-on-surface flex items-center gap-1 transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px]">domain</span>
+<span>Institutional &amp; SAML SSO</span>
+</a>
+</div>
+</form>
+<!-- FORM END -->
+</div>
+</section>
+</div>
+<!-- Bottom Secondary Footer for Legal & Academic Accreditations -->
+<footer class="mt-12 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-secondary font-caption text-caption">
+<div class="flex items-center gap-space-md">
+<span>© 2024 SmartHire AI Platform Inc.</span>
+<span>•</span>
+<a class="hover:text-on-surface transition-colors" href="#">Candidate Privacy Notice</a>
+<span>•</span>
+<a class="hover:text-on-surface transition-colors" href="#">STAR Methodology</a>
+</div>
+<div class="flex items-center gap-space-sm text-secondary">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span>All AI Speech Evaluation Models Operational</span>
+</div>
+</footer>
+</div>
+</div>
+<script>
+  function togglePasswordVisibility(inputId, button) {
+    const input = document.getElementById(inputId);
+    const icon = button.querySelector('.material-symbols-outlined');
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.textContent = 'visibility_off';
+    } else {
+      input.type = 'password';
+      icon.textContent = 'visibility';
+    }
+  }
+
+  function updateRoleStyles(selected) {
+    const candCard = document.getElementById('roleCandidateLabel');
+    const candBadge = document.getElementById('candidateCheckBadge');
+    const recCard = document.getElementById('roleRecruiterLabel');
+    const recBadge = document.getElementById('recruiterCheckBadge');
+
+    if (selected === 'candidate') {
+      candCard.className = 'relative flex flex-col p-3 rounded-xl bg-surface-container-low shadow-sm cursor-pointer transition-all duration-200';
+      candBadge.className = 'w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center text-[13px]';
+      recCard.className = 'relative flex flex-col p-3 rounded-xl bg-surface-container-lowest shadow-sm hover:bg-surface-container-low cursor-pointer transition-all duration-200';
+      recBadge.className = 'w-5 h-5 rounded-full bg-surface-container text-transparent flex items-center justify-center text-[13px]';
+    } else if (selected === 'recruiter') {
+      recCard.className = 'relative flex flex-col p-3 rounded-xl bg-surface-container-low shadow-sm cursor-pointer transition-all duration-200';
+      recBadge.className = 'w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center text-[13px]';
+      candCard.className = 'relative flex flex-col p-3 rounded-xl bg-surface-container-lowest shadow-sm hover:bg-surface-container-low cursor-pointer transition-all duration-200';
+      candBadge.className = 'w-5 h-5 rounded-full bg-surface-container text-transparent flex items-center justify-center text-[13px]';
+    }
+  }
+</script></main></body></html>

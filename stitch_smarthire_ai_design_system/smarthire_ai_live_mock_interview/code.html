@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"primary":"#2f685c","outline":"#707976","surface-container-highest":"#d3e4fe","on-tertiary":"#ffffff","secondary":"#5e5d68","on-surface-variant":"#404946","primary-container":"#6fa89a","secondary-container":"#e4e1ee","on-error":"#ffffff","surface-container":"#e5eeff","surface-bright":"#f8f9ff","inverse-surface":"#213145","on-error-container":"#93000a","surface-container-lowest":"#ffffff","on-tertiary-fixed":"#211a16","inverse-on-surface":"#eaf1ff","on-tertiary-fixed-variant":"#4e4540","on-secondary-fixed":"#1b1b24","on-surface":"#0b1c2f","surface-variant":"#d3e4fe","primary-fixed":"#b3eedf","error-container":"#ffdad6","on-secondary-fixed-variant":"#464650","on-secondary":"#ffffff","surface-dim":"#cbdbf5","error":"#ba1a1a","tertiary":"#665d57","surface-container-high":"#dce9ff","on-tertiary-container":"#3b332e","outline-variant":"#bfc9c5","tertiary-fixed-dim":"#d1c4bd","secondary-fixed":"#e4e1ee","on-primary-fixed":"#00201a","on-background":"#0b1c2f","on-primary-container":"#003c33","surface-tint":"#2f685c","on-primary-fixed-variant":"#115044","tertiary-container":"#a69b94","tertiary-fixed":"#eee0d8","surface":"#f8f9ff","inverse-primary":"#98d2c3","on-primary":"#ffffff","background":"#f8f9ff","secondary-fixed-dim":"#c7c5d1","surface-container-low":"#eff4ff","primary-fixed-dim":"#98d2c3","on-secondary-container":"#64636e"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"gutter":"1.5rem","margin":"2rem","space-xs":"0.25rem","space-xl":"2rem","space-lg":"1.5rem","margin-mobile":"1rem","space-sm":"0.5rem","gutter-mobile":"1rem","space-md":"1rem"},"fontFamily":{"body-medium":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"display":["Plus Jakarta Sans"],"label-md":["Plus Jakarta Sans"],"caption":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"display-mobile":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"]},"fontSize":{"body-medium":["14px",{"lineHeight":"22px","fontWeight":"500"}],"headline-sm":["18px",{"lineHeight":"26px","letterSpacing":"-0.005em","fontWeight":"600"}],"label-sm":["12px",{"lineHeight":"16px","letterSpacing":"0.02em","fontWeight":"500"}],"headline-lg-mobile":["26px",{"lineHeight":"34px","letterSpacing":"-0.015em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"headline-lg":["30px",{"lineHeight":"38px","letterSpacing":"-0.015em","fontWeight":"700"}],"display":["40px",{"lineHeight":"48px","letterSpacing":"-0.02em","fontWeight":"700"}],"label-md":["13px",{"lineHeight":"18px","letterSpacing":"0.01em","fontWeight":"600"}],"caption":["12px",{"lineHeight":"16px","fontWeight":"400"}],"headline-md":["22px",{"lineHeight":"30px","letterSpacing":"-0.01em","fontWeight":"600"}],"display-mobile":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"body-md":["14px",{"lineHeight":"22px","fontWeight":"400"}]}}}}</script></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased min-h-screen"><header class="fixed top-0 left-0 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-lg"><div class="flex items-center gap-space-sm"><img alt="SmartHire AI Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/ALJJyrCOF-oe_wVPLl5TpkKlt_csD6zFGSNbedFrlNEpggZIRjNuq5Lg67MrtDFPDwss3n8rFLFRg5nx7Y9SQ4tVNd4MeRd-KWtZf5LNUC5QjGFlch_-Dt15lCaEBozvCY2IGOl162MFm1ZfpYeVZgfiZpEPk__w9G1mFgytgq49DqusXBpS2chj0xQSOqDMIaIe6zRIREjzcO2OAGnghwByoTBL0EBDcrlgWOEcjUlkeZ0Q"/><span class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">SmartHire <span class="text-primary">AI</span></span></div><div class="hidden md:flex items-center bg-surface-container-low px-3 py-1.5 rounded-full text-on-surface-variant gap-2"><span class="w-2 h-2 rounded-full bg-primary"></span><span class="font-label-sm text-label-sm text-on-surface">Candidate Portal</span><span class="text-outline font-label-sm text-label-sm">/</span><button class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors">Recruiter View</button></div></div><div class="flex items-center gap-space-md"><div class="relative hidden sm:flex items-center"><span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">search</span><input class="w-64 lg:w-80 bg-surface-container-low pl-9 pr-12 py-1.5 rounded-xl font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Search practice, roles, rubrics..." type="text"/><kbd class="absolute right-2.5 font-label-sm text-label-sm bg-surface-container-lowest text-on-surface-variant px-1.5 py-0.5 rounded shadow-sm">⌘K</kbd></div><div class="flex items-center gap-space-sm"><button aria-label="Notifications" class="relative p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary ring-2 ring-surface-container-lowest"></span></button><button aria-label="Help &amp; Resources" class="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">help_outline</span></button></div><div class="h-6 w-px bg-outline-variant/30"></div><div class="flex items-center gap-space-sm"><div class="relative"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsTHAzJTyOs73jMav6TPcDWVhNkFhwFRPrIGQbEOqBh3cSsdLGskQ1jdsEaTvzRN5kFYJhIPvanfQJc1RLt6xzHsmg73unUcp6gcHTxSLvtSRCwyb-ja54i2uFMdJ-t8R3ZnlOZfTaY0aFFbSB-3M0jckTduqWxNkW0z7ZsSkqZ-EZDdV8bmi3Wn8SrV2ZfqjZ8ZC99j6W-LtI9nV9OMXjta5T-B-tGk-hVXKxXNs"/><span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-primary ring-2 ring-surface-container-lowest"></span></div><div class="hidden xl:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface leading-tight">Elena Vance</span><span class="font-caption text-caption text-on-surface-variant leading-tight">Senior Candidate</span></div></div></div></header><aside class="fixed left-0 top-16 bottom-0 w-64 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.03)] z-40 flex flex-col justify-between p-space-md"><div class="flex flex-col gap-space-xs"><div class="px-3 py-2"><span class="font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold">Workspace</span></div><nav class="flex flex-col gap-1" data-active-classes="bg-primary-fixed text-on-primary-fixed font-semibold shadow-sm"><a class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px]">dashboard</span><span>Dashboard</span></a><a aria-current="page" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all bg-primary-fixed text-on-primary-fixed font-semibold shadow-sm" data-path="mock-interviews" href="#"><span class="material-symbols-outlined text-[20px]">videocam</span><span>Mock Interviews</span></a><a class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="practice-library" href="#"><span class="material-symbols-outlined text-[20px]">local_library</span><span>Practice Library</span></a><a class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="candidate-assessments" href="#"><span class="material-symbols-outlined text-[20px]">assignment_turned_in</span><span>Candidate Assessments</span></a><a class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="performance-analytics" href="#"><span class="material-symbols-outlined text-[20px]">insights</span><span>Performance Analytics</span></a><a class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span>Settings</span></a></nav></div><div class="p-space-sm bg-surface-container-low rounded-xl flex flex-col gap-2"><div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-on-surface-variant">Weekly Goal</span><span class="font-label-sm text-label-sm text-primary font-semibold">4 / 5 Done</span></div><div class="w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden"><div class="bg-primary h-full rounded-full" style="width: 80%"></div></div><div class="flex items-center gap-2 pt-1"><span class="material-symbols-outlined text-[16px] text-primary">verified</span><span class="font-caption text-caption text-on-surface-variant">Ready for evaluation</span></div></div></aside><div class="pl-64"><main class="w-full pt-16 bg-surface min-h-[calc(100vh-4rem)] p-space-margin"><div class="flex flex-col w-full gap-6">
+<!-- Top Session Header -->
+<div class="w-full bg-surface-container-lowest rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-xl bg-primary-fixed flex items-center justify-center text-on-primary-fixed shadow-sm">
+<span class="material-symbols-outlined text-[24px]">psychology</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2.5">
+<h1 class="font-headline-sm text-headline-sm text-on-surface">Senior Frontend Engineer Interview</h1>
+<span class="px-2.5 py-0.5 rounded-full text-xs font-label-sm bg-primary-fixed text-on-primary-fixed flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+            Live Session
+          </span>
+</div>
+<p class="font-caption text-caption text-on-surface-variant flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-primary">smart_toy</span>
+          Interviewer: Elena Vance (AI Technical &amp; Behavioral Evaluator)
+        </p>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-3">
+<!-- Session Duration Pill -->
+<div class="flex items-center gap-2 bg-surface-container-low px-3.5 py-1.5 rounded-xl">
+<span class="material-symbols-outlined text-[18px] text-primary">timer</span>
+<span class="font-label-md text-label-md text-on-surface tracking-tight" id="session-timer">18:42</span>
+<span class="font-caption text-caption text-secondary">/ 45:00</span>
+</div>
+<!-- Quick Action Controls -->
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors" id="pause-btn">
+<span class="material-symbols-outlined text-[18px]">pause</span>
+<span class="hidden sm:inline">Pause</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors" id="skip-btn">
+<span class="material-symbols-outlined text-[18px]">skip_next</span>
+<span class="hidden sm:inline">Skip</span>
+</button>
+<button class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-error-container text-on-error-container hover:opacity-90 font-label-md text-label-md transition-opacity" id="finish-btn">
+<span class="material-symbols-outlined text-[18px]">flag</span>
+<span>End Session</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Main Stage Split (65% / 35%) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- Left Interaction Stage (lg:col-span-8 approx 66%) -->
+<div class="lg:col-span-8 flex flex-col gap-5 min-w-0">
+<!-- AI Interviewer Video Hub + Candidate Picture-in-Picture -->
+<div class="relative w-full aspect-[16/9] sm:aspect-[21/9] lg:aspect-[16/9] bg-gradient-to-b from-surface-container-low via-surface-container to-surface-dim rounded-2xl overflow-hidden shadow-sm flex items-center justify-center p-6">
+<!-- Ambient Radial Glow -->
+<div class="absolute inset-0 bg-radial from-primary/10 via-transparent to-transparent opacity-70 pointer-events-none"></div>
+<!-- AI Persona Visualizer Center -->
+<div class="relative z-10 flex flex-col items-center text-center gap-3">
+<div class="relative flex items-center justify-center">
+<!-- Pulsing Halo Rings -->
+<div class="absolute w-28 h-28 rounded-full bg-primary/15 animate-ping opacity-60"></div>
+<div class="absolute w-24 h-24 rounded-full bg-primary/25 animate-pulse"></div>
+<!-- Persona Avatar -->
+<div class="relative w-20 h-20 rounded-full overflow-hidden shadow-md ring-4 ring-surface-container-lowest">
+<img class="w-full h-full object-cover" data-alt="Warm and composed modern AI interviewer avatar, gentle expression, soft studio lighting with subtle teal and slate highlights, photorealistic corporate headshot." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAn4YrPk4octDAHa3N3UPKVCHeuanxCjM41lJuScBVilg9uDJsocCD-AfTA3iVbAqQ7MsfJHQJLtmRbIayDXR8bGrwXN9GY4a718h-hG6FP4MWmclchMEjKBEvmDQSIG8ZOZqr11dnezGh_hDInHvm4gqrFs0GUBqUqP2cu_SFbFTQaeuhgRQ06XXcaCH89INaB7ra3q1o9X4yGMW6pmqzZjZ_GZyluvuapoKFA95o"/>
+</div>
+<!-- Active Speech Badge -->
+<span class="absolute -bottom-1 -right-1 bg-primary text-on-primary rounded-full p-1 shadow-sm flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px]">volume_up</span>
+</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-headline-sm text-headline-sm text-on-surface">Elena Vance</span>
+<span class="font-caption text-caption text-on-surface-variant">Speaking • Listening actively</span>
+</div>
+<!-- Dynamic Speech Waveform Visualizer -->
+<div class="flex items-center gap-1.5 px-4 py-2 bg-surface-container-lowest/80 backdrop-blur-md rounded-full shadow-sm mt-1">
+<div class="w-1 bg-primary rounded-full animate-bounce h-3" style="animation-delay: 0.1s"></div>
+<div class="w-1 bg-primary rounded-full animate-bounce h-5" style="animation-delay: 0.3s"></div>
+<div class="w-1 bg-primary rounded-full animate-bounce h-7" style="animation-delay: 0.2s"></div>
+<div class="w-1 bg-primary rounded-full animate-bounce h-4" style="animation-delay: 0.4s"></div>
+<div class="w-1 bg-primary rounded-full animate-bounce h-6" style="animation-delay: 0.15s"></div>
+<div class="w-1 bg-primary rounded-full animate-bounce h-3" style="animation-delay: 0.35s"></div>
+<div class="w-1 bg-primary rounded-full animate-bounce h-5" style="animation-delay: 0.25s"></div>
+<span class="font-label-sm text-label-sm text-primary font-semibold ml-2">Synthesizing response...</span>
+</div>
+</div>
+<!-- Floating Environmental Badges Top Left -->
+<div class="absolute top-4 left-4 z-20 flex items-center gap-2">
+<span class="px-2.5 py-1 rounded-lg bg-surface-container-lowest/80 backdrop-blur-md text-on-surface font-label-sm text-label-sm flex items-center gap-1.5 shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-primary">hearing</span>
+            Audio HD • 48kHz
+          </span>
+<span class="px-2.5 py-1 rounded-lg bg-surface-container-lowest/80 backdrop-blur-md text-on-surface font-label-sm text-label-sm flex items-center gap-1.5 shadow-sm">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+            Neural Latency 140ms
+          </span>
+</div>
+<!-- Candidate Webcam Preview (Picture-in-Picture Bottom Right) -->
+<div class="absolute bottom-4 right-4 z-20 w-36 sm:w-44 aspect-video rounded-xl overflow-hidden shadow-lg bg-surface-container-lowest ring-2 ring-surface-container-lowest transition-transform hover:scale-105">
+<img class="w-full h-full object-cover" data-alt="Professional female software engineer candidate in a home office setting, natural window lighting, attentive and focused expression looking directly at the camera." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqrmk4DAN4jQGryDvTu9DR1Mq6m_l-vTGfYnHNH48_PNt2kzhG1oiGyN7ev48M3hDVYcWmwaAsKEPxMMFEF_KWTf4y7BxVfIFaFGnJFooS-2ks1UG1Voqwb2xB4nqWEetv3akDZBCl2Dp0oKEOyw-xJ2WITrdfJQF8asJLbDJK06_kLKSufGqe08Krf0Q_aclFki5MHZXXplnix2x7Unlo22pTXqV0XnFpUa3dXD8"/>
+<div class="absolute bottom-1.5 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-container-lowest/90 backdrop-blur-sm shadow-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span class="font-caption text-[10px] font-semibold text-on-surface">You (Elena V.)</span>
+</div>
+<div class="absolute top-1.5 right-1.5 p-1 rounded-full bg-surface-container-lowest/80 text-primary">
+<span class="material-symbols-outlined text-[14px]">mic</span>
+</div>
+</div>
+</div>
+<!-- Active Question Card -->
+<div class="w-full bg-surface-container-lowest rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-1 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-semibold">
+              Question 3 of 6
+            </span>
+<span class="px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface font-caption text-caption">
+              System Architecture • Technical Depth
+            </span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant font-caption text-caption">
+<span class="material-symbols-outlined text-[16px] text-primary">psychology_alt</span>
+            Weight: 25% Total Score
+          </div>
+</div>
+<p class="font-headline-sm text-headline-sm text-on-surface leading-snug">
+          “Can you walk me through a situation where you had to refactor a legacy micro-frontend architecture with zero downtime?”
+        </p>
+<div class="flex flex-wrap items-center gap-2 pt-1">
+<span class="font-caption text-caption text-secondary">Rubric targets:</span>
+<span class="px-2 py-0.5 rounded-md bg-surface-container-low text-on-surface-variant font-caption text-caption">Canary Rollouts</span>
+<span class="px-2 py-0.5 rounded-md bg-surface-container-low text-on-surface-variant font-caption text-caption">Module Federation</span>
+<span class="px-2 py-0.5 rounded-md bg-surface-container-low text-on-surface-variant font-caption text-caption">Contract Testing</span>
+<span class="px-2 py-0.5 rounded-md bg-surface-container-low text-on-surface-variant font-caption text-caption">Backward Compatibility</span>
+</div>
+</div>
+<!-- Live Interactive Transcription Stream -->
+<div class="w-full bg-surface-container-lowest rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col gap-4">
+<div class="flex items-center justify-between pb-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-primary">subtitles</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Live Transcription Stream</h2>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-caption text-caption text-on-surface-variant">Real-time Whisper v3</span>
+</div>
+</div>
+<div class="flex flex-col gap-3.5 max-h-64 overflow-y-auto pr-1" id="transcript-feed">
+<!-- AI Speech Bubble -->
+<div class="flex gap-3 max-w-[90%]">
+<div class="w-7 h-7 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px]">smart_toy</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Elena (AI Interviewer)</span>
+<span class="font-caption text-caption text-outline">18:10</span>
+</div>
+<div class="p-3.5 rounded-2xl rounded-tl-sm bg-surface-container-low text-on-surface font-body-md text-body-md shadow-xs">
+                To evaluate your systems design mindset: Can you walk me through a situation where you had to refactor a legacy micro-frontend architecture with zero downtime? Take a moment to frame your thoughts if needed.
+              </div>
+</div>
+</div>
+<!-- Candidate Response Bubble -->
+<div class="flex gap-3 max-w-[92%] self-end flex-row-reverse">
+<div class="w-7 h-7 rounded-full bg-secondary-container text-on-secondary-fixed flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px]">person</span>
+</div>
+<div class="flex flex-col items-end gap-1">
+<div class="flex items-center gap-2">
+<span class="font-caption text-caption text-outline">18:24</span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Elena Vance (You)</span>
+</div>
+<div class="p-3.5 rounded-2xl rounded-tr-sm bg-primary-fixed text-on-primary-fixed font-body-md text-body-md shadow-xs">
+                Certainly. In my previous organization, we managed six distributed teams deploying through single-spa iframes. Our core checkout module suffered from bundle version drift. We transitioned to Webpack 5 Module Federation using a bidirectional proxy layer.
+              </div>
+</div>
+</div>
+<!-- Live Streaming Incoming Transcript Candidate -->
+<div class="flex gap-3 max-w-[92%] self-end flex-row-reverse">
+<div class="w-7 h-7 rounded-full bg-primary text-on-primary flex items-center justify-center shrink-0 mt-0.5 animate-pulse">
+<span class="material-symbols-outlined text-[16px]">mic</span>
+</div>
+<div class="flex flex-col items-end gap-1">
+<div class="flex items-center gap-2">
+<span class="font-caption text-caption text-primary font-medium">Listening...</span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Elena Vance (You)</span>
+</div>
+<div class="p-3.5 rounded-2xl rounded-tr-sm bg-surface-container-high text-on-surface font-body-md text-body-md shadow-xs">
+<span class="text-on-surface">To guarantee zero downtime, we established an immutable blue-green routing topology at Cloudflare Workers so each micro-frontend could fall back immediately if host bootstrapping failed...</span>
+<span class="inline-block w-1.5 h-4 bg-primary ml-1 animate-pulse align-middle"></span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Live Feedback & Analysis HUD (lg:col-span-4 approx 34%) -->
+<div class="lg:col-span-4 flex flex-col gap-5 min-w-0">
+<!-- AI Real-Time Metric Engine -->
+<div class="w-full bg-surface-container-lowest rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col gap-5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-primary">insights</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Live Interview Radar</h2>
+</div>
+<span class="px-2 py-0.5 rounded-full text-xs font-label-sm bg-primary-fixed text-on-primary-fixed">Active HUD</span>
+</div>
+<!-- Metric 1: Pace & Cadence -->
+<div class="flex flex-col gap-2 p-3.5 rounded-xl bg-surface-container-low">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">speed</span>
+<span class="font-label-md text-label-md text-on-surface">Speaking Cadence</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-headline-sm text-primary font-bold">135</span>
+<span class="font-caption text-caption text-on-surface-variant">wpm</span>
+</div>
+</div>
+<!-- Gauge Bar with target zone -->
+<div class="relative w-full h-2.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="absolute left-[30%] right-[30%] top-0 bottom-0 bg-primary/20"></div>
+<div class="h-full bg-primary rounded-full transition-all duration-500" style="width: 58%;"></div>
+</div>
+<div class="flex items-center justify-between font-caption text-caption text-outline text-[11px]">
+<span>Slow (90)</span>
+<span class="text-primary font-semibold">Optimal Range (125-150)</span>
+<span>Fast (180+)</span>
+</div>
+</div>
+<!-- Metric 2: Confidence & Sentiment Index -->
+<div class="flex flex-col gap-2.5 p-3.5 rounded-xl bg-surface-container-low">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">psychology</span>
+<span class="font-label-md text-label-md text-on-surface">Confidence &amp; Tone</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="font-headline-sm text-headline-sm text-primary font-bold">89%</span>
+<span class="px-1.5 py-0.5 rounded bg-primary-fixed text-[11px] font-label-sm text-on-primary-fixed">High</span>
+</div>
+</div>
+<!-- Micro SVG Sparkline / Wave of Confidence -->
+<div class="w-full flex items-center justify-between gap-3">
+<div class="flex-1">
+<svg class="w-full h-10 text-primary" fill="none" viewbox="0 0 200 40">
+<path d="M0 28 C30 25, 45 10, 80 18 C110 24, 130 8, 160 12 C180 14, 190 6, 200 5" stroke="currentColor" stroke-linecap="round" stroke-width="2.5"></path>
+<path d="M0 28 C30 25, 45 10, 80 18 C110 24, 130 8, 160 12 C180 14, 190 6, 200 5 L200 40 L0 40 Z" fill="currentColor" fill-opacity="0.1"></path>
+</svg>
+</div>
+<div class="flex flex-col text-right">
+<span class="font-caption text-caption text-on-surface-variant font-medium">Clarity: 92%</span>
+<span class="font-caption text-caption text-on-surface-variant font-medium">Pauses: Natural</span>
+</div>
+</div>
+</div>
+<!-- Rubric Coverage Checklist -->
+<div class="flex flex-col gap-2.5">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface">Answer Topics Detected</span>
+<span class="font-caption text-caption text-primary font-semibold">3 / 4 Hit</span>
+</div>
+<div class="flex flex-col gap-2">
+<!-- Item 1 -->
+<div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-container-low text-on-surface">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md font-medium">STAR Framework Structure</span>
+</div>
+<span class="font-caption text-[11px] text-primary font-semibold bg-surface-container-lowest px-2 py-0.5 rounded-md">Identified</span>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-container-low text-on-surface">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md font-medium">Module Federation / Proxies</span>
+</div>
+<span class="font-caption text-[11px] text-primary font-semibold bg-surface-container-lowest px-2 py-0.5 rounded-md">Deep</span>
+</div>
+<!-- Item 3 -->
+<div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-container-low text-on-surface">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md font-medium">Fallback &amp; Rollback Mechanisms</span>
+</div>
+<span class="font-caption text-[11px] text-primary font-semibold bg-surface-container-lowest px-2 py-0.5 rounded-md">Covered</span>
+</div>
+<!-- Item 4 (Pending) -->
+<div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-container-low text-secondary opacity-75">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-outline">radio_button_unchecked</span>
+<span class="font-body-md text-body-md">CI/CD Automated Canary Gates</span>
+</div>
+<span class="font-caption text-[11px] text-secondary bg-surface-container-lowest px-2 py-0.5 rounded-md">Recommended</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Live Scratchpad & Real-Time Notes Tab -->
+<div class="w-full bg-surface-container-lowest rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-primary">edit_note</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Candidate Scratchpad</h3>
+</div>
+<span class="font-caption text-caption text-secondary">Private • Auto-saved</span>
+</div>
+<textarea class="w-full bg-surface-container-low rounded-xl p-3 text-on-surface placeholder:text-outline font-body-md text-body-md focus:outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 resize-none transition-all" placeholder="Jot down architectural diagrams, acronyms, or metrics to remember during your response..." rows="4">S: 6 distributed squads, version drift across checkout
+T: Zero downtime micro-frontend rewrite
+A: Cloudflare Workers edge router + Webpack 5 Module Federation + contract tests
+R: 0 minutes downtime, 42% bundle size reduction</textarea>
+<div class="flex items-center justify-between pt-1">
+<div class="flex items-center gap-1.5 text-on-surface-variant font-caption text-caption">
+<span class="material-symbols-outlined text-[15px] text-primary">cloud_done</span>
+            Saved to final review rubric
+          </div>
+<button class="font-label-sm text-label-sm text-primary hover:underline font-semibold">Clear Notes</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Interaction & Session Control Bar -->
+<div class="sticky bottom-4 z-40 w-full bg-surface-container-lowest/95 backdrop-blur-xl rounded-2xl p-4 sm:p-5 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+<!-- Audio/Video Hardware Toggles -->
+<div class="flex items-center gap-2.5">
+<button class="flex items-center justify-center w-11 h-11 rounded-xl bg-primary text-on-primary shadow-sm hover:opacity-95 transition-opacity" id="toggle-mic" title="Mute/Unmute Microphone">
+<span class="material-symbols-outlined text-[22px]">mic</span>
+</button>
+<button class="flex items-center justify-center w-11 h-11 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface transition-colors" id="toggle-cam" title="Toggle Webcam">
+<span class="material-symbols-outlined text-[22px]">videocam</span>
+</button>
+<div class="h-6 w-px bg-surface-container-highest mx-1"></div>
+<!-- AI Speed Controls -->
+<div class="flex items-center bg-surface-container-low px-2.5 py-1.5 rounded-xl gap-2">
+<span class="font-caption text-caption text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary">speed</span>
+          Voice:
+        </span>
+<button class="font-label-sm text-label-sm font-semibold px-2 py-0.5 rounded-lg bg-surface-container-lowest text-primary shadow-xs">1.0x</button>
+<button class="font-label-sm text-label-sm text-secondary hover:text-on-surface px-1.5 py-0.5 transition-colors">1.2x</button>
+</div>
+<!-- Closed Captions Toggle -->
+<button class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors">
+<span class="material-symbols-outlined text-[18px] text-primary">closed_caption</span>
+<span class="hidden sm:inline">Captions</span>
+</button>
+</div>
+<!-- Active Status Hint Center -->
+<div class="hidden xl:flex items-center gap-2 text-on-surface-variant font-caption text-caption">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+      Speech engine stream active • Analyzing technical depth
+    </div>
+<!-- Submit Primary Action -->
+<div class="flex items-center gap-3 w-full md:w-auto justify-end">
+<button class="flex-1 md:flex-initial flex items-center justify-center gap-2.5 px-6 py-3 rounded-xl bg-primary text-on-primary font-label-md text-label-md hover:opacity-95 active:scale-98 shadow-md transition-all" id="submit-response-btn">
+<span>Submit Response &amp; Next</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<script>
+  (function () {
+    // Session Timer Simulation
+    let totalSeconds = 18 * 60 + 42;
+    const timerElement = document.getElementById('session-timer');
+    if (timerElement) {
+      setInterval(() => {
+        totalSeconds++;
+        const mins = Math.floor(totalSeconds / 60);
+        const secs = totalSeconds % 60;
+        timerElement.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      }, 1000);
+    }
+
+    // Mic Toggle State
+    const micBtn = document.getElementById('toggle-mic');
+    if (micBtn) {
+      let isMuted = false;
+      micBtn.addEventListener('click', () => {
+        isMuted = !isMuted;
+        const icon = micBtn.querySelector('.material-symbols-outlined');
+        if (isMuted) {
+          micBtn.classList.remove('bg-primary', 'text-on-primary');
+          micBtn.classList.add('bg-error-container', 'text-on-error-container');
+          if (icon) icon.textContent = 'mic_off';
+        } else {
+          micBtn.classList.remove('bg-error-container', 'text-on-error-container');
+          micBtn.classList.add('bg-primary', 'text-on-primary');
+          if (icon) icon.textContent = 'mic';
+        }
+      });
+    }
+
+    // Camera Toggle State
+    const camBtn = document.getElementById('toggle-cam');
+    if (camBtn) {
+      let camOff = false;
+      camBtn.addEventListener('click', () => {
+        camOff = !camOff;
+        const icon = camBtn.querySelector('.material-symbols-outlined');
+        if (camOff) {
+          camBtn.classList.add('bg-error-container', 'text-on-error-container');
+          if (icon) icon.textContent = 'videocam_off';
+        } else {
+          camBtn.classList.remove('bg-error-container', 'text-on-error-container');
+          if (icon) icon.textContent = 'videocam';
+        }
+      });
+    }
+
+    // Submit Response Feedback
+    const submitBtn = document.getElementById('submit-response-btn');
+    if (submitBtn) {
+      submitBtn.addEventListener('click', () => {
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = `
+          <span class="material-symbols-outlined text-[18px] animate-spin">refresh</span>
+          <span>Grading Response...</span>
+        `;
+        submitBtn.classList.add('opacity-80', 'pointer-events-none');
+        setTimeout(() => {
+          submitBtn.innerHTML = `
+            <span class="material-symbols-outlined text-[18px]">done</span>
+            <span>Question 4 Ready!</span>
+          `;
+          setTimeout(() => {
+            submitBtn.innerHTML = originalText;
+            submitBtn.classList.remove('opacity-80', 'pointer-events-none');
+          }, 1500);
+        }, 1200);
+      });
+    }
+  })();
+</script></main></div></body></html>

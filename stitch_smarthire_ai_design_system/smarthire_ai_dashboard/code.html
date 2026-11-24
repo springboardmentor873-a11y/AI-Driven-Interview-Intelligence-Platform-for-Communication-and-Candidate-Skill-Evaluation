@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"primary":"#2f685c","outline":"#707976","surface-container-highest":"#d3e4fe","on-tertiary":"#ffffff","secondary":"#5e5d68","on-surface-variant":"#404946","primary-container":"#6fa89a","secondary-container":"#e4e1ee","on-error":"#ffffff","surface-container":"#e5eeff","surface-bright":"#f8f9ff","inverse-surface":"#213145","on-error-container":"#93000a","surface-container-lowest":"#ffffff","on-tertiary-fixed":"#211a16","inverse-on-surface":"#eaf1ff","on-tertiary-fixed-variant":"#4e4540","on-secondary-fixed":"#1b1b24","on-surface":"#0b1c2f","surface-variant":"#d3e4fe","primary-fixed":"#b3eedf","error-container":"#ffdad6","on-secondary-fixed-variant":"#464650","on-secondary":"#ffffff","surface-dim":"#cbdbf5","error":"#ba1a1a","tertiary":"#665d57","surface-container-high":"#dce9ff","on-tertiary-container":"#3b332e","outline-variant":"#bfc9c5","tertiary-fixed-dim":"#d1c4bd","secondary-fixed":"#e4e1ee","on-primary-fixed":"#00201a","on-background":"#0b1c2f","on-primary-container":"#003c33","surface-tint":"#2f685c","on-primary-fixed-variant":"#115044","tertiary-container":"#a69b94","tertiary-fixed":"#eee0d8","surface":"#f8f9ff","inverse-primary":"#98d2c3","on-primary":"#ffffff","background":"#f8f9ff","secondary-fixed-dim":"#c7c5d1","surface-container-low":"#eff4ff","primary-fixed-dim":"#98d2c3","on-secondary-container":"#64636e"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"gutter":"1.5rem","margin":"2rem","space-xs":"0.25rem","space-xl":"2rem","space-lg":"1.5rem","margin-mobile":"1rem","space-sm":"0.5rem","gutter-mobile":"1rem","space-md":"1rem"},"fontFamily":{"body-medium":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"display":["Plus Jakarta Sans"],"label-md":["Plus Jakarta Sans"],"caption":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"display-mobile":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"]},"fontSize":{"body-medium":["14px",{"lineHeight":"22px","fontWeight":"500"}],"headline-sm":["18px",{"lineHeight":"26px","letterSpacing":"-0.005em","fontWeight":"600"}],"label-sm":["12px",{"lineHeight":"16px","letterSpacing":"0.02em","fontWeight":"500"}],"headline-lg-mobile":["26px",{"lineHeight":"34px","letterSpacing":"-0.015em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"headline-lg":["30px",{"lineHeight":"38px","letterSpacing":"-0.015em","fontWeight":"700"}],"display":["40px",{"lineHeight":"48px","letterSpacing":"-0.02em","fontWeight":"700"}],"label-md":["13px",{"lineHeight":"18px","letterSpacing":"0.01em","fontWeight":"600"}],"caption":["12px",{"lineHeight":"16px","fontWeight":"400"}],"headline-md":["22px",{"lineHeight":"30px","letterSpacing":"-0.01em","fontWeight":"600"}],"display-mobile":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"body-md":["14px",{"lineHeight":"22px","fontWeight":"400"}]}}}}</script></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased min-h-screen"><header class="fixed top-0 left-0 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-lg"><div class="flex items-center gap-space-sm"><img alt="SmartHire AI Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/ALJJyrCOF-oe_wVPLl5TpkKlt_csD6zFGSNbedFrlNEpggZIRjNuq5Lg67MrtDFPDwss3n8rFLFRg5nx7Y9SQ4tVNd4MeRd-KWtZf5LNUC5QjGFlch_-Dt15lCaEBozvCY2IGOl162MFm1ZfpYeVZgfiZpEPk__w9G1mFgytgq49DqusXBpS2chj0xQSOqDMIaIe6zRIREjzcO2OAGnghwByoTBL0EBDcrlgWOEcjUlkeZ0Q"/><span class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">SmartHire <span class="text-primary">AI</span></span></div><div class="hidden md:flex items-center bg-surface-container-low px-3 py-1.5 rounded-full text-on-surface-variant gap-2"><span class="w-2 h-2 rounded-full bg-primary"></span><span class="font-label-sm text-label-sm text-on-surface">Candidate Portal</span><span class="text-outline font-label-sm text-label-sm">/</span><button class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors">Recruiter View</button></div></div><div class="flex items-center gap-space-md"><div class="relative hidden sm:flex items-center"><span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">search</span><input class="w-64 lg:w-80 bg-surface-container-low pl-9 pr-12 py-1.5 rounded-xl font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Search practice, roles, rubrics..." type="text"/><kbd class="absolute right-2.5 font-label-sm text-label-sm bg-surface-container-lowest text-on-surface-variant px-1.5 py-0.5 rounded shadow-sm">⌘K</kbd></div><div class="flex items-center gap-space-sm"><button aria-label="Notifications" class="relative p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary ring-2 ring-surface-container-lowest"></span></button><button aria-label="Help &amp; Resources" class="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">help_outline</span></button></div><div class="h-6 w-px bg-outline-variant/30"></div><div class="flex items-center gap-space-sm"><div class="relative"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsTHAzJTyOs73jMav6TPcDWVhNkFhwFRPrIGQbEOqBh3cSsdLGskQ1jdsEaTvzRN5kFYJhIPvanfQJc1RLt6xzHsmg73unUcp6gcHTxSLvtSRCwyb-ja54i2uFMdJ-t8R3ZnlOZfTaY0aFFbSB-3M0jckTduqWxNkW0z7ZsSkqZ-EZDdV8bmi3Wn8SrV2ZfqjZ8ZC99j6W-LtI9nV9OMXjta5T-B-tGk-hVXKxXNs"/><span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-primary ring-2 ring-surface-container-lowest"></span></div><div class="hidden xl:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface leading-tight">Elena Vance</span><span class="font-caption text-caption text-on-surface-variant leading-tight">Senior Candidate</span></div></div></div></header><aside class="fixed left-0 top-16 bottom-0 w-64 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.03)] z-40 flex flex-col justify-between p-space-md"><div class="flex flex-col gap-space-xs"><div class="px-3 py-2"><span class="font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold">Workspace</span></div><nav class="flex flex-col gap-1" data-active-classes="bg-primary-fixed text-on-primary-fixed font-semibold shadow-sm"><a aria-current="page" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all bg-primary-fixed text-on-primary-fixed font-semibold shadow-sm" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px]">dashboard</span><span>Dashboard</span></a><a class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="mock-interviews" href="#"><span class="material-symbols-outlined text-[20px]">videocam</span><span>Mock Interviews</span></a><a class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="practice-library" href="#"><span class="material-symbols-outlined text-[20px]">local_library</span><span>Practice Library</span></a><a class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="candidate-assessments" href="#"><span class="material-symbols-outlined text-[20px]">assignment_turned_in</span><span>Candidate Assessments</span></a><a class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="performance-analytics" href="#"><span class="material-symbols-outlined text-[20px]">insights</span><span>Performance Analytics</span></a><a class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span>Settings</span></a></nav></div><div class="p-space-sm bg-surface-container-low rounded-xl flex flex-col gap-2"><div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-on-surface-variant">Weekly Goal</span><span class="font-label-sm text-label-sm text-primary font-semibold">4 / 5 Done</span></div><div class="w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden"><div class="bg-primary h-full rounded-full" style="width: 80%"></div></div><div class="flex items-center gap-2 pt-1"><span class="material-symbols-outlined text-[16px] text-primary">verified</span><span class="font-caption text-caption text-on-surface-variant">Ready for evaluation</span></div></div></aside><div class="pl-64"><main class="w-full pt-16 bg-surface min-h-[calc(100vh-4rem)] p-space-margin"><div class="flex flex-col w-full gap-space-xl">
+<!-- Top Welcome & Next Session Banner -->
+<section class="relative overflow-hidden rounded-2xl bg-surface-container-lowest shadow-sm p-space-xl">
+<div class="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-gradient-to-br from-primary-fixed/40 via-surface-container/30 to-transparent blur-2xl pointer-events-none"></div>
+<div class="absolute -left-12 -bottom-12 w-64 h-64 rounded-full bg-secondary-container/40 blur-xl pointer-events-none"></div>
+<div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-space-lg">
+<div class="flex flex-col gap-space-xs max-w-2xl">
+<div class="flex items-center gap-space-sm mb-1">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+            Simulated AI Environment Ready
+          </span>
+<span class="text-secondary font-caption text-caption">Session ID: #SH-4092</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">
+          Welcome back, Sarah 👋
+        </h1>
+<p class="font-body-lg text-body-lg text-secondary leading-relaxed">
+          You have an upcoming AI Mock Interview for <strong class="text-on-surface font-semibold">Senior Product Designer</strong> scheduled for today at 3:00 PM. All telemetry and rubrics are calibrated.
+        </p>
+</div>
+<div class="flex items-center gap-space-sm shrink-0 flex-wrap">
+<button class="px-5 py-3 rounded-xl bg-primary text-on-primary font-label-md text-label-md transition-all duration-200 hover:brightness-105 active:scale-[0.98] shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">play_circle</span>
+          Start Practice Session
+        </button>
+<button class="px-5 py-3 rounded-xl bg-surface-container-low text-on-surface font-label-md text-label-md transition-all duration-200 hover:bg-surface-container hover:text-primary active:scale-[0.98] flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">menu_book</span>
+          Browse Questions
+        </button>
+</div>
+</div>
+</section>
+<!-- KPI Metric Overview Cards -->
+<section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md">
+<!-- Metric 1: Interviews Completed -->
+<div class="rounded-2xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col justify-between gap-space-md transition-all hover:shadow-md">
+<div class="flex items-start justify-between">
+<div class="p-2.5 rounded-xl bg-surface-container-low text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">assignment_turned_in</span>
+</div>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+          +2 this week
+        </span>
+</div>
+<div>
+<p class="font-caption text-caption text-secondary">Interviews Completed</p>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-display text-display text-on-surface">12</span>
+<span class="font-label-sm text-label-sm text-secondary">total sessions</span>
+</div>
+</div>
+<div class="w-full bg-surface-container-low rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-full rounded-full transition-all duration-500" style="width: 75%"></div>
+</div>
+</div>
+<!-- Metric 2: Average Readiness Score -->
+<div class="rounded-2xl bg-surface-container-lowest p-space-lg shadow-sm flex items-center justify-between gap-space-md transition-all hover:shadow-md">
+<div class="flex flex-col justify-between h-full">
+<div class="p-2.5 rounded-xl bg-surface-container-low text-primary flex items-center justify-center w-fit">
+<span class="material-symbols-outlined text-[22px]">speed</span>
+</div>
+<div class="mt-space-md">
+<p class="font-caption text-caption text-secondary">Avg. Readiness Score</p>
+<div class="flex items-baseline gap-1 mt-1">
+<span class="font-headline-lg text-headline-lg text-on-surface">88</span>
+<span class="font-body-md text-body-md text-secondary">/100</span>
+</div>
+</div>
+</div>
+<!-- Progress Ring SVG -->
+<div class="relative w-20 h-20 shrink-0 flex items-center justify-center">
+<svg class="w-full h-full -rotate-90 transform" viewbox="0 0 36 36">
+<path class="text-surface-container-low" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3.5"></path>
+<path class="text-primary transition-all duration-700" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="88, 100" stroke-linecap="round" stroke-width="3.5"></path>
+</svg>
+<span class="absolute font-label-md text-label-md text-on-surface font-semibold">88%</span>
+</div>
+</div>
+<!-- Metric 3: Top Skill Area -->
+<div class="rounded-2xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col justify-between gap-space-md transition-all hover:shadow-md">
+<div class="flex items-start justify-between">
+<div class="p-2.5 rounded-xl bg-surface-container-low text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">psychology</span>
+</div>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
+          94% Proficient
+        </span>
+</div>
+<div>
+<p class="font-caption text-caption text-secondary">Top Skill Domain</p>
+<h2 class="font-headline-sm text-headline-sm text-on-surface mt-1 line-clamp-1">
+          System Architecture
+        </h2>
+<p class="font-caption text-caption text-secondary mt-0.5">&amp; Behavioral Leadership</p>
+</div>
+<div class="flex items-center gap-1.5 text-primary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+<span>Top 5% candidate percentile</span>
+</div>
+</div>
+<!-- Metric 4: Recruiter Visibility -->
+<div class="rounded-2xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col justify-between gap-space-md transition-all hover:shadow-md">
+<div class="flex items-start justify-between">
+<div class="p-2.5 rounded-xl bg-surface-container-low text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">visibility</span>
+</div>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-surface-variant text-on-surface font-label-sm text-label-sm font-semibold">
+          High Exposure
+        </span>
+</div>
+<div>
+<p class="font-caption text-caption text-secondary">Recruiter Visibility</p>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-headline-lg text-headline-lg text-on-surface">4 Invites</span>
+</div>
+<p class="font-caption text-caption text-secondary mt-0.5">Pending direct review</p>
+</div>
+<a class="flex items-center gap-1 text-primary hover:text-on-primary-container font-label-sm text-label-sm font-semibold transition-colors" href="#">
+<span>Manage employer access</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</a>
+</div>
+</section>
+<!-- Two-Column Primary Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- Left Column (Wider, Span 7) -->
+<div class="lg:col-span-7 flex flex-col gap-space-lg">
+<!-- Upcoming Scheduled Mock Interviews -->
+<section class="rounded-2xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">event_upcoming</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Upcoming Mock Interviews</h2>
+</div>
+<button class="font-label-sm text-label-sm text-primary hover:text-on-primary-container font-semibold transition-colors">
+            Schedule New +
+          </button>
+</div>
+<div class="flex flex-col gap-space-sm">
+<!-- Item 1: High Priority today -->
+<div class="p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="relative shrink-0">
+<img class="w-12 h-12 rounded-xl object-cover shadow-sm" data-alt="Close up warm portrait of AI simulated female design recruiter with glasses and modern office lighting in soft teal tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIu8Mpkb1z_AGBcVfwyjDrJm01sfSth2hIT1drYorgBfC-tln14SL2h8Ybf2w4Ft-tUtwtQHBa6ln4Jn5tNNLBhJVs0QPp7tI7ezU8z5JmXgqT_L3g0E14cdMRCCnFTlyyS76pRaSZGZbapOh6oYbz56nJ3y0juCSBgS0G8ie-16fqlNDkpmqRBI8Fq7y0yKKOfYXD8w0wuyY2wm1-McCgiam0-pLgtrkg_iGruKk"/>
+<span class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-primary text-on-primary flex items-center justify-center text-[10px]">
+<span class="material-symbols-outlined text-[10px]">smart_toy</span>
+</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2 flex-wrap">
+<h3 class="font-body-medium text-body-medium font-semibold text-on-surface">Senior Product Designer</h3>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">System Design</span>
+</div>
+<div class="flex items-center gap-3 text-secondary font-caption text-caption mt-1">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">schedule</span> Today, 3:00 PM (45m)</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">network_intelligence</span> Hard</span>
+</div>
+</div>
+</div>
+<button class="px-4 py-2 rounded-xl bg-primary text-on-primary font-label-sm text-label-sm font-semibold hover:brightness-105 active:scale-95 transition-all shadow-sm shrink-0 self-end sm:self-auto flex items-center gap-1.5">
+<span>Enter Room</span>
+<span class="material-symbols-outlined text-[16px]">meeting_room</span>
+</button>
+</div>
+<!-- Item 2: Tomorrow -->
+<div class="p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="relative shrink-0">
+<img class="w-12 h-12 rounded-xl object-cover shadow-sm" data-alt="Intelligent clean modern tech executive avatar in warm minimalist studio setting with soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA07nE9icVXV5eswZtBWuGHPLhZAaFVarkVwTN8A2QG6o-_njr1EJBqVJa2TK1ZG491X2yCUmZgv-KTW8nndeRj_LeEBOwWWUFR6GSbyuayicRAcsDco6qkGBYvGB4EoZyttBfi4psNdpACCCNpcq-0yk9hP6JzJlMNNFAbLfR4mWuIbmQyDg65DvrBPD-yfgem9TSoNVmTXSZjlgtVoMpyCC9FUv3MtjDkVslTRV4"/>
+<span class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-secondary text-on-secondary flex items-center justify-center text-[10px]">
+<span class="material-symbols-outlined text-[10px]">smart_toy</span>
+</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2 flex-wrap">
+<h3 class="font-body-medium text-body-medium font-semibold text-on-surface">Cross-Functional Leadership</h3>
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">Behavioral</span>
+</div>
+<div class="flex items-center gap-3 text-secondary font-caption text-caption mt-1">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">calendar_today</span> Tomorrow, 11:30 AM (30m)</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">bar_chart</span> Medium</span>
+</div>
+</div>
+</div>
+<button class="px-4 py-2 rounded-xl bg-surface-container-lowest text-on-surface hover:text-primary font-label-sm text-label-sm font-semibold transition-all shrink-0 self-end sm:self-auto shadow-sm">
+              Prepare Rubric
+            </button>
+</div>
+</div>
+</section>
+<!-- AI Performance Growth Chart & Readiness Over Time -->
+<section class="rounded-2xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">analytics</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Readiness Progression</h2>
+</div>
+<p class="font-caption text-caption text-secondary mt-0.5">Aggregated multi-dimensional interview metrics across last 6 trials</p>
+</div>
+<!-- Dimension filter tabs -->
+<div class="flex items-center gap-1 p-1 rounded-xl bg-surface-container-low shrink-0" id="filter-container">
+<button class="px-2.5 py-1 rounded-lg bg-surface-container-lowest text-on-surface font-label-sm text-label-sm font-semibold shadow-xs">Overall</button>
+<button class="px-2.5 py-1 rounded-lg text-secondary hover:text-on-surface font-label-sm text-label-sm">Communication</button>
+<button class="px-2.5 py-1 rounded-lg text-secondary hover:text-on-surface font-label-sm text-label-sm">Technical</button>
+</div>
+</div>
+<!-- SVG Progression Visualization -->
+<div class="relative w-full h-56 pt-4 flex flex-col justify-end">
+<svg class="w-full h-44 overflow-visible" fill="none" preserveaspectratio="none" viewbox="0 0 500 150">
+<defs>
+<lineargradient id="areaGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#2f685c" stop-opacity="0.25"></stop>
+<stop offset="100%" stop-color="#2f685c" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+<!-- Grid Lines -->
+<line stroke="#e5eeff" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="500" y1="30" y2="30"></line>
+<line stroke="#e5eeff" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="500" y1="70" y2="70"></line>
+<line stroke="#e5eeff" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="500" y1="110" y2="110"></line>
+<!-- Area Fill -->
+<path d="M 0 120 Q 80 110, 120 85 T 240 70 T 360 40 T 500 25 L 500 150 L 0 150 Z" fill="url(#areaGradient)"></path>
+<!-- Smooth Trajectory Line -->
+<path d="M 0 120 Q 80 110, 120 85 T 240 70 T 360 40 T 500 25" fill="none" stroke="#2f685c" stroke-linecap="round" stroke-width="3"></path>
+<!-- Data Point Circles -->
+<circle cx="0" cy="120" fill="#ffffff" r="4" stroke="#2f685c" stroke-width="2.5"></circle>
+<circle cx="120" cy="85" fill="#ffffff" r="4" stroke="#2f685c" stroke-width="2.5"></circle>
+<circle cx="240" cy="70" fill="#ffffff" r="4" stroke="#2f685c" stroke-width="2.5"></circle>
+<circle cx="360" cy="40" fill="#ffffff" r="4" stroke="#2f685c" stroke-width="2.5"></circle>
+<circle cx="500" cy="25" fill="#2f685c" r="5" stroke="#ffffff" stroke-width="2"></circle>
+</svg>
+<!-- X-Axis Labels -->
+<div class="flex justify-between items-center text-secondary font-caption text-caption pt-2">
+<span>Session 1</span>
+<span>Session 3</span>
+<span>Session 6</span>
+<span>Session 9</span>
+<span class="text-primary font-semibold">Latest (Session 12)</span>
+</div>
+</div>
+<!-- Pillar summary tags -->
+<div class="grid grid-cols-3 gap-space-sm pt-2">
+<div class="p-3 rounded-xl bg-surface-container-low flex flex-col">
+<span class="font-caption text-caption text-secondary">Communication</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold mt-0.5">92/100</span>
+<span class="text-primary font-label-sm text-label-sm mt-1">Excellent clarity</span>
+</div>
+<div class="p-3 rounded-xl bg-surface-container-low flex flex-col">
+<span class="font-caption text-caption text-secondary">Technical Depth</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold mt-0.5">85/100</span>
+<span class="text-secondary font-label-sm text-label-sm mt-1">Solid architecture</span>
+</div>
+<div class="p-3 rounded-xl bg-surface-container-low flex flex-col">
+<span class="font-caption text-caption text-secondary">Problem Solving</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold mt-0.5">87/100</span>
+<span class="text-primary font-label-sm text-label-sm mt-1">High trade-off awareness</span>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column (Span 5) -->
+<div class="lg:col-span-5 flex flex-col gap-space-lg">
+<!-- Recent AI Feedback Snippets -->
+<section class="rounded-2xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">rate_review</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Recent AI Feedback</h2>
+</div>
+<span class="font-label-sm text-label-sm text-secondary">Yesterday</span>
+</div>
+<!-- Highlight Badge Card -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">thumb_up</span>
+              Key Strength Observed
+            </span>
+<span class="font-caption text-caption text-secondary">Behavioral Rubric</span>
+</div>
+<p class="font-body-medium text-body-medium text-on-surface font-semibold">
+            "Clear STAR method structure throughout complex conflict resolution questions."
+          </p>
+<p class="font-caption text-caption text-secondary">
+            Candidate articulated stakes, individual contributions, and quantifiable business outcomes in less than 3.5 minutes per response.
+          </p>
+</div>
+<!-- Opportunity Badge Card -->
+<div class="p-space-md rounded-xl bg-secondary-container/40 flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">lightbulb</span>
+              Growth Opportunity
+            </span>
+<span class="font-caption text-caption text-secondary">Architecture Stage</span>
+</div>
+<p class="font-body-medium text-body-medium text-on-surface font-semibold">
+            "Elaborate more on trade-offs during system design iterations."
+          </p>
+<p class="font-caption text-caption text-secondary">
+            When proposing Redis cache partitioning, explicitly contrast data eviction strategies (LRU vs. LFU) before locking down the schema.
+          </p>
+</div>
+<a class="inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-surface-container-low text-primary font-label-md text-label-md hover:bg-surface-container transition-colors" href="#">
+<span>View Comprehensive 14-Point Report</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</section>
+<!-- Recommended Practice Tracks -->
+<section class="rounded-2xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">model_training</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Curated Tracks</h2>
+</div>
+<span class="font-label-sm text-label-sm text-secondary">Based on gaps</span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<!-- Track 1 -->
+<div class="group p-3.5 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all flex items-center justify-between cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-lowest flex items-center justify-center text-primary group-hover:scale-105 transition-transform shadow-xs">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-medium text-body-medium font-semibold text-on-surface">Behavioral &amp; Leadership</span>
+<span class="font-caption text-caption text-secondary">8 interactive scenarios • 40 mins</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary group-hover:text-primary transition-colors text-[20px]">chevron_right</span>
+</div>
+<!-- Track 2 -->
+<div class="group p-3.5 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all flex items-center justify-between cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-lowest flex items-center justify-center text-primary group-hover:scale-105 transition-transform shadow-xs">
+<span class="material-symbols-outlined text-[20px]">account_tree</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-medium text-body-medium font-semibold text-on-surface">Full-Stack System Design</span>
+<span class="font-caption text-caption text-secondary">12 distributed modules • 90 mins</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary group-hover:text-primary transition-colors text-[20px]">chevron_right</span>
+</div>
+<!-- Track 3 -->
+<div class="group p-3.5 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all flex items-center justify-between cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-lowest flex items-center justify-center text-primary group-hover:scale-105 transition-transform shadow-xs">
+<span class="material-symbols-outlined text-[20px]">code</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-medium text-body-medium font-semibold text-on-surface">Live Coding Under Pressure</span>
+<span class="font-caption text-caption text-secondary">Timed algorithmic drill • 30 mins</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary group-hover:text-primary transition-colors text-[20px]">chevron_right</span>
+</div>
+</div>
+</section>
+<!-- Candidate Testimonial & Coach Tip Card with Photo -->
+<section class="rounded-2xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col gap-space-sm relative overflow-hidden">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-full object-cover shadow-sm" data-alt="Warm natural portrait of a female executive mentor with calm reassuring expression in a softly lit design studio" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBT0yGNDNIHP1ZYepUALYBIKUE47mBcssTMbRHPzIKOquhc8saY7RNjFn4yEu2TKE8nj0tYU0U_c7zwje8BVlfplYhCIJHZeO_nx1RyCIjZ6Jlm7VVNxIUxhXFwCSVS--W_3E2ijCwARVA0xXuqgETCFqLZZHZBOOcVC7alhTFSvX5OI5e6K0NTr6MQH_FZz7pre2OGP6P3mjMyxsQcnBR5R7hLydikre8SeTG7ub0"/>
+<div>
+<h3 class="font-body-medium text-body-medium font-semibold text-on-surface">AI Coach Maya</h3>
+<p class="font-caption text-caption text-secondary">Calm Horizon Guidance Engine</p>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant italic mt-1">
+          "Remember to pause for two seconds after the interviewer presents a complex prompt. Pausing conveys composure and strategic presence."
+        </p>
+</section>
+</div>
+</div>
+</div>
+<script>
+  // Simple tab toggle interaction for readiness graph
+  const filterBtns = document.querySelectorAll('#filter-container button');
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => {
+        b.className = 'px-2.5 py-1 rounded-lg text-secondary hover:text-on-surface font-label-sm text-label-sm';
+      });
+      btn.className = 'px-2.5 py-1 rounded-lg bg-surface-container-lowest text-on-surface font-label-sm text-label-sm font-semibold shadow-xs';
+    });
+  });
+</script></main></div></body></html>

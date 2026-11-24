@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"primary":"#2f685c","outline":"#707976","surface-container-highest":"#d3e4fe","on-tertiary":"#ffffff","secondary":"#5e5d68","on-surface-variant":"#404946","primary-container":"#6fa89a","secondary-container":"#e4e1ee","on-error":"#ffffff","surface-container":"#e5eeff","surface-bright":"#f8f9ff","inverse-surface":"#213145","on-error-container":"#93000a","surface-container-lowest":"#ffffff","on-tertiary-fixed":"#211a16","inverse-on-surface":"#eaf1ff","on-tertiary-fixed-variant":"#4e4540","on-secondary-fixed":"#1b1b24","on-surface":"#0b1c2f","surface-variant":"#d3e4fe","primary-fixed":"#b3eedf","error-container":"#ffdad6","on-secondary-fixed-variant":"#464650","on-secondary":"#ffffff","surface-dim":"#cbdbf5","error":"#ba1a1a","tertiary":"#665d57","surface-container-high":"#dce9ff","on-tertiary-container":"#3b332e","outline-variant":"#bfc9c5","tertiary-fixed-dim":"#d1c4bd","secondary-fixed":"#e4e1ee","on-primary-fixed":"#00201a","on-background":"#0b1c2f","on-primary-container":"#003c33","surface-tint":"#2f685c","on-primary-fixed-variant":"#115044","tertiary-container":"#a69b94","tertiary-fixed":"#eee0d8","surface":"#f8f9ff","inverse-primary":"#98d2c3","on-primary":"#ffffff","background":"#f8f9ff","secondary-fixed-dim":"#c7c5d1","surface-container-low":"#eff4ff","primary-fixed-dim":"#98d2c3","on-secondary-container":"#64636e"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"gutter":"1.5rem","margin":"2rem","space-xs":"0.25rem","space-xl":"2rem","space-lg":"1.5rem","margin-mobile":"1rem","space-sm":"0.5rem","gutter-mobile":"1rem","space-md":"1rem"},"fontFamily":{"body-medium":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"display":["Plus Jakarta Sans"],"label-md":["Plus Jakarta Sans"],"caption":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"display-mobile":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"]},"fontSize":{"body-medium":["14px",{"lineHeight":"22px","fontWeight":"500"}],"headline-sm":["18px",{"lineHeight":"26px","letterSpacing":"-0.005em","fontWeight":"600"}],"label-sm":["12px",{"lineHeight":"16px","letterSpacing":"0.02em","fontWeight":"500"}],"headline-lg-mobile":["26px",{"lineHeight":"34px","letterSpacing":"-0.015em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"headline-lg":["30px",{"lineHeight":"38px","letterSpacing":"-0.015em","fontWeight":"700"}],"display":["40px",{"lineHeight":"48px","letterSpacing":"-0.02em","fontWeight":"700"}],"label-md":["13px",{"lineHeight":"18px","letterSpacing":"0.01em","fontWeight":"600"}],"caption":["12px",{"lineHeight":"16px","fontWeight":"400"}],"headline-md":["22px",{"lineHeight":"30px","letterSpacing":"-0.01em","fontWeight":"600"}],"display-mobile":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"body-md":["14px",{"lineHeight":"22px","fontWeight":"400"}]}}}}</script></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased min-h-screen"><header class="fixed top-0 left-0 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-lg"><div class="flex items-center gap-space-sm"><img alt="SmartHire AI Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/ALJJyrCOF-oe_wVPLl5TpkKlt_csD6zFGSNbedFrlNEpggZIRjNuq5Lg67MrtDFPDwss3n8rFLFRg5nx7Y9SQ4tVNd4MeRd-KWtZf5LNUC5QjGFlch_-Dt15lCaEBozvCY2IGOl162MFm1ZfpYeVZgfiZpEPk__w9G1mFgytgq49DqusXBpS2chj0xQSOqDMIaIe6zRIREjzcO2OAGnghwByoTBL0EBDcrlgWOEcjUlkeZ0Q"/><span class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">SmartHire <span class="text-primary">AI</span></span></div><div class="hidden md:flex items-center bg-surface-container-low px-3 py-1.5 rounded-full text-on-surface-variant gap-2"><span class="w-2 h-2 rounded-full bg-primary"></span><span class="font-label-sm text-label-sm text-on-surface">Candidate Portal</span><span class="text-outline font-label-sm text-label-sm">/</span><button class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors">Recruiter View</button></div></div><div class="flex items-center gap-space-md"><div class="relative hidden sm:flex items-center"><span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">search</span><input class="w-64 lg:w-80 bg-surface-container-low pl-9 pr-12 py-1.5 rounded-xl font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Search practice, roles, rubrics..." type="text"/><kbd class="absolute right-2.5 font-label-sm text-label-sm bg-surface-container-lowest text-on-surface-variant px-1.5 py-0.5 rounded shadow-sm">⌘K</kbd></div><div class="flex items-center gap-space-sm"><button aria-label="Notifications" class="relative p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary ring-2 ring-surface-container-lowest"></span></button><button aria-label="Help &amp; Resources" class="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">help_outline</span></button></div><div class="h-6 w-px bg-outline-variant/30"></div><div class="flex items-center gap-space-sm"><div class="relative"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsTHAzJTyOs73jMav6TPcDWVhNkFhwFRPrIGQbEOqBh3cSsdLGskQ1jdsEaTvzRN5kFYJhIPvanfQJc1RLt6xzHsmg73unUcp6gcHTxSLvtSRCwyb-ja54i2uFMdJ-t8R3ZnlOZfTaY0aFFbSB-3M0jckTduqWxNkW0z7ZsSkqZ-EZDdV8bmi3Wn8SrV2ZfqjZ8ZC99j6W-LtI9nV9OMXjta5T-B-tGk-hVXKxXNs"/><span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-primary ring-2 ring-surface-container-lowest"></span></div><div class="hidden xl:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface leading-tight">Elena Vance</span><span class="font-caption text-caption text-on-surface-variant leading-tight">Senior Candidate</span></div></div></div></header><aside class="fixed left-0 top-16 bottom-0 w-64 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.03)] z-40 flex flex-col justify-between p-space-md"><div class="flex flex-col gap-space-xs"><div class="px-3 py-2"><span class="font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold">Workspace</span></div><nav class="flex flex-col gap-1" data-active-classes="bg-primary-fixed text-on-primary-fixed font-semibold shadow-sm"><a class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px]">dashboard</span><span>Dashboard</span></a><a class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="mock-interviews" href="#"><span class="material-symbols-outlined text-[20px]">videocam</span><span>Mock Interviews</span></a><a class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="practice-library" href="#"><span class="material-symbols-outlined text-[20px]">local_library</span><span>Practice Library</span></a><a aria-current="page" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all bg-primary-fixed text-on-primary-fixed font-semibold shadow-sm" data-path="candidate-assessments" href="#"><span class="material-symbols-outlined text-[20px]">assignment_turned_in</span><span>Candidate Assessments</span></a><a class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="performance-analytics" href="#"><span class="material-symbols-outlined text-[20px]">insights</span><span>Performance Analytics</span></a><a class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span>Settings</span></a></nav></div><div class="p-space-sm bg-surface-container-low rounded-xl flex flex-col gap-2"><div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-on-surface-variant">Weekly Goal</span><span class="font-label-sm text-label-sm text-primary font-semibold">4 / 5 Done</span></div><div class="w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden"><div class="bg-primary h-full rounded-full" style="width: 80%"></div></div><div class="flex items-center gap-2 pt-1"><span class="material-symbols-outlined text-[16px] text-primary">verified</span><span class="font-caption text-caption text-on-surface-variant">Ready for evaluation</span></div></div></aside><div class="pl-64"><main class="w-full pt-16 bg-surface min-h-[calc(100vh-4rem)] p-space-margin"><div class="flex flex-col w-full gap-8">
+<!-- Top Profile & Evaluation Overview Banner -->
+<section class="relative w-full rounded-2xl bg-surface-container-lowest shadow-sm p-6 lg:p-8 overflow-hidden">
+<div class="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-gradient-to-br from-primary-fixed/30 via-surface-container-highest/20 to-transparent blur-3xl pointer-events-none"></div>
+<div class="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+<!-- Candidate Metadata -->
+<div class="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+<div class="relative">
+<img class="w-20 h-20 rounded-2xl object-cover shadow-sm ring-4 ring-surface-container-low" data-alt="Warm natural portrait of Sarah Jenkins, a professional product designer in her early 30s with soft daylight studio lighting, wearing a muted sage sweater against a minimalist off-white aesthetic background, confident warm expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8l6f7vrQZYBRovf9O0Co83cka-K0jMz6jaR7_UJ-g9kIXIpGaH8xAMw_XtgFaHbYgrF9WaeTokmZnHa_LxvVX454lu3HP7jE2o5-ybhduo9T6mNjI3Q87EqSEP8T6BCP4so66wkH6l9xP6d2AuuRxYrhc1kDVceUKV6qQhnaoZzJm-dAmEx1HBFNhZd-jsNToJbh_kGfTozOjYdoPWSKKjEz8y-2zrTmBvhD2iZ0"/>
+<div class="absolute -bottom-1 -right-1 bg-primary text-on-primary w-6 h-6 rounded-full flex items-center justify-center text-xs shadow-sm">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+</div>
+</div>
+<div class="flex flex-col gap-1.5">
+<div class="flex flex-wrap items-center gap-3">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Sarah Jenkins</h1>
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#E7F3EE] text-[#1E5E4E]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#1E5E4E]"></span>
+              Strong Hire Recommendation
+            </span>
+</div>
+<div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-on-surface-variant font-body-md text-body-md">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-outline">palette</span>
+              Senior Product Designer
+            </span>
+<span class="text-outline-variant font-caption text-caption">•</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-outline">calendar_today</span>
+              Completed Oct 24, 2024
+            </span>
+<span class="text-outline-variant font-caption text-caption">•</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-outline">schedule</span>
+              42 min session
+            </span>
+</div>
+</div>
+</div>
+<!-- Action Trays -->
+<div class="flex flex-wrap items-center gap-3 self-start xl:self-center">
+<button class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all text-on-surface font-label-md text-label-md shadow-sm" id="downloadPdfBtn">
+<span class="material-symbols-outlined text-[18px] text-primary">download</span>
+<span>Download PDF Report</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all text-on-surface font-label-md text-label-md shadow-sm" id="shareReportBtn">
+<span class="material-symbols-outlined text-[18px] text-primary">share</span>
+<span>Share with Hiring Team</span>
+</button>
+<button class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-[#255248] active:scale-[0.98] transition-all text-on-primary font-label-md text-label-md shadow-sm">
+<span class="material-symbols-outlined text-[18px]">calendar_month</span>
+<span>Schedule Follow-up Interview</span>
+</button>
+</div>
+</div>
+<!-- Quick Score KPI bar -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8 pt-6 border-none bg-surface-container-low/60 rounded-xl p-4">
+<div class="flex items-center gap-4 bg-surface-container-lowest p-4 rounded-xl shadow-sm">
+<div class="w-12 h-12 rounded-xl bg-[#E7F3EE] flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[26px]">psychology</span>
+</div>
+<div class="flex flex-col">
+<span class="font-caption text-caption text-on-surface-variant font-medium">Overall AI Score</span>
+<div class="flex items-baseline gap-1.5">
+<span class="font-headline-lg text-headline-lg text-on-surface font-bold">91</span>
+<span class="font-label-sm text-label-sm text-outline">/100</span>
+</div>
+<span class="font-caption text-caption text-[#1E5E4E] font-medium">Top 5% of candidates</span>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-surface-container-lowest p-4 rounded-xl shadow-sm">
+<div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[26px]">record_voice_over</span>
+</div>
+<div class="flex flex-col">
+<span class="font-caption text-caption text-on-surface-variant font-medium">Speech Clarity Index</span>
+<div class="flex items-baseline gap-1.5">
+<span class="font-headline-lg text-headline-lg text-on-surface font-bold">96%</span>
+<span class="font-label-sm text-label-sm text-primary">High</span>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">142 WPM • 0.8% fillers</span>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-surface-container-lowest p-4 rounded-xl shadow-sm">
+<div class="w-12 h-12 rounded-xl bg-[#F0EDFA] flex items-center justify-center text-[#4F3C7E]">
+<span class="material-symbols-outlined text-[26px]">fact_check</span>
+</div>
+<div class="flex flex-col">
+<span class="font-caption text-caption text-on-surface-variant font-medium">STAR Framework</span>
+<div class="flex items-baseline gap-1.5">
+<span class="font-headline-lg text-headline-lg text-on-surface font-bold">5 / 5</span>
+<span class="font-label-sm text-label-sm text-[#4F3C7E]">Full</span>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Exceptional structure</span>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-surface-container-lowest p-4 rounded-xl shadow-sm">
+<div class="w-12 h-12 rounded-xl bg-[#FBEDE5] flex items-center justify-center text-[#8C4B27]">
+<span class="material-symbols-outlined text-[26px]">balance</span>
+</div>
+<div class="flex flex-col">
+<span class="font-caption text-caption text-on-surface-variant font-medium">Confidence Calibration</span>
+<div class="flex items-baseline gap-1.5">
+<span class="font-headline-lg text-headline-lg text-on-surface font-bold">89%</span>
+<span class="font-label-sm text-label-sm text-[#8C4B27]">Steady</span>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Low anxiety signature</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Bento Section: Skill Matrix Radar & Video Snippet Timeline -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Skill Matrix Visual Card (5 Cols) -->
+<div class="lg:col-span-5 flex flex-col rounded-2xl bg-surface-container-lowest p-6 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<div>
+<span class="font-caption text-caption uppercase tracking-wider text-outline font-semibold">Competency Blueprint</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Category Skill Matrix</h2>
+</div>
+<span class="px-2.5 py-1 rounded-lg bg-surface-container text-on-surface-variant font-label-sm text-label-sm">5 Pillars</span>
+</div>
+<!-- Skill Radar SVG Chart -->
+<div class="relative w-full flex items-center justify-center py-4">
+<svg class="w-full max-w-[320px] overflow-visible" viewbox="0 0 340 320">
+<!-- Concentric Pentagons -->
+<polygon class="text-surface-container-highest" fill="none" points="170,30 295,120 250,265 90,265 45,120" stroke="currentColor" stroke-dasharray="3 3" stroke-width="1.5"></polygon>
+<polygon class="text-surface-container-highest" fill="none" points="170,60 265,130 230,240 110,240 75,130" stroke="currentColor" stroke-width="1.5"></polygon>
+<polygon class="text-surface-container-highest" fill="none" points="170,95 235,142 210,218 130,218 105,142" stroke="currentColor" stroke-width="1.5"></polygon>
+<polygon class="text-surface-container-highest" fill="none" points="170,130 205,155 190,195 150,195 135,155" stroke="currentColor" stroke-width="1.5"></polygon>
+<!-- Axis lines -->
+<line class="text-outline-variant" stroke="currentColor" stroke-width="1" x1="170" x2="170" y1="170" y2="30"></line>
+<line class="text-outline-variant" stroke="currentColor" stroke-width="1" x1="170" x2="295" y1="170" y2="120"></line>
+<line class="text-outline-variant" stroke="currentColor" stroke-width="1" x1="170" x2="250" y1="170" y2="265"></line>
+<line class="text-outline-variant" stroke="currentColor" stroke-width="1" x1="170" x2="90" y1="170" y2="265"></line>
+<line class="text-outline-variant" stroke="currentColor" stroke-width="1" x1="170" x2="45" y1="170" y2="120"></line>
+<!-- Candidate Polygon Data (94, 88, 92, 90, 91) scaled -->
+<polygon class="transition-all duration-700" fill="#6fa89a" fill-opacity="0.32" points="170,38 280,126 244,258 96,255 56,124" stroke="#2f685c" stroke-width="2.5"></polygon>
+<!-- Anchor nodes -->
+<circle cx="170" cy="38" fill="#2f685c" r="4.5"></circle>
+<circle cx="280" cy="126" fill="#2f685c" r="4.5"></circle>
+<circle cx="244" cy="258" fill="#2f685c" r="4.5"></circle>
+<circle cx="96" cy="255" fill="#2f685c" r="4.5"></circle>
+<circle cx="56" cy="124" fill="#2f685c" r="4.5"></circle>
+<!-- Labels -->
+<text class="font-label-sm text-[11px] fill-on-surface font-semibold" text-anchor="middle" x="170" y="18">Communication (94%)</text>
+<text class="font-label-sm text-[11px] fill-on-surface font-semibold" text-anchor="start" x="300" y="118">System Arch (88%)</text>
+<text class="font-label-sm text-[11px] fill-on-surface font-semibold" text-anchor="middle" x="254" y="284">Problem Solving (92%)</text>
+<text class="font-label-sm text-[11px] fill-on-surface font-semibold" text-anchor="middle" x="86" y="284">Empathy &amp; Culture (90%)</text>
+<text class="font-label-sm text-[11px] fill-on-surface font-semibold" text-anchor="end" x="35" y="118">Design Quality (91%)</text>
+</svg>
+</div>
+<!-- Linear Skill Bar Drilldown -->
+<div class="flex flex-col gap-3 mt-4 pt-4 bg-surface-container-low/40 rounded-xl p-3.5">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-label-md text-label-md">
+<span class="text-on-surface">Communication</span>
+<span class="font-semibold text-primary">94%</span>
+</div>
+<div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 94%"></div>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-label-md text-label-md">
+<span class="text-on-surface">Problem Solving &amp; Trade-offs</span>
+<span class="font-semibold text-primary">92%</span>
+</div>
+<div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 92%"></div>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-label-md text-label-md">
+<span class="text-on-surface">Code &amp; Visual Design Quality</span>
+<span class="font-semibold text-primary">91%</span>
+</div>
+<div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 91%"></div>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-label-md text-label-md">
+<span class="text-on-surface">Cultural Fit &amp; Empathy</span>
+<span class="font-semibold text-primary">90%</span>
+</div>
+<div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 90%"></div>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-label-md text-label-md">
+<span class="text-on-surface">Technical Architecture</span>
+<span class="font-semibold text-primary">88%</span>
+</div>
+<div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 88%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Video / Audio Playback Snippet Timeline (7 Cols) -->
+<div class="lg:col-span-7 flex flex-col rounded-2xl bg-surface-container-lowest p-6 shadow-sm">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+<div>
+<span class="font-caption text-caption uppercase tracking-wider text-outline font-semibold">Observation Player</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Interview Playback &amp; Timestamp Flags</h2>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">AI Timeline Verified</span>
+</div>
+</div>
+<!-- Embedded Mock Video Frame -->
+<div class="relative w-full rounded-xl overflow-hidden bg-on-surface aspect-video mb-4 shadow-sm group">
+<img class="w-full h-full object-cover opacity-85" data-alt="Candidate Sarah Jenkins speaking into a microphone during an interactive design presentation on an online video meeting software, crisp natural workspace lighting with plants in the background, sharp UI overlays displaying speaking metrics" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgNev20B8cPQQAYSJ5Xw5WUFsD1kt4-CyPBj4OykFl0j4lm8yGIt26RPHZ-sZ_eILSiY7m49jcQdwrYCmvrxO5PmlZ4IG4oqck6qh_-DxKFobG4o4NSLJ7lf7dHwldONT_t6WF96Yr4BxIv8f2jJkZieO1MF4NfLBk7xsfM9IbDFAHu9C3u49D89E3neRg9fiFZ24HbVJs3OZ3x25YOeMTE3-5OiTkQhgm4X_KIH0"/>
+<!-- Video Overlay Top HUD -->
+<div class="absolute top-3 left-3 right-3 flex items-center justify-between text-surface-container-lowest font-label-sm text-label-sm bg-inverse-surface/60 backdrop-blur-md px-3 py-1.5 rounded-lg">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-[#ba1a1a]"></span>
+<span>Recorded Q2: System Redesign</span>
+</div>
+<span class="font-body-md text-body-md font-mono">08:15 / 42:00</span>
+</div>
+<!-- Video Player Controls Bar -->
+<div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-inverse-surface/90 via-inverse-surface/40 to-transparent p-4 flex flex-col gap-2">
+<div class="relative w-full h-2 bg-surface-container/30 rounded-full cursor-pointer">
+<div class="absolute left-0 top-0 bottom-0 bg-primary-fixed rounded-full" style="width: 20%;"></div>
+<!-- Marker 1 -->
+<div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 bg-primary-fixed rounded-full ring-2 ring-inverse-surface" style="left: 20%;" title="Great trade-off analysis at 08:15"></div>
+<!-- Marker 2 -->
+<div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-[#FBEDE5] rounded-full ring-2 ring-inverse-surface" style="left: 34%;" title="Hesitation on caching strategies at 14:20"></div>
+<!-- Marker 3 -->
+<div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-[#E7F3EE] rounded-full ring-2 ring-inverse-surface" style="left: 65%;" title="Exemplary stakeholder conflict resolution"></div>
+</div>
+<div class="flex items-center justify-between text-surface-container-lowest">
+<div class="flex items-center gap-3">
+<button class="hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined text-[24px]">play_arrow</span>
+</button>
+<button class="hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined text-[20px]">volume_up</span>
+</button>
+<span class="font-caption text-caption opacity-80">1.0x Speed</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined text-[20px]">subtitles</span>
+</button>
+<button class="hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined text-[20px]">fullscreen</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Key Timestamped Event Chips -->
+<div class="flex flex-col gap-2.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Algorithmic Moment Highlights</span>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+<!-- Highlight Item 1 -->
+<div class="flex items-start gap-3 p-3 rounded-xl bg-[#E7F3EE] cursor-pointer hover:bg-[#d8ece4] transition-all">
+<span class="material-symbols-outlined text-[20px] text-[#1E5E4E] shrink-0 mt-0.5">thumb_up</span>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm font-bold text-[#1E5E4E]">08:15</span>
+<span class="font-caption text-caption text-[#1E5E4E] font-semibold">Exemplary Analysis</span>
+</div>
+<p class="font-caption text-caption text-[#1E5E4E]/90 mt-0.5">Articulated multi-tenant design tradeoffs with notable lucidity.</p>
+</div>
+</div>
+<!-- Highlight Item 2 -->
+<div class="flex items-start gap-3 p-3 rounded-xl bg-[#FBEDE5] cursor-pointer hover:bg-[#f5e0d3] transition-all">
+<span class="material-symbols-outlined text-[20px] text-[#8C4B27] shrink-0 mt-0.5">pause_circle</span>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm font-bold text-[#8C4B27]">14:20</span>
+<span class="font-caption text-caption text-[#8C4B27] font-semibold">Brief Hesitation</span>
+</div>
+<p class="font-caption text-caption text-[#8C4B27]/90 mt-0.5">Hesitated 4.2s when probed on distributed client-side caching limits.</p>
+</div>
+</div>
+<!-- Highlight Item 3 -->
+<div class="flex items-start gap-3 p-3 rounded-xl bg-[#F0EDFA] cursor-pointer hover:bg-[#e4ddf4] transition-all">
+<span class="material-symbols-outlined text-[20px] text-[#4F3C7E] shrink-0 mt-0.5">groups</span>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm font-bold text-[#4F3C7E]">27:40</span>
+<span class="font-caption text-caption text-[#4F3C7E] font-semibold">Executive Presence</span>
+</div>
+<p class="font-caption text-caption text-[#4F3C7E]/90 mt-0.5">Demonstrated high emotional intelligence when discussing past cross-team conflict.</p>
+</div>
+</div>
+<!-- Highlight Item 4 -->
+<div class="flex items-start gap-3 p-3 rounded-xl bg-surface-container cursor-pointer hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined text-[20px] text-primary shrink-0 mt-0.5">speed</span>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm font-bold text-on-surface">36:10</span>
+<span class="font-caption text-caption text-on-surface-variant font-semibold">Synthesized Takeaway</span>
+</div>
+<p class="font-caption text-caption text-on-surface-variant mt-0.5">Summarized future product vision in under 45 seconds cleanly.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- AI Executive Summary Card -->
+<section class="rounded-2xl bg-surface-container-lowest p-6 lg:p-8 shadow-sm">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between pb-6 gap-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-primary-fixed/40 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[24px]">auto_awesome</span>
+</div>
+<div>
+<span class="font-caption text-caption uppercase tracking-wider text-outline font-semibold">Synthesis</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">AI Executive Synthesis &amp; Recruiter Guidance</h2>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="font-label-sm text-label-sm bg-surface-container text-on-surface-variant px-3 py-1.5 rounded-full">Model: Gemini Pro Recruiter v4.1</span>
+<span class="font-label-sm text-label-sm bg-[#E7F3EE] text-[#1E5E4E] px-3 py-1.5 rounded-full font-semibold">Confidence 98.4%</span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+<!-- Key Strengths -->
+<div class="flex flex-col gap-3 p-5 rounded-xl bg-[#E7F3EE]/50">
+<div class="flex items-center gap-2 text-[#1E5E4E]">
+<span class="material-symbols-outlined text-[20px]">stars</span>
+<span class="font-headline-sm text-headline-sm font-semibold">Core Strengths</span>
+</div>
+<ul class="flex flex-col gap-2.5 font-body-md text-body-md text-on-surface">
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] text-[#1E5E4E] shrink-0 mt-0.5">check_circle</span>
+<span>Exceptional systems-level design vocabulary with quantifiable business outcomes.</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] text-[#1E5E4E] shrink-0 mt-0.5">check_circle</span>
+<span>Balanced user advocacy with business constraints consistently across prompts.</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] text-[#1E5E4E] shrink-0 mt-0.5">check_circle</span>
+<span>Rigorous adherence to the STAR narrative approach during complex anecdotes.</span>
+</li>
+</ul>
+</div>
+<!-- Behavioral Observations -->
+<div class="flex flex-col gap-3 p-5 rounded-xl bg-[#F0EDFA]/60">
+<div class="flex items-center gap-2 text-[#4F3C7E]">
+<span class="material-symbols-outlined text-[20px]">psychology_alt</span>
+<span class="font-headline-sm text-headline-sm font-semibold">Behavioral Signals</span>
+</div>
+<ul class="flex flex-col gap-2.5 font-body-md text-body-md text-on-surface">
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] text-[#4F3C7E] shrink-0 mt-0.5">visibility</span>
+<span>Sustained steady eye engagement with camera (89% direct contact duration).</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] text-[#4F3C7E] shrink-0 mt-0.5">lightbulb</span>
+<span>Uses constructive pauses to formulate structured answers instead of nervous fillers.</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] text-[#4F3C7E] shrink-0 mt-0.5">handshake</span>
+<span>Exhibits cooperative linguistic tone ("we discovered", "partnered with engineering").</span>
+</li>
+</ul>
+</div>
+<!-- Vocabulary & Clarity Index -->
+<div class="flex flex-col gap-3 p-5 rounded-xl bg-surface-container-low">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-[20px]">spellcheck</span>
+<span class="font-headline-sm text-headline-sm font-semibold">Vocabulary &amp; Clarity</span>
+</div>
+<div class="flex flex-col gap-3 font-body-md text-body-md text-on-surface">
+<div class="flex justify-between items-center bg-surface-container-lowest p-2.5 rounded-lg shadow-sm">
+<span class="text-on-surface-variant font-caption text-caption">Domain Lexicon</span>
+<span class="font-bold text-primary">Advanced / Expert</span>
+</div>
+<div class="flex justify-between items-center bg-surface-container-lowest p-2.5 rounded-lg shadow-sm">
+<span class="text-on-surface-variant font-caption text-caption">Sentence Complexity</span>
+<span class="font-bold text-on-surface">Optimal (Grade 11.2)</span>
+</div>
+<div class="flex justify-between items-center bg-surface-container-lowest p-2.5 rounded-lg shadow-sm">
+<span class="text-on-surface-variant font-caption text-caption">Sentiment Baseline</span>
+<span class="font-bold text-[#1E5E4E]">Constructive (+0.78)</span>
+</div>
+</div>
+</div>
+<!-- Recommended Next Steps -->
+<div class="flex flex-col gap-3 p-5 rounded-xl bg-[#FBEDE5]/60">
+<div class="flex items-center gap-2 text-[#8C4B27]">
+<span class="material-symbols-outlined text-[20px]">assignment_turned_in</span>
+<span class="font-headline-sm text-headline-sm font-semibold">Recruiter Next Steps</span>
+</div>
+<div class="flex flex-col gap-2 font-body-md text-body-md text-on-surface">
+<div class="flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] text-[#8C4B27] shrink-0 mt-0.5">arrow_forward</span>
+<span>Advance directly to Design Director Onsite (skip technical screener).</span>
+</div>
+<div class="flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] text-[#8C4B27] shrink-0 mt-0.5">arrow_forward</span>
+<span>Deep-probe: Ask for concrete instances of cross-platform handoff tooling friction.</span>
+</div>
+<div class="flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] text-[#8C4B27] shrink-0 mt-0.5">arrow_forward</span>
+<span>Compensation alignment: Top-of-band competitive recommendation.</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Question-by-Question Deep Dive Table & Accordions -->
+<section class="rounded-2xl bg-surface-container-lowest p-6 lg:p-8 shadow-sm flex flex-col gap-6">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div>
+<span class="font-caption text-caption uppercase tracking-wider text-outline font-semibold">Granular Rubrics</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Question-by-Question Deep Dive</h2>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface font-label-md text-label-md hover:bg-surface-container">All Questions (4)</button>
+<button class="px-3 py-1.5 rounded-lg text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-low">Flagged Items</button>
+</div>
+</div>
+<!-- Questions Container -->
+<div class="flex flex-col gap-3" id="accordionQuestions">
+<!-- Question 1 (Expanded by default) -->
+<div class="rounded-xl bg-surface-container-low overflow-hidden transition-all">
+<button class="w-full flex items-center justify-between p-4 sm:p-5 text-left hover:bg-surface-container-high/60 transition-colors focus:outline-none" onclick="toggleAccordion('q1-content', 'q1-icon')">
+<div class="flex flex-col md:flex-row md:items-center gap-4 flex-1">
+<span class="w-7 h-7 rounded-lg bg-primary text-on-primary flex items-center justify-center font-bold text-xs shrink-0">Q1</span>
+<div class="flex-1">
+<span class="font-headline-sm text-headline-sm text-on-surface">Describe a design system redesign where you balanced legacy debt with future scalability.</span>
+<div class="flex flex-wrap items-center gap-3 mt-1 text-on-surface-variant font-caption text-caption">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">timer</span> 06:45 duration</span>
+<span>•</span>
+<span class="text-[#1E5E4E] font-medium bg-[#E7F3EE] px-2 py-0.5 rounded-full">STAR 100% Compliant</span>
+<span>•</span>
+<span class="font-semibold text-primary">Score: 95/100</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline transition-transform duration-300 transform rotate-180" id="q1-icon">expand_more</span>
+</button>
+<div class="p-5 pt-0 flex flex-col gap-4" id="q1-content">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 bg-surface-container-lowest rounded-xl p-4 shadow-sm">
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center gap-1.5 text-[#1E5E4E] font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span>Key Strengths Identified</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Candidate broke down the exact multi-token migration roadmap, detailing semantic design token mappings and showing direct collaboration metrics with engineering teams.</p>
+</div>
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center gap-1.5 text-[#8C4B27] font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">insights</span>
+<span>Areas for Development</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Could provide deeper specifics on automated accessibility test coverage and unit test parity for tokens.</p>
+</div>
+</div>
+<div class="bg-surface-container-high/40 p-3.5 rounded-xl flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">mic</span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Transcript Excerpt:</span>
+<span class="font-body-md text-body-md text-on-surface-variant italic truncate max-w-lg">"...we instituted a tier-3 gradual deprecation scheme so downstream micro-frontends wouldn't experience visual regressions..."</span>
+</div>
+<button class="font-label-sm text-label-sm text-primary hover:underline font-semibold shrink-0">Listen clip (04:12)</button>
+</div>
+</div>
+</div>
+<!-- Question 2 -->
+<div class="rounded-xl bg-surface-container-low overflow-hidden transition-all">
+<button class="w-full flex items-center justify-between p-4 sm:p-5 text-left hover:bg-surface-container-high/60 transition-colors focus:outline-none" onclick="toggleAccordion('q2-content', 'q2-icon')">
+<div class="flex flex-col md:flex-row md:items-center gap-4 flex-1">
+<span class="w-7 h-7 rounded-lg bg-surface-container-highest text-on-surface flex items-center justify-center font-bold text-xs shrink-0">Q2</span>
+<div class="flex-1">
+<span class="font-headline-sm text-headline-sm text-on-surface">How do you handle severe pushback from engineering leads on design fidelity?</span>
+<div class="flex flex-wrap items-center gap-3 mt-1 text-on-surface-variant font-caption text-caption">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">timer</span> 05:12 duration</span>
+<span>•</span>
+<span class="text-[#1E5E4E] font-medium bg-[#E7F3EE] px-2 py-0.5 rounded-full">STAR 95% Compliant</span>
+<span>•</span>
+<span class="font-semibold text-primary">Score: 92/100</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline transition-transform duration-300" id="q2-icon">expand_more</span>
+</button>
+<div class="hidden p-5 pt-0 flex flex-col gap-4" id="q2-content">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 bg-surface-container-lowest rounded-xl p-4 shadow-sm">
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center gap-1.5 text-[#1E5E4E] font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span>Key Strengths Identified</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Focuses on shared OKRs, organizing collaborative pairing sessions and demonstrating business cost of technical compromises in UX.</p>
+</div>
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center gap-1.5 text-[#8C4B27] font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">insights</span>
+<span>Areas for Development</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Could emphasize asynchronous consensus docs (RFCs) alongside live pairing sessions.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Question 3 -->
+<div class="rounded-xl bg-surface-container-low overflow-hidden transition-all">
+<button class="w-full flex items-center justify-between p-4 sm:p-5 text-left hover:bg-surface-container-high/60 transition-colors focus:outline-none" onclick="toggleAccordion('q3-content', 'q3-icon')">
+<div class="flex flex-col md:flex-row md:items-center gap-4 flex-1">
+<span class="w-7 h-7 rounded-lg bg-surface-container-highest text-on-surface flex items-center justify-center font-bold text-xs shrink-0">Q3</span>
+<div class="flex-1">
+<span class="font-headline-sm text-headline-sm text-on-surface">Walk us through your approach to architectural caching and offline-first interfaces.</span>
+<div class="flex flex-wrap items-center gap-3 mt-1 text-on-surface-variant font-caption text-caption">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">timer</span> 08:30 duration</span>
+<span>•</span>
+<span class="text-[#8C4B27] font-medium bg-[#FBEDE5] px-2 py-0.5 rounded-full">STAR 80% (Hesitation in Action phase)</span>
+<span>•</span>
+<span class="font-semibold text-primary">Score: 84/100</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline transition-transform duration-300" id="q3-icon">expand_more</span>
+</button>
+<div class="hidden p-5 pt-0 flex flex-col gap-4" id="q3-content">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 bg-surface-container-lowest rounded-xl p-4 shadow-sm">
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center gap-1.5 text-[#1E5E4E] font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span>Key Strengths Identified</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Strong familiarity with optimistic UI states and progressive hydration feedback patterns.</p>
+</div>
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center gap-1.5 text-[#8C4B27] font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">insights</span>
+<span>Areas for Development</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Initial pause (4.2s) when explaining Service Worker sync boundaries before recovering composure.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Question 4 -->
+<div class="rounded-xl bg-surface-container-low overflow-hidden transition-all">
+<button class="w-full flex items-center justify-between p-4 sm:p-5 text-left hover:bg-surface-container-high/60 transition-colors focus:outline-none" onclick="toggleAccordion('q4-content', 'q4-icon')">
+<div class="flex flex-col md:flex-row md:items-center gap-4 flex-1">
+<span class="w-7 h-7 rounded-lg bg-surface-container-highest text-on-surface flex items-center justify-center font-bold text-xs shrink-0">Q4</span>
+<div class="flex-1">
+<span class="font-headline-sm text-headline-sm text-on-surface">Can you share a time you championed product accessibility against tight delivery deadlines?</span>
+<div class="flex flex-wrap items-center gap-3 mt-1 text-on-surface-variant font-caption text-caption">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">timer</span> 07:15 duration</span>
+<span>•</span>
+<span class="text-[#1E5E4E] font-medium bg-[#E7F3EE] px-2 py-0.5 rounded-full">STAR 100% Compliant</span>
+<span>•</span>
+<span class="font-semibold text-primary">Score: 94/100</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline transition-transform duration-300" id="q4-icon">expand_more</span>
+</button>
+<div class="hidden p-5 pt-0 flex flex-col gap-4" id="q4-content">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 bg-surface-container-lowest rounded-xl p-4 shadow-sm">
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center gap-1.5 text-[#1E5E4E] font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span>Key Strengths Identified</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Built automated WCAG 2.1 AA checking directly into the CI/CD pipeline, reducing manual review by 60%.</p>
+</div>
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center gap-1.5 text-[#8C4B27] font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">insights</span>
+<span>Areas for Development</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Could expand on screen reader testing protocols with actual assistive technology users.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Interactive Modal / Notification Toast (Hidden by default) -->
+<div class="fixed bottom-6 right-6 bg-inverse-surface text-inverse-on-surface px-5 py-3 rounded-xl shadow-xl flex items-center gap-3 transition-opacity duration-300 opacity-0 pointer-events-none z-50" id="actionToast">
+<span class="material-symbols-outlined text-primary-fixed text-[20px]">check_circle</span>
+<span class="font-label-md text-label-md" id="toastMsg">Action successful</span>
+</div>
+</div>
+<script>
+  function toggleAccordion(contentId, iconId) {
+    const content = document.getElementById(contentId);
+    const icon = document.getElementById(iconId);
+    if (!content || !icon) return;
+
+    if (content.classList.contains('hidden')) {
+      content.classList.remove('hidden');
+      icon.classList.add('rotate-180');
+    } else {
+      content.classList.add('hidden');
+      icon.classList.remove('rotate-180');
+    }
+  }
+
+  function showToast(message) {
+    const toast = document.getElementById('actionToast');
+    const toastMsg = document.getElementById('toastMsg');
+    if (!toast || !toastMsg) return;
+
+    toastMsg.textContent = message;
+    toast.classList.remove('opacity-0', 'pointer-events-none');
+    toast.classList.add('opacity-100');
+
+    setTimeout(() => {
+      toast.classList.remove('opacity-100');
+      toast.classList.add('opacity-0', 'pointer-events-none');
+    }, 2800);
+  }
+
+  document.getElementById('downloadPdfBtn')?.addEventListener('click', () => {
+    showToast('Compiling high-resolution report PDF...');
+  });
+
+  document.getElementById('shareReportBtn')?.addEventListener('click', () => {
+    showToast('Secure link copied to clipboard for team access');
+  });
+</script></main></div></body></html>

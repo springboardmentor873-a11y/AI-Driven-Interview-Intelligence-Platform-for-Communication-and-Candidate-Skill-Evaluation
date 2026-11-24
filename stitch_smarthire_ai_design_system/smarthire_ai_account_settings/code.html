@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"secondary-fixed-dim":"#c7c5d1","surface-container-highest":"#d3e4fe","on-tertiary-fixed-variant":"#4e4540","secondary-container":"#e4e1ee","on-secondary":"#ffffff","surface":"#f8f9ff","on-tertiary-fixed":"#211a16","on-tertiary":"#ffffff","surface-container-lowest":"#ffffff","primary":"#2f685c","on-primary":"#ffffff","primary-container":"#6fa89a","on-error":"#ffffff","on-primary-fixed-variant":"#115044","surface-tint":"#2f685c","on-secondary-container":"#64636e","on-primary-container":"#003c33","surface-variant":"#d3e4fe","on-surface-variant":"#404946","on-secondary-fixed":"#1b1b24","tertiary":"#665d57","surface-dim":"#cbdbf5","secondary-fixed":"#e4e1ee","on-error-container":"#93000a","surface-bright":"#f8f9ff","tertiary-fixed":"#eee0d8","background":"#f8f9ff","primary-fixed-dim":"#98d2c3","on-secondary-fixed-variant":"#464650","surface-container-high":"#dce9ff","inverse-primary":"#98d2c3","tertiary-fixed-dim":"#d1c4bd","inverse-surface":"#213145","secondary":"#5e5d68","on-tertiary-container":"#3b332e","on-background":"#0b1c2f","primary-fixed":"#b3eedf","tertiary-container":"#a69b94","inverse-on-surface":"#eaf1ff","error":"#ba1a1a","on-primary-fixed":"#00201a","surface-container":"#e5eeff","error-container":"#ffdad6","outline":"#707976","outline-variant":"#bfc9c5","on-surface":"#0b1c2f","surface-container-low":"#eff4ff"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-sm":"0.5rem","margin":"2rem","space-lg":"1.5rem","gutter-mobile":"1rem","gutter":"1.5rem","margin-mobile":"1rem","space-md":"1rem","space-xs":"0.25rem","space-xl":"2rem"},"fontFamily":{"headline-sm":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"caption":["Plus Jakarta Sans"],"body-medium":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"label-md":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"display-mobile":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"display":["Plus Jakarta Sans"]},"fontSize":{"headline-sm":["18px",{"lineHeight":"26px","letterSpacing":"-0.005em","fontWeight":"600"}],"headline-md":["22px",{"lineHeight":"30px","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-lg":["30px",{"lineHeight":"38px","letterSpacing":"-0.015em","fontWeight":"700"}],"caption":["12px",{"lineHeight":"16px","fontWeight":"400"}],"body-medium":["14px",{"lineHeight":"22px","fontWeight":"500"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"label-md":["13px",{"lineHeight":"18px","letterSpacing":"0.01em","fontWeight":"600"}],"label-sm":["12px",{"lineHeight":"16px","letterSpacing":"0.02em","fontWeight":"500"}],"body-md":["14px",{"lineHeight":"22px","fontWeight":"400"}],"display-mobile":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-lg-mobile":["26px",{"lineHeight":"34px","letterSpacing":"-0.015em","fontWeight":"700"}],"display":["40px",{"lineHeight":"48px","letterSpacing":"-0.02em","fontWeight":"700"}]}}}}</script></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased min-h-screen"><header class="fixed top-0 left-0 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-lg"><div class="flex items-center gap-space-sm"><img alt="SmartHire AI Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/ALJJyrCOF-oe_wVPLl5TpkKlt_csD6zFGSNbedFrlNEpggZIRjNuq5Lg67MrtDFPDwss3n8rFLFRg5nx7Y9SQ4tVNd4MeRd-KWtZf5LNUC5QjGFlch_-Dt15lCaEBozvCY2IGOl162MFm1ZfpYeVZgfiZpEPk__w9G1mFgytgq49DqusXBpS2chj0xQSOqDMIaIe6zRIREjzcO2OAGnghwByoTBL0EBDcrlgWOEcjUlkeZ0Q"/><span class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">SmartHire <span class="text-primary">AI</span></span></div><div class="hidden md:flex items-center bg-secondary-container/50 px-3 py-1 rounded-full text-on-surface-variant gap-2"><span class="w-2 h-2 rounded-full bg-primary"></span><span class="font-label-sm text-label-sm text-on-surface font-medium">Candidate Portal</span></div></div><div class="flex items-center gap-space-md"><div class="relative hidden sm:flex items-center"><span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">search</span><input class="w-72 lg:w-96 bg-surface-container-low pl-9 pr-12 py-1.5 rounded-xl font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Search interview tracks, questions, rubrics..." type="text"/><kbd class="absolute right-2.5 font-label-sm text-label-sm bg-surface-container-lowest text-on-surface-variant px-1.5 py-0.5 rounded shadow-sm">⌘K</kbd></div><div class="flex items-center gap-space-sm"><button aria-label="Notifications" class="relative p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary ring-2 ring-surface-container-lowest"></span></button></div><div class="h-6 w-px bg-outline-variant/30"></div><div class="flex items-center gap-space-sm"><div class="relative"><img alt="Elena Vance Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsTHAzJTyOs73jMav6TPcDWVhNkFhwFRPrIGQbEOqBh3cSsdLGskQ1jdsEaTvzRN5kFYJhIPvanfQJc1RLt6xzHsmg73unUcp6gcHTxSLvtSRCwyb-ja54i2uFMdJ-t8R3ZnlOZfTaY0aFFbSB-3M0jckTduqWxNkW0z7ZsSkqZ-EZDdV8bmi3Wn8SrV2ZfqjZ8ZC99j6W-LtI9nV9OMXjta5T-B-tGk-hVXKxXNs"/><span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-primary ring-2 ring-surface-container-lowest"></span></div><div class="hidden xl:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface leading-tight">Elena Vance</span><span class="font-caption text-caption text-on-surface-variant leading-tight">Senior Candidate</span></div></div></div></header><aside class="fixed left-0 top-16 bottom-0 w-64 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.03)] z-40 flex flex-col justify-between p-space-md"><div class="flex flex-col gap-space-xs"><div class="px-3 py-2 flex items-center justify-between"><span class="font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold">Candidate Workspace</span><span class="px-2 py-0.5 rounded-full font-label-sm text-label-sm bg-secondary-container text-on-secondary-container font-medium">Track</span></div><nav class="flex flex-col gap-1" data-active-classes="bg-primary-fixed text-on-primary-fixed font-semibold shadow-sm"><a class="flex items-center justify-between px-3.5 py-2.5 rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="overview" href="#"><span>Overview</span></a><a class="flex items-center justify-between px-3.5 py-2.5 rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="my-resume" href="#"><span>My Resume</span></a><a class="flex items-center justify-between px-3.5 py-2.5 rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="mock-interviews" href="#"><span>Mock Interviews</span></a><a class="flex items-center justify-between px-3.5 py-2.5 rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="performance-analytics" href="#"><span>Performance Analytics</span></a><a class="flex items-center justify-between px-3.5 py-2.5 rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="interview-history" href="#"><span>Interview History</span></a><a class="flex items-center justify-between px-3.5 py-2.5 rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="feedback-reports" href="#"><span>Feedback &amp; Reports</span></a><a class="flex items-center justify-between px-3.5 py-2.5 rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="profile" href="#"><span>Profile</span></a><a aria-current="page" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all bg-primary-fixed text-on-primary-fixed font-semibold shadow-sm" data-path="settings" href="#"><span>Settings</span><span class="w-2 h-2 rounded-full bg-primary"></span></a></nav></div><div class="flex flex-col gap-space-sm pt-2"><div class="p-space-sm bg-surface-container-low rounded-xl flex flex-col gap-1.5"><div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-on-surface-variant">Prep Progress</span><span class="font-label-sm text-label-sm text-primary font-semibold">80% Ready</span></div><div class="w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden"><div class="bg-primary-container h-full rounded-full" style="width: 80%"></div></div></div><a class="flex items-center px-3.5 py-2.5 rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-error-container/40 hover:text-error transition-all" data-path="logout" href="#"><span>Logout</span></a></div></aside><div class="pl-64"><main class="w-full pt-16 bg-surface min-h-[calc(100vh-4rem)] p-space-margin"><div class="flex flex-col w-full">
+<!-- Interactive Toast Notification (Simulated State) -->
+<div class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-3 bg-inverse-surface text-inverse-on-surface px-5 py-3 rounded-2xl shadow-xl" id="saveToast">
+<span class="material-symbols-outlined text-primary-fixed text-[20px]">check_circle</span>
+<span class="font-body-medium text-body-medium">Settings updated successfully</span>
+</div>
+<!-- Header Section with Distinct Action Geometry -->
+<div class="flex flex-col gap-6 pb-8">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div class="flex flex-col gap-1.5 max-w-2xl">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm tracking-wider uppercase text-outline font-semibold">Preferences &amp; Security</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="font-label-sm text-label-sm text-primary font-medium">Candidate Account</span>
+</div>
+<h1 class="font-display text-display text-on-surface tracking-tight">Account Settings</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">
+          Manage your credentials, active login sessions, notification rules, and data privacy preferences.
+        </p>
+</div>
+<!-- Action Cluster -->
+<div class="flex items-center gap-3 shrink-0">
+<button class="px-5 py-2.5 rounded-xl font-label-md text-label-md text-on-surface bg-surface-container-lowest shadow-sm hover:bg-surface-container-low active:scale-[0.98] transition-all" id="discardTopBtn">
+          Discard Unsaved
+        </button>
+<button class="flex items-center gap-2 px-6 py-2.5 rounded-xl font-label-md text-label-md text-on-primary bg-primary-container hover:brightness-95 active:scale-[0.98] shadow-sm transition-all" id="saveTopBtn">
+<span class="material-symbols-outlined text-[18px]">done</span>
+<span>Save Preferences</span>
+</button>
+</div>
+</div>
+<!-- Navigation Filter Anchors -->
+<div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+<a class="px-4 py-2 rounded-xl font-label-md text-label-md text-on-primary-fixed bg-primary-fixed shadow-sm whitespace-nowrap transition-all" href="#section-account">
+        Account Details
+      </a>
+<a class="px-4 py-2 rounded-xl font-label-md text-label-md text-on-surface-variant bg-surface-container-lowest hover:bg-surface-container hover:text-on-surface whitespace-nowrap shadow-sm transition-all" href="#section-security">
+        Security &amp; Sessions
+      </a>
+<a class="px-4 py-2 rounded-xl font-label-md text-label-md text-on-surface-variant bg-surface-container-lowest hover:bg-surface-container hover:text-on-surface whitespace-nowrap shadow-sm transition-all" href="#section-notifications">
+        Notifications
+      </a>
+<a class="px-4 py-2 rounded-xl font-label-md text-label-md text-on-surface-variant bg-surface-container-lowest hover:bg-surface-container hover:text-on-surface whitespace-nowrap shadow-sm transition-all" href="#section-privacy">
+        Privacy &amp; Danger Zone
+      </a>
+</div>
+</div>
+<!-- Main Settings Vertical Stream -->
+<div class="flex flex-col gap-8 pb-32">
+<!-- 1. ACCOUNT INFORMATION SECTION -->
+<section class="bg-surface-container-lowest rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col gap-6" id="section-account">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 bg-surface-container-low/40 -mx-6 sm:-mx-8 -mt-6 sm:-mt-8 p-6 sm:p-8 rounded-t-2xl">
+<div class="flex items-start sm:items-center gap-3.5">
+<div class="w-10 h-10 rounded-xl bg-primary-fixed/50 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[22px]">badge</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Account Information</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Update your primary login email and general account credentials.</p>
+</div>
+</div>
+<div class="inline-flex items-center gap-2 self-start sm:self-center px-3 py-1.5 rounded-full bg-secondary-container text-on-secondary-container">
+<span class="material-symbols-outlined text-[16px]">school</span>
+<span class="font-label-sm text-label-sm font-semibold">UC Berkeley Sponsored</span>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+<!-- Field: Primary Email -->
+<div class="flex flex-col gap-2 p-5 rounded-xl bg-surface-container-low/50">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md text-on-surface font-semibold">Primary Email Address</label>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+              Verified
+            </span>
+</div>
+<div class="flex flex-col sm:flex-row gap-2.5 mt-1">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-3 top-3 text-outline text-[18px]">mail</span>
+<input class="w-full bg-surface-container-lowest pl-9 pr-4 py-2.5 rounded-xl font-body-md text-body-md text-on-surface shadow-sm focus:outline-none cursor-default" readonly="" type="email" value="elena.vance@university.edu"/>
+</div>
+<button class="px-4 py-2.5 rounded-xl font-label-md text-label-md text-on-surface bg-surface-container-lowest shadow-sm hover:bg-surface-container transition-all">
+              Update Email
+            </button>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Associated with university recruiting portals and mock interview transcripts.</span>
+</div>
+<!-- Field: Full Name & Handle -->
+<div class="flex flex-col gap-2 p-5 rounded-xl bg-surface-container-low/50">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md text-on-surface font-semibold">Full Name &amp; Candidate Handle</label>
+<button class="font-label-sm text-label-sm text-primary hover:underline font-semibold">Edit details</button>
+</div>
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-lowest shadow-sm">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-headline-sm text-headline-sm font-semibold">
+                EV
+              </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Elena Vance</span>
+<span class="font-caption text-caption text-on-surface-variant font-mono">ID: #SH-8842-CA</span>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-lg bg-surface-container-low font-label-sm text-label-sm text-on-surface-variant">Senior Track</span>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Used across automated scorecard exports and peer mock challenges.</span>
+</div>
+<!-- Field: Tier & Affiliation -->
+<div class="flex flex-col gap-2 p-5 rounded-xl bg-surface-container-low/50">
+<label class="font-label-md text-label-md text-on-surface font-semibold">Account Tier &amp; Affiliation</label>
+<div class="p-3.5 rounded-xl bg-surface-container-lowest shadow-sm flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-[22px] mt-0.5">workspace_premium</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">UC Berkeley Sponsored Pro Tier</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Unlimited AI mock sessions, real-time rubric generation, priority recruiter pipeline.</span>
+</div>
+</div>
+<div class="flex items-center justify-between font-caption text-caption text-on-surface-variant pt-1">
+<span>Renewal date: Dec 15, 2025</span>
+<span class="text-primary font-medium">Campus License Administered</span>
+</div>
+</div>
+<!-- Field: SSO & Identity -->
+<div class="flex flex-col gap-2 p-5 rounded-xl bg-surface-container-low/50">
+<label class="font-label-md text-label-md text-on-surface font-semibold">Linked Identity / SSO</label>
+<div class="p-3.5 rounded-xl bg-surface-container-lowest shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px] text-tertiary">hub</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Google Workspace Single Sign-On</span>
+<span class="font-caption text-caption text-on-surface-variant">elena.vance@university.edu</span>
+</div>
+</div>
+<button class="px-3.5 py-1.5 rounded-lg font-label-sm text-label-sm text-on-surface bg-surface-container-low hover:bg-surface-container transition-all">
+              Manage SSO
+            </button>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Fast 1-click tokenized authentication enabled via institutional provider.</span>
+</div>
+</div>
+</section>
+<!-- 2. SECURITY & SESSIONS SECTION -->
+<section class="bg-surface-container-lowest rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col gap-8" id="section-security">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 bg-surface-container-low/40 -mx-6 sm:-mx-8 -mt-6 sm:-mt-8 p-6 sm:p-8 rounded-t-2xl">
+<div class="flex items-start sm:items-center gap-3.5">
+<div class="w-10 h-10 rounded-xl bg-primary-fixed/50 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[22px]">shield</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Security &amp; Authentication</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Protect your candidate profile and manage active device sessions.</p>
+</div>
+</div>
+<div class="flex items-center gap-2 self-start sm:self-center px-3 py-1.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[16px]">verified_user</span>
+          High Protection Level
+        </div>
+</div>
+<!-- Password Management -->
+<div class="flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div>
+<h3 class="font-label-md text-label-md text-on-surface font-semibold">Password Management</h3>
+<span class="font-caption text-caption text-on-surface-variant">Last updated 45 days ago (Security audit recommended every 90 days)</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary bg-primary-fixed/40 px-2.5 py-1 rounded-lg">Status: Secure</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+<!-- Current Password -->
+<div class="flex flex-col gap-1.5">
+<label class="font-caption text-caption text-on-surface-variant font-medium">Current Password</label>
+<div class="relative">
+<input class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl font-body-md text-body-md text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container/30 transition-all" id="pwd-curr" type="password" value="••••••••••••••••"/>
+<button class="absolute right-3 top-2.5 text-outline hover:text-on-surface" onclick="const el = document.getElementById('pwd-curr'); el.type = el.type === 'password' ? 'text' : 'password';">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+</div>
+</div>
+<!-- New Password -->
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<label class="font-caption text-caption text-on-surface-variant font-medium">New Password</label>
+<span class="font-label-sm text-label-sm text-primary font-semibold">Strong</span>
+</div>
+<div class="relative">
+<input class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl font-body-md text-body-md text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container/30 transition-all" placeholder="At least 12 characters" type="password"/>
+</div>
+</div>
+<!-- Confirm New Password -->
+<div class="flex flex-col gap-1.5">
+<label class="font-caption text-caption text-on-surface-variant font-medium">Confirm New Password</label>
+<div class="relative">
+<input class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl font-body-md text-body-md text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container/30 transition-all" placeholder="Repeat new password" type="password"/>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-end pt-2">
+<button class="px-5 py-2 rounded-xl font-label-md text-label-md text-on-surface bg-surface-container hover:bg-surface-container-high transition-all">
+            Update Password
+          </button>
+</div>
+</div>
+<!-- Two-Factor Authentication Box -->
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 rounded-2xl bg-surface-container-low/50 gap-4">
+<div class="flex items-start gap-3.5">
+<div class="w-10 h-10 rounded-xl bg-surface-container-lowest shadow-sm flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[22px]">phonelink_lock</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Two-Factor Authentication (2FA)</span>
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-semibold">Enabled</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-0.5">
+              Configured with Google Authenticator (TOTP algorithm). Protects interview audio assets and score rubrics.
+            </p>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0 self-end sm:self-center">
+<button class="px-3.5 py-2 rounded-xl font-label-sm text-label-sm text-primary hover:underline font-semibold">
+            Reconfigure 2FA
+          </button>
+<!-- Toggle Button Component -->
+<button aria-checked="true" class="w-12 h-6 bg-primary rounded-full relative p-0.5 transition-colors focus:outline-none" onclick="this.setAttribute('aria-checked', this.getAttribute('aria-checked') === 'true' ? 'false' : 'true'); this.classList.toggle('bg-primary'); this.classList.toggle('bg-outline-variant'); this.firstElementChild.classList.toggle('translate-x-6');" role="switch">
+<div class="w-5 h-5 bg-surface-container-lowest rounded-full transform translate-x-6 transition-transform shadow-sm"></div>
+</button>
+</div>
+</div>
+<!-- Active Sessions & Device Management -->
+<div class="flex flex-col gap-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div>
+<h3 class="font-label-md text-label-md text-on-surface font-semibold">Active Login Sessions</h3>
+<span class="font-caption text-caption text-on-surface-variant">Devices currently authenticated to your candidate dashboard.</span>
+</div>
+<button class="flex items-center gap-2 px-4 py-2 rounded-xl font-label-sm text-label-sm text-error bg-error-container/40 hover:bg-error-container/80 transition-all self-start sm:self-auto" id="logoutAllBtn">
+<span class="material-symbols-outlined text-[16px]">logout</span>
+<span>Log Out From All Other Devices</span>
+</button>
+</div>
+<div class="flex flex-col gap-2.5">
+<!-- Session 1: Current -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-surface-container-lowest shadow-sm gap-3">
+<div class="flex items-center gap-3.5">
+<div class="w-10 h-10 rounded-xl bg-surface-container-low flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[20px]">laptop_mac</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Chrome on macOS Sonoma</span>
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-semibold">This Device</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant font-caption text-caption">
+<span>San Francisco, USA</span>
+<span>•</span>
+<span class="inline-flex items-center gap-1 text-primary font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                    Active Now
+                  </span>
+<span>•</span>
+<span class="font-mono">192.88.99.14</span>
+</div>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-outline px-3 py-1 rounded-lg bg-surface-container-low self-start sm:self-center">Current Session</span>
+</div>
+<!-- Session 2 -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-surface-container-lowest shadow-sm gap-3">
+<div class="flex items-center gap-3.5">
+<div class="w-10 h-10 rounded-xl bg-surface-container-low flex items-center justify-center text-secondary shrink-0">
+<span class="material-symbols-outlined text-[20px]">phone_iphone</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Safari on iPhone 15 Pro</span>
+<div class="flex items-center gap-2 text-on-surface-variant font-caption text-caption">
+<span>San Francisco, USA</span>
+<span>•</span>
+<span>Last active 3 hours ago</span>
+</div>
+</div>
+</div>
+<button class="px-3 py-1.5 rounded-lg font-label-sm text-label-sm text-outline hover:text-error hover:bg-error-container/30 transition-all self-start sm:self-center">
+              Revoke Session
+            </button>
+</div>
+<!-- Session 3 -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-surface-container-lowest shadow-sm gap-3">
+<div class="flex items-center gap-3.5">
+<div class="w-10 h-10 rounded-xl bg-surface-container-low flex items-center justify-center text-secondary shrink-0">
+<span class="material-symbols-outlined text-[20px]">desktop_windows</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Edge on Windows 11</span>
+<div class="flex items-center gap-2 text-on-surface-variant font-caption text-caption">
+<span>Library Lab, Berkeley, USA</span>
+<span>•</span>
+<span>Last active 4 days ago</span>
+</div>
+</div>
+</div>
+<button class="px-3 py-1.5 rounded-lg font-label-sm text-label-sm text-outline hover:text-error hover:bg-error-container/30 transition-all self-start sm:self-center">
+              Revoke Session
+            </button>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. NOTIFICATION PREFERENCES SECTION -->
+<section class="bg-surface-container-lowest rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col gap-6" id="section-notifications">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 bg-surface-container-low/40 -mx-6 sm:-mx-8 -mt-6 sm:-mt-8 p-6 sm:p-8 rounded-t-2xl">
+<div class="flex items-start sm:items-center gap-3.5">
+<div class="w-10 h-10 rounded-xl bg-primary-fixed/50 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[22px]">notifications_active</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Notification Preferences</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Control how SmartHire AI contacts you about mock interviews and system alerts.</p>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-3 py-1.5 rounded-full">
+          Email &amp; In-App Sync
+        </span>
+</div>
+<!-- Toggles Grid -->
+<div class="flex flex-col gap-3">
+<!-- Item 1: Email Notifications (ON) -->
+<div class="flex items-start sm:items-center justify-between p-4 rounded-xl bg-surface-container-low/40 gap-4">
+<div class="flex items-start gap-3.5">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5">summarize</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Email Score Summaries</span>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                Receive email summaries of evaluated interviews, score breakdowns, and weekly benchmark reports.
+              </p>
+</div>
+</div>
+<button aria-checked="true" class="toggle-btn w-12 h-6 bg-primary rounded-full relative p-0.5 transition-colors shrink-0 focus:outline-none" onclick="toggleSwitch(this)" role="switch">
+<div class="w-5 h-5 bg-surface-container-lowest rounded-full transform translate-x-6 transition-transform shadow-sm"></div>
+</button>
+</div>
+<!-- Item 2: Interview Reminders (ON) -->
+<div class="flex items-start sm:items-center justify-between p-4 rounded-xl bg-surface-container-low/40 gap-4">
+<div class="flex items-start gap-3.5">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5">alarm</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Interview Reminders</span>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                Get SMS and email reminders 1 hour and 15 minutes before scheduled live mock sessions.
+              </p>
+</div>
+</div>
+<button aria-checked="true" class="toggle-btn w-12 h-6 bg-primary rounded-full relative p-0.5 transition-colors shrink-0 focus:outline-none" onclick="toggleSwitch(this)" role="switch">
+<div class="w-5 h-5 bg-surface-container-lowest rounded-full transform translate-x-6 transition-transform shadow-sm"></div>
+</button>
+</div>
+<!-- Item 3: Account & Security Notifications (Locked ON) -->
+<div class="flex items-start sm:items-center justify-between p-4 rounded-xl bg-surface-container-low/40 gap-4">
+<div class="flex items-start gap-3.5">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5">lock_person</span>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Account &amp; Security Notifications</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">Required</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                Immediate alerts for new device logins, password resets, and critical permission changes.
+              </p>
+</div>
+</div>
+<button aria-checked="true" class="w-12 h-6 bg-primary/60 rounded-full relative p-0.5 opacity-80 cursor-not-allowed shrink-0" disabled="" role="switch">
+<div class="w-5 h-5 bg-surface-container-lowest rounded-full transform translate-x-6 shadow-sm"></div>
+</button>
+</div>
+<!-- Item 4: Product & Coaching Tips (OFF) -->
+<div class="flex items-start sm:items-center justify-between p-4 rounded-xl bg-surface-container-low/40 gap-4">
+<div class="flex items-start gap-3.5">
+<span class="material-symbols-outlined text-outline text-[20px] mt-0.5">tips_and_updates</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Product &amp; AI Coaching Tips</span>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                Receive curated AI coaching recommendations and weekly STAR method drills.
+              </p>
+</div>
+</div>
+<button aria-checked="false" class="toggle-btn w-12 h-6 bg-outline-variant rounded-full relative p-0.5 transition-colors shrink-0 focus:outline-none" onclick="toggleSwitch(this)" role="switch">
+<div class="w-5 h-5 bg-surface-container-lowest rounded-full transform translate-x-0 transition-transform shadow-sm"></div>
+</button>
+</div>
+<!-- Item 5: Recruiter Visibility Alerts (ON) -->
+<div class="flex items-start sm:items-center justify-between p-4 rounded-xl bg-surface-container-low/40 gap-4">
+<div class="flex items-start gap-3.5">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5">visibility</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Recruiter Visibility Alerts</span>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                Get notified when verified partner recruiters view your anonymized candidate assessment.
+              </p>
+</div>
+</div>
+<button aria-checked="true" class="toggle-btn w-12 h-6 bg-primary rounded-full relative p-0.5 transition-colors shrink-0 focus:outline-none" onclick="toggleSwitch(this)" role="switch">
+<div class="w-5 h-5 bg-surface-container-lowest rounded-full transform translate-x-6 transition-transform shadow-sm"></div>
+</button>
+</div>
+</div>
+</section>
+<!-- 4. PRIVACY PREFERENCES & DATA CONTROLS + DANGER ZONE -->
+<section class="bg-surface-container-lowest rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col gap-8" id="section-privacy">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 bg-surface-container-low/40 -mx-6 sm:-mx-8 -mt-6 sm:-mt-8 p-6 sm:p-8 rounded-t-2xl">
+<div class="flex items-start sm:items-center gap-3.5">
+<div class="w-10 h-10 rounded-xl bg-primary-fixed/50 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[22px]">privacy_tip</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Privacy Preferences &amp; Data Controls</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage how your interview performance and personal data are shared.</p>
+</div>
+</div>
+<div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">folder_special</span>
+          FERPA &amp; GDPR Compliant
+        </div>
+</div>
+<!-- Data Sharing Toggles -->
+<div class="flex flex-col gap-3">
+<!-- Talent Cloud Sharing (ON) -->
+<div class="flex items-start sm:items-center justify-between p-4 rounded-xl bg-surface-container-low/40 gap-4">
+<div class="flex items-start gap-3.5">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5">cloud_done</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Talent Cloud Sharing</span>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                Allow verified university partner recruiters to view your high-readiness interview scores (85+).
+              </p>
+</div>
+</div>
+<button aria-checked="true" class="toggle-btn w-12 h-6 bg-primary rounded-full relative p-0.5 transition-colors shrink-0 focus:outline-none" onclick="toggleSwitch(this)" role="switch">
+<div class="w-5 h-5 bg-surface-container-lowest rounded-full transform translate-x-6 transition-transform shadow-sm"></div>
+</button>
+</div>
+<!-- Anonymize Profile (OFF) -->
+<div class="flex items-start sm:items-center justify-between p-4 rounded-xl bg-surface-container-low/40 gap-4">
+<div class="flex items-start gap-3.5">
+<span class="material-symbols-outlined text-outline text-[20px] mt-0.5">incognito</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Anonymize Profile in Cohort Leaderboards</span>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                Display your real name and university in aggregate benchmark rankings instead of an anonymous identifier.
+              </p>
+</div>
+</div>
+<button aria-checked="false" class="toggle-btn w-12 h-6 bg-outline-variant rounded-full relative p-0.5 transition-colors shrink-0 focus:outline-none" onclick="toggleSwitch(this)" role="switch">
+<div class="w-5 h-5 bg-surface-container-lowest rounded-full transform translate-x-0 transition-transform shadow-sm"></div>
+</button>
+</div>
+<!-- AI Model Training Feedback (ON) -->
+<div class="flex items-start sm:items-center justify-between p-4 rounded-xl bg-surface-container-low/40 gap-4">
+<div class="flex items-start gap-3.5">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5">model_training</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">AI Model Training Feedback</span>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                Allow synthetic speech telemetry to calibrate interview scoring accuracy. Transcripts are stripped of personal identifiers.
+              </p>
+</div>
+</div>
+<button aria-checked="true" class="toggle-btn w-12 h-6 bg-primary rounded-full relative p-0.5 transition-colors shrink-0 focus:outline-none" onclick="toggleSwitch(this)" role="switch">
+<div class="w-5 h-5 bg-surface-container-lowest rounded-full transform translate-x-6 transition-transform shadow-sm"></div>
+</button>
+</div>
+</div>
+<!-- Export Data Module -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-2xl bg-surface-container-low/60 gap-4">
+<div class="flex items-start gap-3.5">
+<div class="w-10 h-10 rounded-xl bg-surface-container-lowest shadow-sm flex items-center justify-center text-tertiary shrink-0">
+<span class="material-symbols-outlined text-[22px]">download_for_offline</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Candidate Archive &amp; Telemetry Data</span>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              Download your full profile data, mock audio records, evaluation rubrics, and feedback timelines in open formats.
+            </p>
+</div>
+</div>
+<button class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-label-md text-label-md text-on-surface bg-surface-container-lowest hover:bg-surface-container shadow-sm transition-all whitespace-nowrap self-start sm:self-center">
+<span class="material-symbols-outlined text-[18px]">file_download</span>
+<span>Export All Data (.ZIP / JSON)</span>
+</button>
+</div>
+<!-- Danger Zone Container -->
+<div class="flex flex-col gap-4 p-6 rounded-2xl bg-error-container/30">
+<div class="flex items-center gap-2.5 text-error">
+<span class="material-symbols-outlined text-[20px]">warning</span>
+<span class="font-label-md text-label-md font-semibold uppercase tracking-wider">Danger Zone</span>
+</div>
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Deactivate or Delete Account</h3>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mt-1">
+              Temporarily pause your candidate account or permanently purge all recorded interview videos, evaluation scorecards, and resume versions. This cannot be undone.
+            </p>
+</div>
+<div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
+<button class="px-4 py-2.5 rounded-xl font-label-md text-label-md text-error bg-surface-container-lowest shadow-sm hover:bg-error-container/50 transition-all">
+              Deactivate Account
+            </button>
+<button class="font-label-sm text-label-sm text-error/80 hover:text-error hover:underline px-2 py-1">
+              Request Permanent Deletion
+            </button>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Persistent Floating Confirmation Bar -->
+<div class="fixed bottom-6 left-64 right-0 px-8 flex justify-center z-40 pointer-events-none transition-all duration-300" id="stickyBar">
+<div class="w-full max-w-4xl bg-surface-container-lowest/95 backdrop-blur-md rounded-2xl p-4 shadow-xl flex items-center justify-between pointer-events-auto">
+<div class="flex items-center gap-3">
+<span class="w-2.5 h-2.5 rounded-full bg-primary animate-ping"></span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Unsaved Changes</span>
+<span class="font-caption text-caption text-on-surface-variant">You modified your notification &amp; privacy parameters</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 rounded-xl font-label-md text-label-md text-on-surface hover:bg-surface-container transition-all" id="barDiscardBtn">
+          Cancel
+        </button>
+<button class="px-5 py-2 rounded-xl font-label-md text-label-md text-on-primary bg-primary-container hover:brightness-95 active:scale-[0.98] shadow-sm transition-all flex items-center gap-1.5" id="barSaveBtn">
+<span class="material-symbols-outlined text-[16px]">check</span>
+<span>Save Changes</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  function toggleSwitch(btn) {
+    const isChecked = btn.getAttribute('aria-checked') === 'true';
+    btn.setAttribute('aria-checked', !isChecked);
+    
+    const knob = btn.firstElementChild;
+    if (isChecked) {
+      btn.classList.remove('bg-primary');
+      btn.classList.add('bg-outline-variant');
+      knob.classList.remove('translate-x-6');
+      knob.classList.add('translate-x-0');
+    } else {
+      btn.classList.remove('bg-outline-variant');
+      btn.classList.add('bg-primary');
+      knob.classList.remove('translate-x-0');
+      knob.classList.add('translate-x-6');
+    }
+
+    // Trigger sticky bar appearance on changes
+    const bar = document.getElementById('stickyBar');
+    if (bar) bar.classList.remove('opacity-0', 'pointer-events-none');
+  }
+
+  function showNotification() {
+    const toast = document.getElementById('saveToast');
+    if (toast) {
+      toast.classList.remove('translate-y-24', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.add('translate-y-24', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 3000);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const saveTop = document.getElementById('saveTopBtn');
+    const barSave = document.getElementById('barSaveBtn');
+    const discardTop = document.getElementById('discardTopBtn');
+    const barDiscard = document.getElementById('barDiscardBtn');
+    const stickyBar = document.getElementById('stickyBar');
+    const logoutAllBtn = document.getElementById('logoutAllBtn');
+
+    if (saveTop) saveTop.addEventListener('click', showNotification);
+    if (barSave) {
+      barSave.addEventListener('click', () => {
+        showNotification();
+        if (stickyBar) stickyBar.classList.add('opacity-0', 'pointer-events-none');
+      });
+    }
+
+    if (discardTop) {
+      discardTop.addEventListener('click', () => {
+        if (stickyBar) stickyBar.classList.add('opacity-0', 'pointer-events-none');
+      });
+    }
+
+    if (barDiscard) {
+      barDiscard.addEventListener('click', () => {
+        if (stickyBar) stickyBar.classList.add('opacity-0', 'pointer-events-none');
+      });
+    }
+
+    if (logoutAllBtn) {
+      logoutAllBtn.addEventListener('click', () => {
+        const toast = document.getElementById('saveToast');
+        if (toast) {
+          toast.querySelector('span:nth-child(2)').textContent = 'Logged out from all external sessions';
+          showNotification();
+          setTimeout(() => {
+            toast.querySelector('span:nth-child(2)').textContent = 'Settings updated successfully';
+          }, 3200);
+        }
+      });
+    }
+  });
+</script></main></div></body></html>

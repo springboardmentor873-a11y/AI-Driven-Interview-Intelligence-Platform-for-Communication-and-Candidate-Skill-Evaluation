@@ -1,0 +1,821 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_dashboard" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary-fixed-variant":"#464650","tertiary-fixed":"#eee0d8","inverse-surface":"#213145","outline-variant":"#bfc9c5","outline":"#707976","background":"#f8f9ff","inverse-primary":"#98d2c3","secondary-container":"#e4e1ee","primary-container":"#6fa89a","surface-bright":"#f8f9ff","on-primary-fixed-variant":"#115044","tertiary-container":"#a69b94","primary-fixed-dim":"#98d2c3","on-primary-fixed":"#00201a","on-secondary-container":"#64636e","on-primary-container":"#003c33","surface":"#f8f9ff","primary":"#2f685c","error-container":"#ffdad6","secondary-fixed":"#e4e1ee","secondary-fixed-dim":"#c7c5d1","on-surface":"#0b1c2f","tertiary-fixed-dim":"#d1c4bd","surface-tint":"#2f685c","on-surface-variant":"#404946","surface-container-lowest":"#ffffff","on-background":"#0b1c2f","on-tertiary-fixed-variant":"#4e4540","inverse-on-surface":"#eaf1ff","on-secondary":"#ffffff","surface-container-high":"#dce9ff","surface-dim":"#cbdbf5","surface-container-highest":"#d3e4fe","on-tertiary":"#ffffff","secondary":"#5e5d68","primary-fixed":"#b3eedf","on-error-container":"#93000a","error":"#ba1a1a","surface-variant":"#d3e4fe","on-error":"#ffffff","tertiary":"#665d57","on-primary":"#ffffff","on-tertiary-fixed":"#211a16","on-secondary-fixed":"#1b1b24","surface-container-low":"#eff4ff","surface-container":"#e5eeff","on-tertiary-container":"#3b332e"},borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},spacing:{"space-sm":"0.5rem","space-lg":"1.5rem","margin-mobile":"1rem","space-xs":"0.25rem","space-xl":"2rem","space-md":"1rem","gutter":"1.5rem","margin":"2rem","gutter-mobile":"1rem"},fontFamily:{"label-sm":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"display-mobile":["Plus Jakarta Sans"],"label-md":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"caption":["Plus Jakarta Sans"],"body-medium":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"display":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"]},fontSize:{"label-sm":["12px",{"lineHeight":"16px","letterSpacing":"0.02em","fontWeight":"500"}],"body-md":["14px",{"lineHeight":"22px","fontWeight":"400"}],"headline-sm":["18px",{"lineHeight":"26px","letterSpacing":"-0.005em","fontWeight":"600"}],"display-mobile":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"label-md":["13px",{"lineHeight":"18px","letterSpacing":"0.01em","fontWeight":"600"}],"headline-lg-mobile":["26px",{"lineHeight":"34px","letterSpacing":"-0.015em","fontWeight":"700"}],"caption":["12px",{"lineHeight":"16px","fontWeight":"400"}],"body-medium":["14px",{"lineHeight":"22px","fontWeight":"500"}],"headline-lg":["30px",{"lineHeight":"38px","letterSpacing":"-0.015em","fontWeight":"700"}],"headline-md":["22px",{"lineHeight":"30px","letterSpacing":"-0.01em","fontWeight":"600"}],"display":["40px",{"lineHeight":"48px","letterSpacing":"-0.02em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}]}}}};</script></head><body class="bg-surface font-body-md text-body-md text-on-surface min-h-screen antialiased"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between"><div class="flex flex-col flex-1 min-h-0"><div class="h-16 px-space-lg flex items-center justify-between"><div class="flex items-center gap-space-sm"><div class="w-9 h-9 rounded-xl bg-primary-container flex items-center justify-center text-on-primary font-headline-sm text-headline-sm"><span class="material-symbols-outlined text-on-primary text-[20px]">psychology</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm font-bold text-on-surface leading-tight tracking-tight">SmartHire AI</span><span class="font-caption text-caption text-secondary tracking-normal">Intelligent Talent</span></div></div><span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">Talent Ops</span></div><nav class="flex-1 px-space-md py-space-md space-y-1 overflow-y-auto" data-active-classes="bg-surface-container-low text-primary font-body-medium"><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl transition-colors bg-primary-fixed text-primary font-body-medium shadow-sm" data-path="overview" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span><span class="">Overview</span></a><a class="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-body-md text-body-md" data-path="candidates" href="#"><span class="material-symbols-outlined text-[20px]">group</span><span class="">Candidates</span></a><a class="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-body-md text-body-md" data-path="candidate-analytics" href="#"><span class="material-symbols-outlined text-[20px]">monitoring</span><span class="">Candidate Analytics</span></a><a class="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-body-md text-body-md" data-path="interview-templates" href="#"><span class="material-symbols-outlined text-[20px]">assignment</span><span class="">Interview Templates</span></a><a class="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-body-md text-body-md" data-path="interview-sessions" href="#"><span class="material-symbols-outlined text-[20px]">video_call</span><span class="">Interview Sessions</span></a><a class="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-body-md text-body-md" data-path="reports" href="#"><span class="material-symbols-outlined text-[20px]">summarize</span><span class="">Reports</span></a><div class="pt-space-sm my-space-xs"><span class="px-space-md font-label-sm text-label-sm text-secondary uppercase tracking-wider">Account</span></div><a class="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-body-md text-body-md" data-path="profile" href="#"><span class="material-symbols-outlined text-[20px]">account_circle</span><span class="">Profile</span></a><a class="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-body-md text-body-md" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span class="">Settings</span></a></nav></div><div class="p-space-md bg-surface-container-lowest"><a class="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl text-on-surface-variant hover:bg-error-container hover:text-on-error-container transition-colors font-body-md text-body-md" data-path="logout" href="#"><span class="material-symbols-outlined text-[20px]">logout</span><span class="">Logout</span></a></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-space-xl"><div class="flex items-center w-full max-w-lg"><div class="relative w-full flex items-center"><span class="material-symbols-outlined absolute left-3 text-secondary text-[20px] pointer-events-none">search</span><input class="w-full h-10 pl-10 pr-12 rounded-xl bg-surface-container-low text-on-surface placeholder:text-secondary font-body-md text-body-md outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container transition-all" placeholder="Search candidates, job roles, interview sessions... ⌘K" type="text"><kbd class="absolute right-3 px-1.5 py-0.5 rounded bg-surface-container text-on-secondary-container font-label-sm text-label-sm shadow-[0_1px_2px_rgba(0,0,0,0.05)]">⌘K</kbd></div></div><div class="flex items-center gap-space-lg"><button aria-label="Notifications" class="relative p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary ring-2 ring-surface-container-lowest"></span></button><div class="flex items-center gap-space-sm pl-space-sm"><div class="flex flex-col text-right hidden sm:flex"><span class="font-label-md text-label-md text-on-surface leading-snug">Marcus Vance</span><span class="font-caption text-caption text-secondary leading-none">Senior Talent Partner</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-16 px-space-xl bg-surface min-h-[calc(100vh-4rem)]"><div class="flex flex-col w-full">
+<!-- Interactive & Notification Floating Toast Hook -->
+<div class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-space-sm px- space-md py-3 rounded-xl bg-inverse-surface text-inverse-on-surface shadow-xl" id="toast-notification">
+<span class="material-symbols-outlined text-inverse-primary text-[20px]" id="toast-icon">check_circle</span>
+<span class="font-body-medium text-body-medium" id="toast-message">Pipeline report exported successfully</span>
+</div>
+<!-- TOP GREETING & CONTEXT HEADER -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-lg pb-space-xl">
+<div class="flex flex-col max-w-2xl">
+<div class="flex items-center gap-space-xs mb-1">
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">Recruiter Workspace</span>
+<span class="text-secondary font-caption text-caption">•</span>
+<span class="text-secondary font-caption text-caption">Autumn 2025 Hiring Wave</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Welcome Back, Recruiter! 👋</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+        Monitor candidate pipelines, review completed mock interview sessions, and manage hiring workflows.
+      </p>
+</div>
+<!-- Quick Action Triggers -->
+<div class="flex flex-wrap items-center gap-space-sm shrink-0"><button class="flex items-center gap-space-xs px-4 py-2.5 rounded-xl bg-primary-container text-on-primary hover:opacity-95 transition-opacity shadow-sm font-label-md text-label-md" onclick="triggerToast('Opening candidate invitation modal...', 'send')"><span class="material-symbols-outlined text-[18px]">person_add</span><span class="">Invite Candidate</span></button><button class="flex items-center gap-space-xs px-4 py-2.5 rounded-xl bg-surface-container-lowest text-on-surface hover:bg-surface-container-low transition-colors shadow-sm font-label-md text-label-md border-surface-container" onclick="triggerToast('Opening interview template builder...', 'add_box')"><span class="material-symbols-outlined text-[18px] text-secondary">tune</span><span class="">Create Interview Template</span></button><button class="flex items-center gap-space-xs px-4 py-2.5 rounded-xl bg-primary text-on-primary hover:opacity-95 transition-opacity shadow-sm font-label-md text-label-md" onclick="triggerToast('Downloading Pipeline CSV dossier...', 'download')"><span class="material-symbols-outlined text-[18px]">download</span><span class="">Export Pipeline Report</span></button></div>
+</div>
+<!-- KPI SUMMARY CARDS -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-lg mb-space-xl">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div class="flex items-start justify-between">
+<div class="w-10 h-10 rounded-xl bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[22px]">groups</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-low text-primary font-label-sm text-label-sm flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>+12% mo
+        </span>
+</div>
+<div class="mt-4">
+<span class="font-caption text-caption text-secondary uppercase tracking-wider block">Total Candidates</span>
+<div class="flex items-baseline gap-space-xs mt-1">
+<span class="font-headline-lg text-headline-lg text-on-surface">1,248</span>
+<span class="font-caption text-caption text-secondary">in system</span>
+</div>
+<div class="w-full bg-surface-container-low h-1.5 rounded-full mt-3 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 78%"></div>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div class="flex items-start justify-between">
+<div class="w-10 h-10 rounded-xl bg-surface-container-low flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined text-[22px]">verified_user</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-low text-on-secondary-container font-label-sm text-label-sm">
+          67.5% completion
+        </span>
+</div>
+<div class="mt-4">
+<span class="font-caption text-caption text-secondary uppercase tracking-wider block">Candidates Reviewed</span>
+<div class="flex items-baseline gap-space-xs mt-1">
+<span class="font-headline-lg text-headline-lg text-on-surface">842</span>
+<span class="font-caption text-caption text-secondary">reviewed</span>
+</div>
+<div class="w-full bg-surface-container-low h-1.5 rounded-full mt-3 overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 67.5%"></div>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div class="flex items-start justify-between">
+<div class="w-10 h-10 rounded-xl bg-surface-container-low flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[22px]">videocam</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">
+          42 this week
+        </span>
+</div>
+<div class="mt-4">
+<span class="font-caption text-caption text-secondary uppercase tracking-wider block">Interview Sessions</span>
+<div class="flex items-baseline gap-space-xs mt-1">
+<span class="font-headline-lg text-headline-lg text-on-surface">356</span>
+<span class="font-caption text-caption text-secondary">completed</span>
+</div>
+<div class="w-full bg-surface-container-low h-1.5 rounded-full mt-3 overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 54%"></div>
+</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div class="flex items-start justify-between">
+<div class="w-10 h-10 rounded-xl bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed">
+<span class="material-symbols-outlined text-[22px]">pending_actions</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-sm text-label-sm flex items-center gap-0.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary mr-0.5"></span>8 high priority
+        </span>
+</div>
+<div class="mt-4">
+<span class="font-caption text-caption text-secondary uppercase tracking-wider block">Pending Reviews</span>
+<div class="flex items-baseline gap-space-xs mt-1">
+<span class="font-headline-lg text-headline-lg text-on-surface">28</span>
+<span class="font-caption text-caption text-secondary">awaiting score</span>
+</div>
+<div class="w-full bg-surface-container-low h-1.5 rounded-full mt-3 overflow-hidden">
+<div class="bg-tertiary-container h-full rounded-full" style="width: 32%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- CANDIDATE MANAGEMENT SECTION -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg mb-space-xl flex flex-col">
+<!-- Header & Section Lead -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between pb-space-md gap-2">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">Candidate Management</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Review applicant profiles, screening statuses, and interview performance.</p>
+</div>
+<div class="flex items-center gap-2 self-start sm:self-auto">
+<span class="font-caption text-caption text-secondary">1,248 Candidates Enrolled</span>
+</div>
+</div>
+<!-- Comprehensive Filter Toolbar -->
+<div class="bg-surface-container-low rounded-xl p-space-md mb-space-md flex flex-col xl:flex-row gap-3 items-stretch xl:items-center justify-between">
+<!-- Search Input -->
+<div class="relative flex-1 min-w-[260px]">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-secondary text-[20px] pointer-events-none">search</span>
+<input class="w-full h-10 pl-10 pr-4 rounded-xl bg-surface-container-lowest text-on-surface placeholder:text-secondary font-body-md text-body-md outline-none focus:ring-2 focus:ring-primary-container transition-all" id="candidate-search" oninput="handleSearch(this.value)" placeholder="Search by candidate name, email, or skill..." type="text">
+</div>
+<!-- Filters Row -->
+<div class="flex flex-wrap items-center gap-2">
+<!-- Role Dropdown -->
+<div class="relative">
+<select class="appearance-none h-10 pl-3 pr-8 rounded-xl bg-surface-container-lowest text-on-surface font-body-md text-body-md outline-none focus:ring-2 focus:ring-primary-container cursor-pointer shadow-sm">
+<option>All Roles</option>
+<option>Product Design</option>
+<option>Frontend Dev</option>
+<option>Backend Lead</option>
+<option>Full-Stack</option>
+<option>QA Automation</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-2.5 text-secondary text-[18px] pointer-events-none">expand_more</span>
+</div>
+<!-- Resume Status Dropdown -->
+<div class="relative">
+<select class="appearance-none h-10 pl-3 pr-8 rounded-xl bg-surface-container-lowest text-on-surface font-body-md text-body-md outline-none focus:ring-2 focus:ring-primary-container cursor-pointer shadow-sm">
+<option>All Statuses</option>
+<option>Parsed &amp; Matched</option>
+<option>Needs Review</option>
+<option>Pending Upload</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-2.5 text-secondary text-[18px] pointer-events-none">expand_more</span>
+</div>
+<!-- Interview Status Dropdown -->
+<div class="relative">
+<select class="appearance-none h-10 pl-3 pr-8 rounded-xl bg-surface-container-lowest text-on-surface font-body-md text-body-md outline-none focus:ring-2 focus:ring-primary-container cursor-pointer shadow-sm">
+<option>All Stages</option>
+<option>Completed</option>
+<option>In Progress</option>
+<option>Scheduled</option>
+<option>Pending</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-2.5 text-secondary text-[18px] pointer-events-none">expand_more</span>
+</div>
+<!-- Sort Control -->
+<div class="relative">
+<select class="appearance-none h-10 pl-3 pr-8 rounded-xl bg-surface-container-lowest text-on-surface font-body-md text-body-md outline-none focus:ring-2 focus:ring-primary-container cursor-pointer shadow-sm">
+<option>Sort: Newest Activity</option>
+<option>Score: High to Low</option>
+<option>Name A-Z</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-2.5 text-secondary text-[18px] pointer-events-none">swap_vert</span>
+</div>
+<button class="h-10 px-3 rounded-xl bg-surface-container text-on-secondary-container hover:bg-surface-container-high transition-colors flex items-center justify-center" onclick="triggerToast('Filters reset to default', 'refresh')" title="Reset Filters">
+<span class="material-symbols-outlined text-[18px]">filter_alt_off</span>
+</button>
+</div>
+</div>
+<!-- Candidate Table Container -->
+<div class="overflow-x-auto w-full">
+<table class="w-full text-left border-collapse min-w-[960px]">
+<thead>
+<tr class="bg-surface-container-low text-secondary font-label-md text-label-md">
+<th class="py-3 px-4 rounded-l-xl w-12 text-center">
+<input class="w-4 h-4 rounded text-primary focus:ring-primary-container accent-primary cursor-pointer" id="select-all" type="checkbox">
+</th>
+<th class="py-3 px-4">Candidate &amp; Role</th>
+<th class="py-3 px-4">Email</th>
+<th class="py-3 px-4">Core Skills</th>
+<th class="py-3 px-4">Resume Status</th>
+<th class="py-3 px-4">Interview Status</th>
+<th class="py-3 px-4 rounded-r-xl text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low text-on-surface font-body-md text-body-md" id="candidate-table-body">
+<!-- Row 1: Elena Vance -->
+<tr class="hover:bg-surface-container-low/60 transition-colors candidate-row" data-name="Elena Vance" data-skill="React TypeScript UI/UX">
+<td class="py-4 px-4 text-center">
+<input class="w-4 h-4 rounded text-primary accent-primary cursor-pointer" type="checkbox">
+</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Portrait photo of Elena Vance, a female senior software engineer with warm lighting, wearing professional attire against a soft neutral studio backdrop" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBA4aJdOOT0mDbT7jyKxOsxnVkbQud-MI4KXZHqaiElpvXsyaQESAjH8dudn7MH-utjbUCQyoGmNY9_giUFe0G6prpYqekVv7SYJzO-xWs63JiNQDoiSS19-aXPaATaBJLQIJQh7JJRmamfe9QRqu6yv4ld6Io_jrEaTQ5_sgSt8WdndFubkjrZsSK6hlwGCaSUA77TLL6jTef7aIfJT8XdbToi5s1p3DV06Te45jk">
+</div>
+<div class="flex flex-col">
+<span class="font-body-medium text-body-medium font-semibold text-on-surface">Elena Vance</span>
+<span class="font-caption text-caption text-secondary">Senior Frontend Engineer</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 text-on-surface-variant font-caption text-caption">
+              elena.vance@university.edu
+            </td>
+<td class="py-4 px-4">
+<div class="flex flex-wrap gap-1">
+<span class="px-2 py-0.5 rounded-lg bg-surface-container text-on-secondary-container font-label-sm text-label-sm">React</span>
+<span class="px-2 py-0.5 rounded-lg bg-surface-container text-on-secondary-container font-label-sm text-label-sm">TypeScript</span>
+<span class="px-2 py-0.5 rounded-lg bg-surface-container text-on-secondary-container font-label-sm text-label-sm">UI/UX</span>
+</div>
+</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+                Parsed &amp; Matched (88%)
+              </span>
+</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+                Completed (Score: 86/100)
+              </span>
+</td>
+<td class="py-4 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-3 py-1.5 rounded-lg bg-surface-container text-primary hover:bg-primary hover:text-on-primary transition-colors font-label-md text-label-md" onclick="triggerToast('Opening assessment for Elena Vance', 'assignment_ind')">
+                  Review Candidate
+                </button>
+<button class="p-1.5 rounded-lg text-secondary hover:bg-surface-container transition-colors" title="Candidate Options">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Marcus Sterling -->
+<tr class="hover:bg-surface-container-low/60 transition-colors candidate-row" data-name="Marcus Sterling" data-skill="Figma Design Systems Prototyping">
+<td class="py-4 px-4 text-center">
+<input class="w-4 h-4 rounded text-primary accent-primary cursor-pointer" type="checkbox">
+</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Portrait photo of Marcus Sterling, product designer in late 20s with glasses, subtle smile, studio lighting with calm cool blue accent fill" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCu3PVSqsno9CDNJ-6OTVtBDAJZ8sISYFQ2pPF9gLsTxANDs3fQ8avLiZOJErBvX6d4RUjPrgJdsr8n_hLVTp_X60CG7mLhqgRwEsD6gXnhSFx6u8WnJkZWAkkkpB94Kf6BPvXHgPr9XcCi-25OJg-V1XxUyrOHHN06Rx1zxDpKqzC2ouW2lCe4zrBTQwhsq5rW3t3M6_fAYbxf0TOyFBHtnkR8LhCYpbfCYMA1bUE">
+</div>
+<div class="flex flex-col">
+<span class="font-body-medium text-body-medium font-semibold text-on-surface">Marcus Sterling</span>
+<span class="font-caption text-caption text-secondary">Product Designer</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 text-on-surface-variant font-caption text-caption">
+              marcus.s@talent.io
+            </td>
+<td class="py-4 px-4">
+<div class="flex flex-wrap gap-1">
+<span class="px-2 py-0.5 rounded-lg bg-surface-container text-on-secondary-container font-label-sm text-label-sm">Figma</span>
+<span class="px-2 py-0.5 rounded-lg bg-surface-container text-on-secondary-container font-label-sm text-label-sm">Design Systems</span>
+<span class="px-2 py-0.5 rounded-lg bg-surface-container text-on-secondary-container font-label-sm text-label-sm">Prototyping</span>
+</div>
+</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+                Validated (92%)
+              </span>
+</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+                Scheduled for Tomorrow
+              </span>
+</td>
+<td class="py-4 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-3 py-1.5 rounded-lg bg-surface-container text-primary hover:bg-primary hover:text-on-primary transition-colors font-label-md text-label-md" onclick="triggerToast('Opening assessment for Marcus Sterling', 'assignment_ind')">
+                  View Details
+                </button>
+<button class="p-1.5 rounded-lg text-secondary hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Priya Sharma -->
+<tr class="hover:bg-surface-container-low/60 transition-colors candidate-row" data-name="Priya Sharma" data-skill="Python Node.js PostgreSQL">
+<td class="py-4 px-4 text-center">
+<input class="w-4 h-4 rounded text-primary accent-primary cursor-pointer" type="checkbox">
+</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Headshot of Priya Sharma, a female engineering lead with poised expression in high-key natural light office environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJXgOIhuMeK3pOx68qTMAuw4lMVsU9HEw80V-Xzah_eTaJKG5-8R1vV40adQGZLrZ47y_X6nrcZgaeip0RofXedOdwjh_gw53yzTnCWYieovNXYONQM2MjWKzvxPLxNhd9fRb7oy3Gm71hjTaoG5y5lVWmg1xeQXjJ6BqoSXUa9jZXbVlYKVXRotoW_UDvqY0e4UsyjGl4hSJpVLqegj7ZhOe-Gt7JxhsQSR3dX6I">
+</div>
+<div class="flex flex-col">
+<span class="font-body-medium text-body-medium font-semibold text-on-surface">Priya Sharma</span>
+<span class="font-caption text-caption text-secondary">Backend Lead</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 text-on-surface-variant font-caption text-caption">
+              priya.sharma@domain.com
+            </td>
+<td class="py-4 px-4">
+<div class="flex flex-wrap gap-1">
+<span class="px-2 py-0.5 rounded-lg bg-surface-container text-on-secondary-container font-label-sm text-label-sm">Python</span>
+<span class="px-2 py-0.5 rounded-lg bg-surface-container text-on-secondary-container font-label-sm text-label-sm">Node.js</span>
+<span class="px-2 py-0.5 rounded-lg bg-surface-container text-on-secondary-container font-label-sm text-label-sm">PostgreSQL</span>
+</div>
+</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+                Verified (85%)
+              </span>
+</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+                Completed (Score: 91/100)
+              </span>
+</td>
+<td class="py-4 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-3 py-1.5 rounded-lg bg-surface-container text-primary hover:bg-primary hover:text-on-primary transition-colors font-label-md text-label-md" onclick="triggerToast('Opening assessment for Priya Sharma', 'assignment_ind')">
+                  Review Session
+                </button>
+<button class="p-1.5 rounded-lg text-secondary hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Lucas Meyer -->
+<tr class="hover:bg-surface-container-low/60 transition-colors candidate-row" data-name="Lucas Meyer" data-skill="React Go GraphQL Docker">
+<td class="py-4 px-4 text-center">
+<input class="w-4 h-4 rounded text-primary accent-primary cursor-pointer" type="checkbox">
+</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Portrait photo of Lucas Meyer, full stack developer wearing a charcoal pullover with soft diffused daylighting, calm demeanor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6D_xI1LZNQswaRMrgtWfA9dptugu4_DssDYbG8vCwQBKgLdci9dLdqusLOxtnpz7-02_zqTHdfyDIiceKHG-W71ZamV8Cj9B0deZoOHOHRUt3P5Bh_oTHKgiR_QPRtIZKgHlvChK7SlArv1fJ_bphvny9Wt7QIMz52VJKLcTnhK3JEksLuvQZQRVLF7tnWDZZa6Db2TmYxjAihS0G-edn1Cph5FVwL3DN28-jPV0">
+</div>
+<div class="flex flex-col">
+<span class="font-body-medium text-body-medium font-semibold text-on-surface">Lucas Meyer</span>
+<span class="font-caption text-caption text-secondary">Full Stack Dev</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 text-on-surface-variant font-caption text-caption">
+              lucas.m@stackhire.net
+            </td>
+<td class="py-4 px-4">
+<div class="flex flex-wrap gap-1">
+<span class="px-2 py-0.5 rounded-lg bg-surface-container text-on-secondary-container font-label-sm text-label-sm">React</span>
+<span class="px-2 py-0.5 rounded-lg bg-surface-container text-on-secondary-container font-label-sm text-label-sm">Go</span>
+<span class="px-2 py-0.5 rounded-lg bg-surface-container text-on-secondary-container font-label-sm text-label-sm">GraphQL</span>
+</div>
+</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">hourglass_empty</span>
+                Needs Review
+              </span>
+</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container text-secondary font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+                Under Review
+              </span>
+</td>
+<td class="py-4 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-3 py-1.5 rounded-lg bg-surface-container text-primary hover:bg-primary hover:text-on-primary transition-colors font-label-md text-label-md" onclick="triggerToast('Opening screening files for Lucas Meyer', 'folder_open')">
+                  View Details
+                </button>
+<button class="p-1.5 rounded-lg text-secondary hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5: Sophia Chen -->
+<tr class="hover:bg-surface-container-low/60 transition-colors candidate-row" data-name="Sophia Chen" data-skill="Cypress Selenium Jest CI/CD">
+<td class="py-4 px-4 text-center">
+<input class="w-4 h-4 rounded text-primary accent-primary cursor-pointer" type="checkbox">
+</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Portrait photo of Sophia Chen, QA automation engineer smiling confidently in modern architectural workspace with soft slate accents" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLGyRGIso7Z0l9RghUAoAuDqW4z78C2WJ4rn0bbfcPnbTPpJ9PCKRSKEhR7AE_D5VS4Tl82IzK3DWGmNCgIH4x7hAuZrwBEX5Fee7pzQlRGOa40bwg_kHGAQSJw8Tstk6DBMSBcohsqeAaH-InFFcC7fvldzH__OgDcHGRMVqbC08SlxXtnx2A6IwUhXAJQ11vGUOBTm2L-Cear2XfoVklBeYkyhn_q6Ijh-zBsQY">
+</div>
+<div class="flex flex-col">
+<span class="font-body-medium text-body-medium font-semibold text-on-surface">Sophia Chen</span>
+<span class="font-caption text-caption text-secondary">QA Automation</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 text-on-surface-variant font-caption text-caption">
+              sophia.chen@qualityops.org
+            </td>
+<td class="py-4 px-4">
+<div class="flex flex-wrap gap-1">
+<span class="px-2 py-0.5 rounded-lg bg-surface-container text-on-secondary-container font-label-sm text-label-sm">Cypress</span>
+<span class="px-2 py-0.5 rounded-lg bg-surface-container text-on-secondary-container font-label-sm text-label-sm">Selenium</span>
+<span class="px-2 py-0.5 rounded-lg bg-surface-container text-on-secondary-container font-label-sm text-label-sm">CI/CD</span>
+</div>
+</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+                Parsed &amp; Matched (90%)
+              </span>
+</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+                Completed (Score: 89/100)
+              </span>
+</td>
+<td class="py-4 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-3 py-1.5 rounded-lg bg-surface-container text-primary hover:bg-primary hover:text-on-primary transition-colors font-label-md text-label-md" onclick="triggerToast('Opening assessment for Sophia Chen', 'assignment_ind')">
+                  Review Candidate
+                </button>
+<button class="p-1.5 rounded-lg text-secondary hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Pagination Footer -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-space-lg">
+<div class="flex items-center gap-2 text-secondary font-caption text-caption">
+<span class="">Showing <strong class="text-on-surface">1-5</strong> of <strong class="text-on-surface">1,248</strong> candidates</span>
+<span class="text-outline-variant">•</span>
+<div class="flex items-center gap-1">
+<span class="">Rows per page:</span>
+<select class="bg-surface-container-low text-on-surface rounded-lg px-2 py-1 text-caption outline-none cursor-pointer">
+<option>5</option>
+<option>10</option>
+<option>25</option>
+<option>50</option>
+</select>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<button class="w-8 h-8 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors flex items-center justify-center disabled:opacity-40" disabled="">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-primary text-on-primary font-label-sm text-label-sm flex items-center justify-center">1</button>
+<button class="w-8 h-8 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-label-sm text-label-sm flex items-center justify-center">2</button>
+<button class="w-8 h-8 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-label-sm text-label-sm flex items-center justify-center">3</button>
+<span class="px-1 text-secondary font-caption text-caption">...</span>
+<button class="w-8 h-8 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-label-sm text-label-sm flex items-center justify-center">250</button>
+<button class="w-8 h-8 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- CANDIDATE COMPARISON & RECENT ACTIVITY DUAL BENTO SECTION -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg mb-space-xl">
+<!-- CANDIDATE COMPARISON (8 Cols Desktop) -->
+<div class="lg:col-span-8 bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col justify-between">
+<div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between pb-space-md gap-2">
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">Candidate Comparison</h2>
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm">3 Candidates Shortlisted</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-0.5">
+              Side-by-side benchmark comparison for shortlisted candidates across core competency dimensions.
+            </p>
+</div>
+<button class="self-start sm:self-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md" onclick="triggerToast('Downloading benchmark dossier...', 'file_download')">
+<span class="material-symbols-outlined text-[18px]">download_for_offline</span>
+<span class="">Download Comparative Dossier</span>
+</button>
+</div>
+<!-- 3-Column Comparative Benchmark Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md mt-2">
+<!-- Candidate Card 1: Elena Vance -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-label-sm text-label-sm font-semibold">Strong Hire</span>
+<span class="font-caption text-caption text-secondary">6+ yrs exp</span>
+</div>
+<div class="flex items-center gap-2.5 mb-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center font-headline-sm text-headline-sm text-primary font-bold">
+                  EV
+                </div>
+<div>
+<h4 class="font-body-medium text-body-medium font-semibold text-on-surface leading-tight">Elena Vance</h4>
+<span class="font-caption text-caption text-secondary">Frontend Lead Track</span>
+</div>
+</div>
+<!-- Metric Bars -->
+<div class="space-y-2.5 pt-2">
+<div>
+<div class="flex justify-between font-label-sm text-label-sm text-on-surface mb-1">
+<span class="">STAR Rubric Articulation</span>
+<span class="font-semibold text-primary">88/100</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 88%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-label-sm text-label-sm text-on-surface mb-1">
+<span class="">Technical Depth</span>
+<span class="font-semibold text-primary">92/100</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 92%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-label-sm text-label-sm text-on-surface mb-1">
+<span class="">Communication Cadence</span>
+<span class="font-semibold text-primary">84/100</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 84%"></div>
+</div>
+</div>
+</div>
+<!-- Match Pill -->
+<div class="mt-4 p-2.5 rounded-xl bg-surface-container-lowest flex items-center justify-between">
+<span class="font-caption text-caption text-secondary">ATS Match:</span>
+<span class="font-label-md text-label-md font-bold text-primary">94% Fit</span>
+</div>
+</div>
+<div class="mt-4 pt-3 space-y-2">
+<button class="w-full py-2 rounded-xl bg-primary text-on-primary font-label-md text-label-md hover:opacity-95 transition-opacity text-center shadow-sm" onclick="triggerToast('Offer preparation initiated for Elena Vance', 'verified')">
+                Proceed to Offer
+              </button>
+</div>
+</div>
+<!-- Candidate Card 2: Marcus Sterling -->
+<div class="bg-secondary-container/60 rounded-xl p-space-md flex flex-col justify-between shadow-sm">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm font-semibold">Recommended</span>
+<span class="font-caption text-caption text-secondary">4 yrs exp</span>
+</div>
+<div class="flex items-center gap-2.5 mb-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center font-headline-sm text-headline-sm text-secondary font-bold">
+                  MS
+                </div>
+<div>
+<h4 class="font-body-medium text-body-medium font-semibold text-on-surface leading-tight">Marcus Sterling</h4>
+<span class="font-caption text-caption text-secondary">Product Design Track</span>
+</div>
+</div>
+<!-- Metric Bars -->
+<div class="space-y-2.5 pt-2">
+<div>
+<div class="flex justify-between font-label-sm text-label-sm text-on-surface mb-1">
+<span class="">STAR Rubric Articulation</span>
+<span class="font-semibold text-primary">82/100</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 82%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-label-sm text-label-sm text-on-surface mb-1">
+<span class="">Technical Depth</span>
+<span class="font-semibold text-primary">86/100</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 86%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-label-sm text-label-sm text-on-surface mb-1">
+<span class="">Communication Cadence</span>
+<span class="font-semibold text-primary">89/100</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 89%"></div>
+</div>
+</div>
+</div>
+<!-- Match Pill -->
+<div class="mt-4 p-2.5 rounded-xl bg-surface-container-lowest flex items-center justify-between">
+<span class="font-caption text-caption text-secondary">ATS Match:</span>
+<span class="font-label-md text-label-md font-bold text-primary">89% Fit</span>
+</div>
+</div>
+<div class="mt-4 pt-3 space-y-2">
+<button class="w-full py-2 rounded-xl bg-primary-container text-on-primary font-label-md text-label-md hover:opacity-95 transition-opacity text-center shadow-sm" onclick="triggerToast('Scheduling Final Round for Marcus Sterling', 'event_available')">
+                Schedule Final Round
+              </button>
+</div>
+</div>
+<!-- Candidate Card 3: Priya Sharma -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-label-sm text-label-sm font-semibold">Strong Hire</span>
+<span class="font-caption text-caption text-secondary">8 yrs exp</span>
+</div>
+<div class="flex items-center gap-2.5 mb-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center font-headline-sm text-headline-sm text-primary font-bold">
+                  PS
+                </div>
+<div>
+<h4 class="font-body-medium text-body-medium font-semibold text-on-surface leading-tight">Priya Sharma</h4>
+<span class="font-caption text-caption text-secondary">Backend Lead Track</span>
+</div>
+</div>
+<!-- Metric Bars -->
+<div class="space-y-2.5 pt-2">
+<div>
+<div class="flex justify-between font-label-sm text-label-sm text-on-surface mb-1">
+<span class="">STAR Rubric Articulation</span>
+<span class="font-semibold text-primary">91/100</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 91%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-label-sm text-label-sm text-on-surface mb-1">
+<span class="">Technical Depth</span>
+<span class="font-semibold text-primary">96/100</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 96%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-label-sm text-label-sm text-on-surface mb-1">
+<span class="">Communication Cadence</span>
+<span class="font-semibold text-primary">87/100</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 87%"></div>
+</div>
+</div>
+</div>
+<!-- Match Pill -->
+<div class="mt-4 p-2.5 rounded-xl bg-surface-container-lowest flex items-center justify-between">
+<span class="font-caption text-caption text-secondary">ATS Match:</span>
+<span class="font-label-md text-label-md font-bold text-primary">96% Fit</span>
+</div>
+</div>
+<div class="mt-4 pt-3 space-y-2">
+<button class="w-full py-2 rounded-xl bg-primary text-on-primary font-label-md text-label-md hover:opacity-95 transition-opacity text-center shadow-sm" onclick="triggerToast('Offer preparation initiated for Priya Sharma', 'verified')">
+                Proceed to Offer
+              </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Comparative Summary Bar -->
+<div class="mt-6 pt-4 border-t border-surface-container flex flex-col sm:flex-row items-center justify-between gap-3 text-secondary font-caption text-caption">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary">info</span>
+<span class="">Benchmarked against 32 historical hires in the same grade tier.</span>
+</div>
+<a class="text-primary hover:underline font-label-sm text-label-sm" href="#" onclick="event.preventDefault(); triggerToast('Expanding deep matrix...', 'view_column')">
+          Expand full 14-dimension rubric matrix →
+        </a>
+</div>
+</div>
+<!-- RECENT ACTIVITY TIMELINE (4 Cols Desktop) -->
+<div class="lg:col-span-4 bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-space-md">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">Recent Activity</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Live feed of recruiter &amp; candidate actions</p>
+</div>
+<span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse" title="Live stream active"></span>
+</div>
+<!-- Timeline Feed -->
+<div class="space-y-space-md relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-0.5 before:bg-surface-container mt-2">
+<!-- Event 1 -->
+<div class="relative flex items-start gap-3 pl-1">
+<div class="w-7 h-7 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center shrink-0 z-10 text-primary">
+<span class="material-symbols-outlined text-[16px]">task_alt</span>
+</div>
+<div class="flex-1 bg-surface-container-low rounded-xl p-3">
+<p class="font-body-md text-body-md text-on-surface font-medium leading-snug">
+<strong>Elena Vance</strong> completed System Design Mock Interview
+              </p>
+<div class="flex items-center justify-between mt-2 pt-1 border-t border-surface-container">
+<span class="font-label-sm text-label-sm text-primary font-semibold">Score: 86/100</span>
+<span class="font-caption text-caption text-secondary">45 mins ago</span>
+</div>
+<div class="mt-2">
+<button class="font-label-sm text-label-sm text-primary hover:underline inline-flex items-center gap-1" onclick="triggerToast('Loading transcript for Elena Vance...', 'play_circle')">
+<span class="">Review Session</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Event 2 -->
+<div class="relative flex items-start gap-3 pl-1">
+<div class="w-7 h-7 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center shrink-0 z-10 text-secondary">
+<span class="material-symbols-outlined text-[16px]">upload_file</span>
+</div>
+<div class="flex-1 bg-surface-container-low rounded-xl p-3">
+<p class="font-body-md text-body-md text-on-surface font-medium leading-snug">
+                New resume uploaded for <strong>Lucas Meyer</strong>
+</p>
+<span class="inline-block mt-1 font-caption text-caption text-secondary">Full Stack Dev track • Automated parsing complete</span>
+<div class="flex items-center justify-between mt-2 pt-1 border-t border-surface-container">
+<button class="font-label-sm text-label-sm text-primary hover:underline inline-flex items-center gap-1" onclick="triggerToast('Opening PDF preview for Lucas Meyer', 'visibility')">
+<span class="">View File</span>
+<span class="material-symbols-outlined text-[14px]">open_in_new</span>
+</button>
+<span class="font-caption text-caption text-secondary">2 hours ago</span>
+</div>
+</div>
+</div>
+<!-- Event 3 -->
+<div class="relative flex items-start gap-3 pl-1">
+<div class="w-7 h-7 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center shrink-0 z-10 text-primary-container">
+<span class="material-symbols-outlined text-[16px]">edit_note</span>
+</div>
+<div class="flex-1 bg-surface-container-low rounded-xl p-3">
+<p class="font-body-md text-body-md text-on-surface font-medium leading-snug">
+                Interview Template <strong>'Senior Frontend V2'</strong> updated
+              </p>
+<span class="inline-block mt-1 font-caption text-caption text-secondary">By Marcus Vance • 4 questions re-weighted</span>
+<div class="flex items-center justify-between mt-2 pt-1 border-t border-surface-container">
+<span class="font-caption text-caption text-secondary">4 hours ago</span>
+</div>
+</div>
+</div>
+<!-- Event 4 -->
+<div class="relative flex items-start gap-3 pl-1">
+<div class="w-7 h-7 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center shrink-0 z-10 text-tertiary">
+<span class="material-symbols-outlined text-[16px]">mark_email_read</span>
+</div>
+<div class="flex-1 bg-surface-container-low rounded-xl p-3">
+<p class="font-body-md text-body-md text-on-surface font-medium leading-snug">
+                Batch feedback sent to <strong>12 candidates</strong>
+</p>
+<span class="inline-block mt-1 font-caption text-caption text-secondary">Summer Tech Cohort • Automated score cards attached</span>
+<div class="flex items-center justify-between mt-2 pt-1 border-t border-surface-container">
+<span class="font-caption text-caption text-secondary">Yesterday</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-4 mt-4 border-t border-surface-container text-center">
+<button class="text-primary hover:text-on-surface transition-colors font-label-md text-label-md" onclick="triggerToast('Loading archived audit trails...', 'history')">
+          View Complete Audit Log →
+        </button>
+</div>
+</div>
+</div>
+<!-- INLINE CLIENT INTERACTION LOGIC -->
+<script>
+    function triggerToast(message, icon = 'check_circle') {
+      const toast = document.getElementById('toast-notification');
+      const toastMsg = document.getElementById('toast-message');
+      const toastIcon = document.getElementById('toast-icon');
+      
+      toastMsg.textContent = message;
+      toastIcon.textContent = icon;
+
+      toast.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+      }, 3200);
+    }
+
+    function handleSearch(query) {
+      const q = query.toLowerCase().trim();
+      const rows = document.querySelectorAll('.candidate-row');
+      rows.forEach(row => {
+        const name = (row.getAttribute('data-name') || '').toLowerCase();
+        const skill = (row.getAttribute('data-skill') || '').toLowerCase();
+        if (name.includes(q) || skill.includes(q)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+
+    // Select-all checkbox toggle
+    document.addEventListener('DOMContentLoaded', () => {
+      const selectAll = document.getElementById('select-all');
+      if (selectAll) {
+        selectAll.addEventListener('change', (e) => {
+          const boxes = document.querySelectorAll('.candidate-row input[type="checkbox"]');
+          boxes.forEach(cb => cb.checked = e.target.checked);
+        });
+      }
+    });
+  </script>
+</div></main></div>
+
+</body></html>

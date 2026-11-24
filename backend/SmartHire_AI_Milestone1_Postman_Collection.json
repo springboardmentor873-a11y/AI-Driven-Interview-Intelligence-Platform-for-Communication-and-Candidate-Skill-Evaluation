@@ -1,0 +1,545 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d",
+    "name": "SmartHire AI - Milestone 1 API Collection",
+    "description": "Complete API testing collection for SmartHire AI Milestone 1 (FastAPI + PostgreSQL/SQLite + JWT + RBAC + Resume Management).\nIncludes pre-request and test scripts to automatically save and use JWT access tokens.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "candidate_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "recruiter_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "uploaded_resume_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. System Health",
+      "item": [
+        {
+          "name": "Root Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            }
+          }
+        },
+        {
+          "name": "Database Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Register Candidate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Aarav Mehta\",\n  \"email\": \"candidate@smarthire.ai\",\n  \"phone_number\": \"+91-9876543210\",\n  \"password\": \"CandidatePass123!\",\n  \"confirm_password\": \"CandidatePass123!\",\n  \"role\": \"candidate\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Register Recruiter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Sneha Kapoor\",\n  \"email\": \"recruiter@techcorp.com\",\n  \"phone_number\": \"+91-9123456789\",\n  \"password\": \"RecruiterPass123!\",\n  \"confirm_password\": \"RecruiterPass123!\",\n  \"role\": \"recruiter\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Public Admin Registration (Must Fail Security Check)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Fake Admin\",\n  \"email\": \"fake.admin@smarthire.ai\",\n  \"password\": \"AdminPass123!\",\n  \"confirm_password\": \"AdminPass123!\",\n  \"role\": \"admin\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Authorized Create Admin (Admin Only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Platform Admin\",\n  \"email\": \"admin.secondary@smarthire.ai\",\n  \"phone_number\": \"+91-9000000002\",\n  \"password\": \"AdminPass123!\",\n  \"confirm_password\": \"AdminPass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/admin/create-admin",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", "admin", "create-admin"]
+            }
+          }
+        },
+        {
+          "name": "Login - Candidate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access_token) {",
+                  "    pm.collectionVariables.set(\"candidate_token\", jsonData.access_token);",
+                  "    console.log(\"Candidate token saved!\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"candidate@smarthire.ai\",\n  \"password\": \"CandidatePass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login - Recruiter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access_token) {",
+                  "    pm.collectionVariables.set(\"recruiter_token\", jsonData.access_token);",
+                  "    console.log(\"Recruiter token saved!\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"recruiter@techcorp.com\",\n  \"password\": \"RecruiterPass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login - Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access_token) {",
+                  "    pm.collectionVariables.set(\"admin_token\", jsonData.access_token);",
+                  "    console.log(\"Admin token saved!\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@smarthire.ai\",\n  \"password\": \"AdminPass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get Authenticated User (/auth/me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{candidate_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Logout & Revoke Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{candidate_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. User & Profile Management",
+      "item": [
+        {
+          "name": "Get Current User Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{candidate_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", "me"]
+            }
+          }
+        },
+        {
+          "name": "Update User Account Info",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{candidate_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Aarav Mehta (Senior Candidate)\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", "me"]
+            }
+          }
+        },
+        {
+          "name": "Update Candidate Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{candidate_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"headline\": \"Full Stack Developer & AI Enthusiast\",\n  \"phone_number\": \"+91-9876543210\",\n  \"skills\": \"Python, FastAPI, React, PostgreSQL, PyTorch, Docker\",\n  \"experience_years\": 2,\n  \"education\": \"B.Tech in Computer Science\",\n  \"github_url\": \"https://github.com/aaravmehta\",\n  \"linkedin_url\": \"https://linkedin.com/in/aaravmehta\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/me/candidate-profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", "me", "candidate-profile"]
+            }
+          }
+        },
+        {
+          "name": "Update Recruiter Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiter_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_name\": \"TechCorp Global Pvt Ltd\",\n  \"company_website\": \"https://techcorp.com\",\n  \"designation\": \"Technical Talent Acquisition Lead\",\n  \"phone_number\": \"+91-9123456789\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/me/recruiter-profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", "me", "recruiter-profile"]
+            }
+          }
+        },
+        {
+          "name": "List Candidates (Recruiter Only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiter_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/candidates?skip=0&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", "candidates"],
+              "query": [
+                {
+                  "key": "skip",
+                  "value": "0"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin Overview of All Users (Admin Only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", "admin", "users"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Resume Management",
+      "item": [
+        {
+          "name": "Upload Resume (Candidate Only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.collectionVariables.set(\"uploaded_resume_id\", jsonData.id);",
+                  "    console.log(\"Saved uploaded resume ID:\", jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{candidate_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "is_primary",
+                  "value": "true",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/resumes/upload",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "resumes", "upload"]
+            }
+          }
+        },
+        {
+          "name": "Get My Resumes (Candidate Only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{candidate_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/resumes/my-resumes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "resumes", "my-resumes"]
+            }
+          }
+        },
+        {
+          "name": "Download Resume (Candidate or Recruiter)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{candidate_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/resumes/download/{{uploaded_resume_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "resumes", "download", "{{uploaded_resume_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Resume (Candidate Owner Only)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{candidate_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/resumes/{{uploaded_resume_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "resumes", "{{uploaded_resume_id}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
