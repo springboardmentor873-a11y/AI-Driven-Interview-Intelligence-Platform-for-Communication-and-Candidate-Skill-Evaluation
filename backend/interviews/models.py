@@ -1,8 +1,17 @@
+import uuid
+
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 CATEGORIES = [('hr', 'HR'), ('technical', 'Technical'), ('behavioral', 'Behavioral'), ('aptitude', 'Aptitude')]
 DIFFICULTIES = [('easy', 'Easy'), ('medium', 'Medium'), ('hard', 'Hard')]
+QUESTION_SOURCES = [('ai', 'AI'), ('bank', 'Question bank')]
+
+
+def answer_audio_path(instance, filename):
+    # server-generated name; never trust the uploaded filename
+    return f'private_audio/{uuid.uuid4().hex}.webm'
 
 
 class InterviewTemplate(models.Model):
@@ -32,9 +41,24 @@ class InterviewSession(models.Model):
     domain = models.CharField(max_length=100, blank=True)
     difficulty = models.CharField(max_length=10, choices=DIFFICULTIES, default='medium')
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.CREATED)
+    resume = models.ForeignKey(
+        'resumes.Resume', null=True, blank=True, on_delete=models.SET_NULL, related_name='interview_sessions'
+    )
+    num_questions = models.PositiveSmallIntegerField(default=5)
+    time_limit_minutes = models.PositiveSmallIntegerField(default=15)
+    question_source = models.CharField(max_length=10, choices=QUESTION_SOURCES, default='bank')
     started_at = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def seconds_left(self):
+        """Time left, counted by the server (the browser clock is never trusted).
+        Only meaningful while the interview is running; otherwise None."""
+        if self.status != self.Status.IN_PROGRESS or not self.started_at:
+            return None
+        used = (timezone.now() - self.started_at).total_seconds()
+        return max(0, int(self.time_limit_minutes * 60 - used))
 
     def __str__(self):
         return f'Session {self.pk} - {self.candidate} - {self.status}'
@@ -55,7 +79,8 @@ class InterviewQuestion(models.Model):
 class Answer(models.Model):
     question = models.OneToOneField(InterviewQuestion, on_delete=models.CASCADE, related_name='answer')
     candidate = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='answers')
-    audio_file = models.FileField(upload_to='private_audio/', null=True, blank=True)
+    audio_file = models.FileField(upload_to=answer_audio_path, null=True, blank=True)
+    text_answer = models.TextField(blank=True)
     transcript = models.TextField(blank=True)
     duration_seconds = models.FloatField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)

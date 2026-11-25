@@ -20,14 +20,17 @@ export default function AdminDashboard() {
   const [errors, setErrors] = useState({})
   const [notice, setNotice] = useState('')
 
-  const load = async () => {
-    const [d, u] = await Promise.all([api.get('/dashboard/'), api.get('/admin/users/')])
+  const fetchAll = () => Promise.all([api.get('/dashboard/'), api.get('/admin/users/')])
+
+  const show = ([d, u]) => {
     setStats(d.data)
     setUsers(u.data)
   }
 
+  const reload = () => fetchAll().then(show)
+
   useEffect(() => {
-    load()
+    fetchAll().then(show)
   }, [])
 
   const countOf = (key) => (key === 'all' ? users.length : users.filter((u) => u.role === key).length)
@@ -50,7 +53,7 @@ export default function AdminDashboard() {
       setForm({ username: '', email: '', password: '' })
       setShowForm(false)
       setNotice('Recruiter account created.')
-      load()
+      reload()
     } catch (err) {
       setErrors(err.response?.data || { detail: 'Could not create the account.' })
     }

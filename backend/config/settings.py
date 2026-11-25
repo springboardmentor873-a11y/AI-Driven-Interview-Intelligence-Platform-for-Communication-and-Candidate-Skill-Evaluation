@@ -131,6 +131,10 @@ REST_FRAMEWORK = {
     ),
 }
 
+# Optional AI (Google Gemini). Leave empty to use the built-in question bank.
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
+GEMINI_MODEL = os.getenv('GEMINI_MODEL', '')
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),

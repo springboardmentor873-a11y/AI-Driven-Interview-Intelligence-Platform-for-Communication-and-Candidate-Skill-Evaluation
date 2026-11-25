@@ -5,25 +5,16 @@ const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-
-  const loadUser = async () => {
-    if (!localStorage.getItem('access')) {
-      setLoading(false)
-      return
-    }
-    try {
-      const { data } = await api.get('/auth/me/')
-      setUser(data)
-    } catch {
-      setUser(null)
-    } finally {
-      setLoading(false)
-    }
-  }
+  // We only need to wait for the server when a saved login token exists.
+  const [loading, setLoading] = useState(() => Boolean(localStorage.getItem('access')))
 
   useEffect(() => {
-    loadUser()
+    if (!localStorage.getItem('access')) return
+    api
+      .get('/auth/me/')
+      .then(({ data }) => setUser(data))
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false))
   }, [])
 
   const login = async (email, password) => {
@@ -52,4 +43,5 @@ export function AuthProvider({ children }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext)

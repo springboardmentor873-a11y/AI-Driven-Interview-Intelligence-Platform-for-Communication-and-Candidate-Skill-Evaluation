@@ -1,31 +1,54 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import api from '../api/client'
+import { errorText } from '../api/errors'
 import { useAuth } from '../context/AuthContext'
 import Shell from '../components/Shell'
 import StatCard from '../components/StatCard'
+import ResumeDetails from '../components/ResumeDetails'
+import { categoryLabel, difficultyLabel, resumeStatusLabel, resumeStatusStyle, sessionStatusLabel } from '../labels'
 
 const greeting = () => {
   const h = new Date().getHours()
   return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
 }
 
+const uploadMessage = {
+  parsed: { type: 'ok', text: 'Resume uploaded and read. Your skills are shown below.' },
+  no_text: { type: 'error', text: 'Resume uploaded, but no text was found. It looks like a scanned PDF and OCR is not supported yet.' },
+  failed: { type: 'error', text: 'Resume uploaded, but we could not read the PDF.' },
+  template: { type: 'error', text: 'This looks like an unfilled template. Please fill in your details and upload again.' },
+}
+
+const HISTORY_LIMIT = 8
+
 export default function CandidateDashboard() {
   const { user } = useAuth()
   const [stats, setStats] = useState(null)
   const [resumes, setResumes] = useState([])
+  const [interviews, setInterviews] = useState([])
   const [message, setMessage] = useState(null)
   const [dragging, setDragging] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null)
   const inputRef = useRef(null)
 
-  const load = async () => {
-    const [d, r] = await Promise.all([api.get('/dashboard/'), api.get('/resumes/')])
+  const fetchAll = () => Promise.all([api.get('/dashboard/'), api.get('/resumes/'), api.get('/interviews/')])
+
+  const show = ([d, r, i]) => {
     setStats(d.data)
     setResumes(r.data)
+    setInterviews(i.data)
   }
 
+  const showLoadError = (err) => setMessage({ type: 'error', text: errorText(err, 'We could not load your data.') })
+
+  const reload = () => fetchAll().then(show).catch(showLoadError)
+
   useEffect(() => {
-    load()
+    fetchAll()
+      .then(show)
+      .catch(showLoadError)
   }, [])
 
   const uploadFile = async (file) => {
@@ -35,19 +58,26 @@ export default function CandidateDashboard() {
     const body = new FormData()
     body.append('file', file)
     try {
-      await api.post('/resumes/', body)
-      setMessage({ type: 'ok', text: 'Resume uploaded successfully.' })
-      load()
+      const { data } = await api.post('/resumes/', body)
+      setMessage(uploadMessage[data.status] || { type: 'ok', text: 'Resume uploaded.' })
+      reload()
     } catch (err) {
-      if (!err.response) {
-        setMessage({ type: 'error', text: 'Cannot reach the server. Is the backend running?' })
-      } else {
-        const d = err.response.data
-        setMessage({ type: 'error', text: d?.file?.[0] || d?.detail || 'Upload failed.' })
-      }
+      setMessage({ type: 'error', text: errorText(err, 'Upload failed.') })
     } finally {
       setBusy(false)
       if (inputRef.current) inputRef.current.value = ''
+    }
+  }
+
+  const deleteResume = async (id) => {
+    setConfirmDeleteId(null)
+    setMessage(null)
+    try {
+      await api.delete(`/resumes/${id}/`)
+      setMessage({ type: 'ok', text: 'Resume deleted.' })
+      reload()
+    } catch (err) {
+      setMessage({ type: 'error', text: errorText(err, 'We could not delete this resume.') })
     }
   }
 
@@ -60,7 +90,12 @@ export default function CandidateDashboard() {
   return (
     <Shell
       title={`${greeting()}, ${user?.username}`}
-      subtitle='Upload your resume and get ready for your first practice interview.'
+      subtitle='Upload your resume, then practise with a timed mock interview.'
+      actions={
+        <Link to='/candidate/new' className='btn-primary'>
+          Start practice interview
+        </Link>
+      }
     >
       <div className='mb-8 grid gap-4 sm:grid-cols-3'>
         <StatCard label='Resumes uploaded' value={stats?.resumes} tone='sand' />
@@ -89,7 +124,7 @@ export default function CandidateDashboard() {
               className='hidden'
               onChange={(e) => uploadFile(e.target.files[0])}
             />
-            <p className='font-display text-2xl font-semibold'>{busy ? 'Uploading...' : 'Drop your resume here'}</p>
+            <p className='font-display text-2xl font-semibold'>{busy ? 'Uploading and reading...' : 'Drop your resume here'}</p>
             <p className='mt-1 text-sm text-ink/60'>or click to browse. PDF only, up to 5 MB.</p>
           </div>
 
@@ -109,24 +144,85 @@ export default function CandidateDashboard() {
               <li className='rounded-2xl bg-sand/60 px-5 py-4 text-sm text-ink/60'>Nothing here yet. Upload your first one above.</li>
             )}
             {resumes.map((r) => (
-              <li key={r.id} className='flex items-center gap-4 rounded-2xl bg-white/70 px-5 py-4'>
-                <span className='grid h-11 w-11 place-items-center rounded-xl bg-clay text-xs font-bold text-paper'>PDF</span>
-                <div className='min-w-0 flex-1'>
-                  <p className='truncate font-semibold'>{r.original_name}</p>
-                  <p className='text-xs text-ink/55'>{new Date(r.created_at).toLocaleString()}</p>
+              <li key={r.id} className='rounded-2xl bg-white/70 px-5 py-4'>
+                <div className='flex items-center gap-4'>
+                  <span className='grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-clay text-xs font-bold text-paper'>PDF</span>
+                  <div className='min-w-0 flex-1'>
+                    <p className='truncate font-semibold'>{r.original_name}</p>
+                    <p className='text-xs text-ink/55'>{new Date(r.created_at).toLocaleString()}</p>
+                  </div>
+                  <span
+                    className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${resumeStatusStyle[r.status] || resumeStatusStyle.uploaded}`}
+                  >
+                    {resumeStatusLabel[r.status] || r.status}
+                  </span>
                 </div>
-                <span className='rounded-full bg-moss/10 px-3 py-1 text-xs font-semibold capitalize text-moss'>{r.status}</span>
+                <ResumeDetails resume={r} />
+                <div className='mt-3 flex flex-wrap items-center gap-3 text-sm'>
+                  {confirmDeleteId === r.id ? (
+                    <>
+                      <span className='font-semibold'>Delete this resume for good?</span>
+                      <button
+                        onClick={() => deleteResume(r.id)}
+                        className='rounded-full bg-clay px-4 py-1 font-semibold text-paper transition hover:opacity-90'
+                      >
+                        Yes, delete
+                      </button>
+                      <button
+                        onClick={() => setConfirmDeleteId(null)}
+                        className='rounded-full border border-ink/20 px-4 py-1 font-medium transition hover:bg-ink hover:text-paper'
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmDeleteId(r.id)}
+                      className='font-semibold text-clay underline underline-offset-4'
+                    >
+                      Delete
+                    </button>
+                  )}
+                </div>
               </li>
             ))}
           </ul>
         </section>
 
         <aside className='h-fit rounded-3xl bg-ink p-7 text-paper'>
-          <span className='rounded-full bg-saffron px-3 py-1 text-xs font-bold text-ink'>Coming next</span>
-          <h3 className='mt-4 font-display text-2xl font-semibold'>Your interview room</h3>
-          <p className='mt-2 text-sm text-paper/70'>
-            AI questions based on your resume, voice answers and detailed feedback are being built in the next milestones.
-          </p>
+          <h3 className='font-display text-2xl font-semibold'>Practice history</h3>
+          {interviews.length === 0 ? (
+            <p className='mt-2 text-sm text-paper/70'>
+              No interviews yet. Press Start practice interview to create your first one.
+            </p>
+          ) : (
+            <ul className='mt-4 space-y-3'>
+              {interviews.slice(0, HISTORY_LIMIT).map((s) => {
+                const open = s.status === 'created' || s.status === 'in_progress'
+                return (
+                  <li key={s.id} className='rounded-2xl bg-paper/10 p-4'>
+                    <p className='font-semibold'>
+                      {s.domain || categoryLabel[s.category]}
+                      <span className='font-normal text-paper/60'> · {difficultyLabel[s.difficulty]}</span>
+                    </p>
+                    <p className='mt-0.5 text-xs text-paper/60'>
+                      {sessionStatusLabel[s.status] || s.status} · {s.answered_count}/{s.num_questions} answered
+                    </p>
+                    <p className='text-xs text-paper/50'>{new Date(s.created_at).toLocaleDateString()}</p>
+                    <Link
+                      to={`/interview/${s.id}`}
+                      className='mt-2 inline-block text-sm font-semibold text-saffron underline underline-offset-4'
+                    >
+                      {open ? 'Continue' : 'Review'}
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+          {interviews.length > HISTORY_LIMIT && (
+            <p className='mt-3 text-xs text-paper/50'>Showing your latest {HISTORY_LIMIT} interviews.</p>
+          )}
         </aside>
       </div>
     </Shell>

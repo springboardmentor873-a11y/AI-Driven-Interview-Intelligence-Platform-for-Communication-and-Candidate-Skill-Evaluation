@@ -7,6 +7,9 @@ SmartHire AI is an AI-powered mock interview and candidate assessment platform. 
 - Secure sign-up and login with JWT authentication
 - Role-based access for candidates, recruiters and administrators
 - Resume upload (PDF) with private, per-user storage
+- Resume reading: text extraction, skill detection, education and experience hints
+- Timed mock interviews (HR, technical, behavioral, aptitude) with a question bank, or AI-written questions when a Gemini key is set
+- Interview room with a server-checked countdown, typed answers and optional voice recording
 - Role-specific dashboards
 - REST API with a React web interface
 
@@ -77,7 +80,11 @@ DB_PASSWORD=your-password
 DB_HOST=127.0.0.1
 DB_PORT=5432
 FRONTEND_ORIGIN=http://localhost:5173
+GEMINI_API_KEY=
+GEMINI_MODEL=
 ```
+
+`GEMINI_API_KEY` and `GEMINI_MODEL` are optional. See [Optional: AI with Google Gemini](#optional-ai-with-google-gemini).
 
 Apply the migrations, create an admin account and start the server:
 
@@ -114,7 +121,7 @@ Open `http://localhost:5173` in your browser.
 
 ## Usage
 
-- **Candidates** register on the Register page, log in with their email and password, and upload resumes from their dashboard.
+- **Candidates** register on the Register page, log in with their email and password, upload resumes, and practise timed mock interviews from their dashboard.
 - **Recruiters** are created by an administrator in the Django admin site (`/admin/`) by setting the user's role to recruiter.
 - **Administrators** are created with `python manage.py createsuperuser`.
 
@@ -127,7 +134,31 @@ Open `http://localhost:5173` in your browser.
 | POST | `/api/auth/token/refresh/` | Refresh the access token |
 | GET | `/api/auth/me/` | Get the current user |
 | GET | `/api/dashboard/` | Get dashboard data for the current role |
-| GET, POST | `/api/resumes/` | List or upload resumes |
+| GET, POST | `/api/resumes/` | List or upload resumes (the PDF is read and skills are detected on upload) |
+| GET, DELETE | `/api/resumes/<id>/` | Get or delete one of your resumes |
+| GET, POST | `/api/interviews/` | List your interviews or create one (type, domain, difficulty, 3 to 10 questions, 5 to 60 minutes, optional resume) |
+| GET | `/api/interviews/<id>/` | Interview details with questions and your saved answers |
+| POST | `/api/interviews/<id>/start/` | Start the timer (only once) |
+| POST | `/api/interviews/<id>/answers/` | Save one answer: `question_id`, `text_answer` and/or `audio_file` (audio up to 10 MB). One answer per question. |
+| POST | `/api/interviews/<id>/complete/` | Finish the interview |
+
+Interview endpoints are for candidates only, and a candidate can only reach their own interviews (others get 404). Errors look like `{"detail": "..."}`. The marking rubric is stored on the server and is never sent to the browser.
+
+## Optional: AI with Google Gemini
+
+The app works without any AI key. It then uses a built-in question bank and plain rules to read resumes.
+
+To turn AI on, put these two values in `backend/.env` and restart the backend:
+
+```
+GEMINI_API_KEY=your-key-from-google-ai-studio
+GEMINI_MODEL=gemini-3.5-flash-lite
+```
+
+- Get a key at [Google AI Studio](https://aistudio.google.com/).
+- Use a fast chat model. "Live" or very slow "thinking" models will often be too slow (calls are stopped after 30 seconds).
+- If a call fails for any reason, the app quietly uses the question bank instead.
+- Only a list of skills is sent for question writing. Resume text is sent only to improve the resume summary.
 
 ## Running Tests
 

@@ -6,6 +6,8 @@ import Register from './pages/Register'
 import CandidateDashboard from './pages/CandidateDashboard'
 import RecruiterDashboard from './pages/RecruiterDashboard'
 import AdminDashboard from './pages/AdminDashboard'
+import NewInterview from './pages/NewInterview'
+import InterviewRoom from './pages/InterviewRoom'
 
 const homeFor = { candidate: '/candidate', recruiter: '/recruiter', admin: '/admin' }
 
@@ -29,6 +31,22 @@ export default function App() {
             element={
               <ProtectedRoute roles={['candidate']}>
                 <CandidateDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/candidate/new'
+            element={
+              <ProtectedRoute roles={['candidate']}>
+                <NewInterview />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/interview/:id'
+            element={
+              <ProtectedRoute roles={['candidate']}>
+                <InterviewRoom />
               </ProtectedRoute>
             }
           />
