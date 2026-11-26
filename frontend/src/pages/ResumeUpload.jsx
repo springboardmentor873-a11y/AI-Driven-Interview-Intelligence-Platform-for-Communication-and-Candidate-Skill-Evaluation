@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import Navbar from '../components/Navbar';
 
@@ -8,6 +8,7 @@ export default function ResumeUpload() {
   const [resumes, setResumes] = useState([]);
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [parsingId, setParsingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -18,7 +19,6 @@ export default function ResumeUpload() {
       try {
         const userRes = await api.get('/auth/me/');
         if (userRes.data.role !== 'candidate') {
-          // Only candidates have access to resume management
           nav('/dashboard');
           return;
         }
@@ -75,7 +75,7 @@ export default function ResumeUpload() {
           'Content-Type': 'multipart/form-data',
         },
       });
-      setSuccess('Resume uploaded and text extracted successfully!');
+      setSuccess('Resume uploaded and processed with Groq AI successfully!');
       setResumes([data, ...resumes]);
       setFile(null);
       e.target.reset();
@@ -88,6 +88,22 @@ export default function ResumeUpload() {
       setError(backendErr);
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleParseAI = async (id) => {
+    setError('');
+    setSuccess('');
+    setParsingId(id);
+
+    try {
+      const { data } = await api.post(`/resumes/${id}/parse/`);
+      setResumes(resumes.map((r) => (r.id === id ? data : r)));
+      setSuccess('Groq AI successfully parsed skills, experience, and profile intelligence!');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to extract skills via Groq AI.');
+    } finally {
+      setParsingId(null);
     }
   };
 
@@ -104,10 +120,7 @@ export default function ResumeUpload() {
       setResumes(resumes.filter((r) => r.id !== id));
       setSuccess('Resume deleted successfully.');
     } catch (err) {
-      setError(
-        err.response?.data?.detail ||
-        'Failed to delete resume. Please try again.'
-      );
+      setError(err.response?.data?.detail || 'Failed to delete resume. Please try again.');
     } finally {
       setDeletingId(null);
     }
@@ -126,11 +139,14 @@ export default function ResumeUpload() {
 
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
         <div>
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 mb-2">
+            AI Skill Extraction & Resume Management
+          </span>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
-            Resume Upload & Skill Extraction
+            Resume Intelligence & Skill Profile
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Upload your PDF resume to extract text and prepare for AI skill evaluation and interview generation.
+            Upload your PDF resume to extract key technologies, experience, education, and launch targeted AI mock interviews.
           </p>
         </div>
 
@@ -175,7 +191,7 @@ export default function ResumeUpload() {
               </button>
             </div>
             <p className="text-xs text-slate-500">
-              Supported format: PDF only. Maximum file size: 5 MB.
+              Supported format: PDF only. Maximum file size: 5 MB. Automatically analyzed with Groq Llama AI.
             </p>
           </form>
         </div>
@@ -191,71 +207,134 @@ export default function ResumeUpload() {
               No resumes uploaded yet. Upload your first PDF resume above!
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {resumes.map((r) => (
                 <div
                   key={r.id}
-                  className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm space-y-4"
+                  className="bg-white rounded-2xl p-6 sm:p-7 border border-slate-200 shadow-sm space-y-6"
                 >
-                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 pb-3 border-b border-slate-100">
+                  {/* Card Header */}
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 pb-4 border-b border-slate-100">
                     <div>
-                      <span className="font-semibold text-slate-800">
-                        {r.file_name || `Resume #${r.id}`}
-                      </span>
-                      <span className="ml-3 text-xs text-slate-500">
-                        Size: {formatFileSize(r.file_size)} • Uploaded on: {new Date(r.uploaded_at).toLocaleString()}
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-900 text-base">
+                          {r.file_name || `Resume #${r.id}`}
+                        </span>
+                        <span
+                          className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${
+                            r.parsing_status === 'completed'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : r.parsing_status === 'failed'
+                              ? 'bg-rose-50 text-rose-700'
+                              : 'bg-amber-50 text-amber-700'
+                          }`}
+                        >
+                          {r.parsing_status === 'completed' ? '✓ AI Parsed' : r.parsing_status}
+                        </span>
+                      </div>
+                      <span className="text-xs text-slate-400 mt-0.5 block">
+                        Size: {formatFileSize(r.file_size)} • Uploaded: {new Date(r.uploaded_at).toLocaleString()}
                       </span>
                     </div>
-                    <div className="flex items-center gap-4">
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link
+                        to={`/interview/setup?resume_id=${r.id}`}
+                        className="text-xs font-bold px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                      >
+                        Start Mock Interview →
+                      </Link>
+
+                      <button
+                        onClick={() => handleParseAI(r.id)}
+                        disabled={parsingId === r.id}
+                        className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-indigo-200 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition disabled:opacity-50"
+                      >
+                        {parsingId === r.id ? 'Analyzing...' : 'Re-Extract with Groq'}
+                      </button>
+
                       {r.file && (
                         <a
                           href={r.file}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-xs font-semibold text-blue-600 hover:text-blue-700 underline"
+                          className="text-xs font-medium text-slate-600 hover:text-slate-900 px-2.5 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition"
                         >
-                          View Original PDF
+                          View PDF
                         </a>
                       )}
+
                       <button
                         onClick={() => handleDelete(r.id)}
                         disabled={deletingId === r.id}
-                        className="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-2.5 py-1 rounded border border-rose-200 disabled:opacity-50 transition cursor-pointer"
+                        className="text-xs font-medium text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-2.5 py-1.5 rounded-lg border border-rose-200 transition"
                       >
                         {deletingId === r.id ? 'Deleting...' : 'Delete'}
                       </button>
                     </div>
                   </div>
 
-                  <div>
-                    <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                      Extracted Text Content
-                    </h4>
-                    <div className="bg-slate-50 p-4 rounded-lg text-sm text-slate-700 font-mono max-h-48 overflow-y-auto whitespace-pre-wrap border border-slate-200">
-                      {r.text ? r.text : <span className="text-slate-400 italic">No text extracted or empty PDF</span>}
+                  {/* AI Summary */}
+                  {r.summary && (
+                    <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 space-y-1">
+                      <span className="text-xs font-bold uppercase tracking-wider text-blue-800">
+                        Executive Profile Summary (AI Generated)
+                      </span>
+                      <p className="text-sm text-slate-700 leading-relaxed">{r.summary}</p>
                     </div>
-                  </div>
+                  )}
 
-                  <div>
-                    <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                      Extracted Skills
-                    </h4>
-                    <div className="text-xs text-slate-500">
-                      {r.skills && Object.keys(r.skills).length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                          {Object.entries(r.skills).map(([key, val]) => (
-                            <span key={key} className="px-2 py-1 bg-blue-50 text-blue-700 rounded-md font-medium">
-                              {key}: {String(val)}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="italic text-slate-400">
-                          Skill extraction pipeline scheduled for Milestone 2 (OpenAI integration).
-                        </span>
-                      )}
+                  {/* Categorized Skills */}
+                  {r.skills && typeof r.skills === 'object' && Object.keys(r.skills).length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        Extracted Technical Skills & Proficiencies
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {Object.entries(r.skills).map(([category, items]) => (
+                          Array.isArray(items) && items.length > 0 ? (
+                            <div key={category} className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
+                              <span className="text-xs font-semibold text-slate-600 capitalize block mb-2">
+                                {category.replace(/_/g, ' ')} ({items.length})
+                              </span>
+                              <div className="flex flex-wrap gap-1.5">
+                                {items.map((item, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="px-2 py-0.5 bg-white border border-slate-200 text-slate-800 rounded-md text-xs font-medium shadow-2xs"
+                                  >
+                                    {item}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          ) : null
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {/* Recommended Roles */}
+                  {r.recommended_roles && r.recommended_roles.length > 0 && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-bold text-slate-600 uppercase">Best Suited Roles:</span>
+                      {r.recommended_roles.map((role, i) => (
+                        <span key={i} className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                          {role}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Raw Text Collapsible Drawer */}
+                  <details className="text-xs text-slate-500">
+                    <summary className="cursor-pointer font-medium hover:text-slate-800">
+                      View Raw PDF Text ({r.text ? r.text.length : 0} characters)
+                    </summary>
+                    <div className="mt-2 bg-slate-50 p-4 rounded-xl text-xs font-mono text-slate-600 max-h-40 overflow-y-auto whitespace-pre-wrap border border-slate-200">
+                      {r.text || 'No text extracted.'}
+                    </div>
+                  </details>
                 </div>
               ))}
             </div>

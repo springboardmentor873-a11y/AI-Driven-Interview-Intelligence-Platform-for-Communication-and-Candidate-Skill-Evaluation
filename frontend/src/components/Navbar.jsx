@@ -42,12 +42,20 @@ export default function Navbar({ user }) {
               Dashboard
             </Link>
             {user?.role === 'candidate' && (
-              <Link
-                to="/resumes"
-                className="text-sm font-medium text-slate-700 hover:text-blue-600 transition"
-              >
-                Resumes
-              </Link>
+              <>
+                <Link
+                  to="/resumes"
+                  className="text-sm font-medium text-slate-700 hover:text-blue-600 transition"
+                >
+                  Resumes
+                </Link>
+                <Link
+                  to="/interview/setup"
+                  className="text-sm font-medium text-slate-700 hover:text-blue-600 transition"
+                >
+                  Mock Interview
+                </Link>
+              </>
             )}
 
             {user && (

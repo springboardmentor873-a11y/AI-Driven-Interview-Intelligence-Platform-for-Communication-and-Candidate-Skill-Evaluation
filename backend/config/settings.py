@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     # Local applications
     'users',
     'resumes',
+    'interviews',
 ]
 
 MIDDLEWARE = [

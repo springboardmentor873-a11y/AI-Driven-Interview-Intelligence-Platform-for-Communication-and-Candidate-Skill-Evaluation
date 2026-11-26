@@ -3,6 +3,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ResumeUpload from './pages/ResumeUpload';
+import InterviewSetup from './pages/InterviewSetup';
+import InterviewRoom from './pages/InterviewRoom';
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem('access');
@@ -32,6 +34,22 @@ export default function App() {
           element={
             <ProtectedRoute>
               <ResumeUpload />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/interview/setup"
+          element={
+            <ProtectedRoute>
+              <InterviewSetup />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/interview/room/:id"
+          element={
+            <ProtectedRoute>
+              <InterviewRoom />
             </ProtectedRoute>
           }
         />

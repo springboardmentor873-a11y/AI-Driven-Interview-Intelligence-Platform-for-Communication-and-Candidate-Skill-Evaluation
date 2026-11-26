@@ -5,15 +5,24 @@ import Navbar from '../components/Navbar';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
+  const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const nav = useNavigate();
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUserAndData = async () => {
       try {
-        const { data } = await api.get('/auth/me/');
-        setUser(data);
+        const { data: userData } = await api.get('/auth/me/');
+        setUser(userData);
+        if (userData.role === 'candidate') {
+          try {
+            const { data: sessionData } = await api.get('/interviews/sessions/');
+            setSessions(sessionData || []);
+          } catch (sessionErr) {
+            console.warn('Failed to load interview sessions:', sessionErr);
+          }
+        }
       } catch (err) {
         localStorage.removeItem('access');
         localStorage.removeItem('refresh');
@@ -22,7 +31,7 @@ export default function Dashboard() {
         setLoading(false);
       }
     };
-    fetchUser();
+    fetchUserAndData();
   }, [nav]);
 
   if (loading) {
@@ -57,12 +66,18 @@ export default function Dashboard() {
           </div>
 
           {user.role === 'candidate' && (
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               <Link
-                to="/resumes"
+                to="/interview/setup"
                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition"
               >
-                Upload Resume
+                🎙️ Start Mock Interview
+              </Link>
+              <Link
+                to="/resumes"
+                className="inline-flex items-center px-4 py-2 border border-slate-300 rounded-lg shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 transition"
+              >
+                📄 Upload Resume
               </Link>
             </div>
           )}
@@ -106,9 +121,12 @@ export default function Dashboard() {
                 <p className="text-sm text-slate-600 mt-1 mb-4">
                   Practice Technical, HR, and Behavioral rounds powered by speech transcription, eye contact, and confidence tracking.
                 </p>
-                <span className="inline-block text-xs font-medium px-2 py-1 bg-amber-50 text-amber-700 rounded border border-amber-200">
-                  Milestone 2 & 3
-                </span>
+                <Link
+                  to="/interview/setup"
+                  className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 inline-flex items-center gap-1"
+                >
+                  Start Practice Session &rarr;
+                </Link>
               </div>
 
               {/* Feature 3 */}
@@ -126,6 +144,88 @@ export default function Dashboard() {
                   Rubric: 90-100 Excellent
                 </span>
               </div>
+            </div>
+
+            {/* Recent Mock Interviews Section */}
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900">
+                    Recent Mock Interviews
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Your scheduled, in-progress, and completed interview simulations
+                  </p>
+                </div>
+                <Link
+                  to="/interview/setup"
+                  className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium text-xs transition"
+                >
+                  + New Interview
+                </Link>
+              </div>
+
+              {sessions.length === 0 ? (
+                <div className="text-center py-8 bg-slate-50 rounded-lg border border-dashed border-slate-200">
+                  <p className="text-slate-500 text-sm">
+                    No mock interview sessions yet.
+                  </p>
+                  <Link
+                    to="/interview/setup"
+                    className="mt-2 inline-block text-sm font-semibold text-blue-600 hover:text-blue-700"
+                  >
+                    Start your first interview session &rarr;
+                  </Link>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100">
+                  {sessions.slice(0, 5).map((s) => (
+                    <div
+                      key={s.id}
+                      className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 px-2 rounded-lg transition"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-sm text-slate-800">
+                            {s.target_role || 'General Interview'}
+                          </span>
+                          <span className="text-xs px-2 py-0.5 rounded-full capitalize font-medium bg-slate-100 text-slate-700">
+                            {s.round_type}
+                          </span>
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${
+                              s.status === 'completed'
+                                ? 'bg-emerald-50 text-emerald-700'
+                                : s.status === 'in_progress'
+                                ? 'bg-blue-50 text-blue-700'
+                                : 'bg-amber-50 text-amber-700'
+                            }`}
+                          >
+                            {s.status.replace('_', ' ')}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500">
+                          {s.questions_count || (s.questions ? s.questions.length : 0)} questions • Difficulty: {s.difficulty} • Created{' '}
+                          {new Date(s.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+
+                      <div>
+                        <Link
+                          to={`/interview/room/${s.id}`}
+                          className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition ${
+                            s.status === 'completed'
+                              ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                              : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                          }`}
+                        >
+                          {s.status === 'completed' ? 'Review Room' : 'Enter Room →'}
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}

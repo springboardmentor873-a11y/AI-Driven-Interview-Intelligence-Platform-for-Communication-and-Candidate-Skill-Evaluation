@@ -15,6 +15,12 @@ def validate_pdf_file(value):
 
 
 class Resume(models.Model):
+    PARSING_STATUS = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    ]
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -27,7 +33,13 @@ class Resume(models.Model):
     file_name = models.CharField(max_length=255, blank=True)
     file_size = models.PositiveIntegerField(default=0, help_text="File size in bytes")
     text = models.TextField(blank=True)
+    summary = models.TextField(blank=True)
     skills = models.JSONField(default=dict, blank=True)
+    experience = models.JSONField(default=list, blank=True)
+    education = models.JSONField(default=list, blank=True)
+    technologies = models.JSONField(default=list, blank=True)
+    recommended_roles = models.JSONField(default=list, blank=True)
+    parsing_status = models.CharField(max_length=20, choices=PARSING_STATUS, default='pending')
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
