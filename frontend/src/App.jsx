@@ -2237,21 +2237,540 @@ function RecruiterTemplatesPage() {
 }
 
 
+
 function RecruiterSessionsPage() {
+  function getLocalDateTime(date) {
+    const offset = date.getTimezoneOffset() * 60000
+    return new Date(date.getTime() - offset)
+      .toISOString()
+      .slice(0, 16)
+  }
+
+  function getDefaultSchedule() {
+    return getLocalDateTime(new Date(Date.now() + 60 * 60 * 1000))
+  }
+
+  const emptyForm = {
+    candidate_id: '',
+    template_id: '',
+    title: '',
+    scheduled_at: getDefaultSchedule(),
+    duration_minutes: 30,
+    notes: '',
+  }
+
+  const [sessions, setSessions] = useState([])
+  const [candidates, setCandidates] = useState([])
+  const [templates, setTemplates] = useState([])
+  const [formData, setFormData] = useState(emptyForm)
+  const [filter, setFilter] = useState('all')
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [showForm, setShowForm] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
+  const [updatingId, setUpdatingId] = useState(null)
+  const [rescheduleValues, setRescheduleValues] = useState({})
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadData() {
+      setLoading(true)
+      setError('')
+
+      try {
+        const [sessionResponse, candidateResponse, templateResponse] =
+          await Promise.all([
+            fetch(`${API_BASE}/recruiter/sessions`, {
+              headers: getAuthHeaders(),
+            }),
+            fetch(`${API_BASE}/recruiter/candidates`, {
+              headers: getAuthHeaders(),
+            }),
+            fetch(`${API_BASE}/recruiter/templates`, {
+              headers: getAuthHeaders(),
+            }),
+          ])
+
+        const [sessionData, candidateData, templateData] =
+          await Promise.all([
+            sessionResponse.json(),
+            candidateResponse.json(),
+            templateResponse.json(),
+          ])
+
+        if (!sessionResponse.ok) {
+          throw new Error(
+            sessionData.detail || 'Unable to load interview sessions'
+          )
+        }
+
+        if (!candidateResponse.ok) {
+          throw new Error(
+            candidateData.detail || 'Unable to load candidates'
+          )
+        }
+
+        if (!templateResponse.ok) {
+          throw new Error(
+            templateData.detail || 'Unable to load templates'
+          )
+        }
+
+        if (!cancelled) {
+          setSessions(sessionData)
+          setCandidates(candidateData.candidates || [])
+          setTemplates(templateData)
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err.message || 'Unable to load session data')
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    loadData()
+
+    return () => {
+      cancelled = true
+    }
+  }, [refreshKey])
+
+  function updateField(field, value) {
+    setFormData((previous) => ({
+      ...previous,
+      [field]: value,
+    }))
+  }
+
+  async function createSession(event) {
+    event.preventDefault()
+    setSaving(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const payload = {
+        ...formData,
+        candidate_id: Number(formData.candidate_id),
+        template_id: formData.template_id
+          ? Number(formData.template_id)
+          : null,
+        duration_minutes: Number(formData.duration_minutes),
+        scheduled_at: new Date(formData.scheduled_at).toISOString(),
+      }
+
+      const response = await fetch(`${API_BASE}/recruiter/sessions`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.detail || 'Unable to create interview session')
+      }
+
+      setSuccess('Interview session scheduled successfully.')
+      setFormData(emptyForm)
+      setShowForm(false)
+      setRefreshKey((value) => value + 1)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function updateSession(sessionId, updates) {
+    setUpdatingId(sessionId)
+    setError('')
+    setSuccess('')
+
+    try {
+      const response = await fetch(
+        `${API_BASE}/recruiter/sessions/${sessionId}`,
+        {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(updates),
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.detail || 'Unable to update session')
+      }
+
+      setSuccess('Interview session updated successfully.')
+      setRefreshKey((value) => value + 1)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setUpdatingId(null)
+    }
+  }
+
+  async function cancelSession(sessionId) {
+    if (!window.confirm('Are you sure you want to cancel this interview?')) {
+      return
+    }
+
+    setUpdatingId(sessionId)
+    setError('')
+    setSuccess('')
+
+    try {
+      const response = await fetch(
+        `${API_BASE}/recruiter/sessions/${sessionId}`,
+        {
+          method: 'DELETE',
+          headers: getAuthHeaders(),
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.detail || 'Unable to cancel session')
+      }
+
+      setSuccess('Interview session cancelled. History has been preserved.')
+      setRefreshKey((value) => value + 1)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setUpdatingId(null)
+    }
+  }
+
+  function formatDate(value) {
+    return new Date(value).toLocaleString([], {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    })
+  }
+
+  function getCandidateName(candidateId) {
+    const candidate = candidates.find(
+      (item) => item.candidate_id === candidateId
+    )
+
+    return candidate?.full_name || `Candidate #${candidateId}`
+  }
+
+  function getTemplateName(templateId) {
+    if (!templateId) return 'Custom interview'
+
+    return (
+      templates.find((item) => item.id === templateId)?.title ||
+      'Template unavailable'
+    )
+  }
+
+  const filteredSessions =
+    filter === 'all'
+      ? sessions
+      : sessions.filter((session) => session.status === filter)
+
+  const counts = {
+    all: sessions.length,
+    scheduled: sessions.filter((s) => s.status === 'scheduled').length,
+    in_progress: sessions.filter((s) => s.status === 'in_progress').length,
+    completed: sessions.filter((s) => s.status === 'completed').length,
+    cancelled: sessions.filter((s) => s.status === 'cancelled').length,
+  }
+
   return (
-    <section className="content-card">
+    <section className="content-card session-page">
       <PageHeading
         title="Interview Sessions"
-        description="Schedule and monitor candidate interview sessions."
-      />
-      <EmptyState
-        icon="◉"
-        title="No interview sessions yet"
-        description="Interview session management will be connected when the session API is implemented."
-      />
+        description="Schedule interviews, assign candidates, track progress, and review history."
+      >
+        <button
+          className="primary-btn"
+          onClick={() => {
+            setShowForm((value) => !value)
+            setError('')
+            setSuccess('')
+          }}
+        >
+          {showForm ? 'Close form' : '+ Schedule Interview'}
+        </button>
+      </PageHeading>
+
+      {error && <div className="session-alert session-error">{error}</div>}
+      {success && (
+        <div className="session-alert session-success">{success}</div>
+      )}
+
+      {showForm && (
+        <form className="session-form" onSubmit={createSession}>
+          <h3>Schedule a New Interview</h3>
+
+          <div className="session-form-grid">
+            <label>
+              Candidate *
+              <select
+                required
+                value={formData.candidate_id}
+                onChange={(e) => updateField('candidate_id', e.target.value)}
+              >
+                <option value="">Select candidate</option>
+                {candidates.map((candidate) => (
+                  <option
+                    key={candidate.candidate_id}
+                    value={candidate.candidate_id}
+                  >
+                    {candidate.full_name} ({candidate.email})
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              Interview Template
+              <select
+                value={formData.template_id}
+                onChange={(e) => updateField('template_id', e.target.value)}
+              >
+                <option value="">Custom interview</option>
+                {templates.map((template) => (
+                  <option key={template.id} value={template.id}>
+                    {template.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="session-full-width">
+              Interview Title *
+              <input
+                required
+                minLength={3}
+                maxLength={200}
+                value={formData.title}
+                onChange={(e) => updateField('title', e.target.value)}
+                placeholder="e.g. Frontend Developer Technical Interview"
+              />
+            </label>
+
+            <label>
+              Date and Time *
+              <input
+                type="datetime-local"
+                required
+                value={formData.scheduled_at}
+                onChange={(e) =>
+                  updateField('scheduled_at', e.target.value)
+                }
+              />
+            </label>
+
+            <label>
+              Duration (minutes) *
+              <select
+                value={formData.duration_minutes}
+                onChange={(e) =>
+                  updateField('duration_minutes', e.target.value)
+                }
+              >
+                {[15, 30, 45, 60, 90, 120, 180].map((minutes) => (
+                  <option key={minutes} value={minutes}>
+                    {minutes} minutes
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="session-full-width">
+              Notes
+              <textarea
+                rows={3}
+                maxLength={2000}
+                value={formData.notes}
+                onChange={(e) => updateField('notes', e.target.value)}
+                placeholder="Add interview instructions or notes..."
+              />
+            </label>
+          </div>
+
+          <div className="session-form-actions">
+            <button
+              type="button"
+              className="secondary-btn"
+              onClick={() => setShowForm(false)}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="primary-btn"
+              disabled={saving || candidates.length === 0}
+            >
+              {saving ? 'Scheduling...' : 'Create Interview'}
+            </button>
+          </div>
+        </form>
+      )}
+
+      <div className="session-stats">
+        {[
+          ['all', 'Total'],
+          ['scheduled', 'Scheduled'],
+          ['in_progress', 'In Progress'],
+          ['completed', 'Completed'],
+          ['cancelled', 'Cancelled'],
+        ].map(([value, label]) => (
+          <button
+            type="button"
+            key={value}
+            className={`session-stat ${filter === value ? 'active' : ''}`}
+            onClick={() => setFilter(value)}
+          >
+            <strong>{counts[value]}</strong>
+            <span>{label}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="session-list-heading">
+        <div>
+          <h3>Interview History</h3>
+          <p>Manage scheduled and previous interviews.</p>
+        </div>
+
+        <button
+          className="secondary-btn"
+          onClick={() => setRefreshKey((value) => value + 1)}
+        >
+          Refresh
+        </button>
+      </div>
+
+      {loading ? (
+        <p className="session-muted">Loading interview sessions...</p>
+      ) : filteredSessions.length === 0 ? (
+        <EmptyState
+          icon="◉"
+          title="No interview sessions found"
+          description={
+            filter === 'all'
+              ? 'Schedule your first interview to get started.'
+              : `There are no ${filter.replace('_', ' ')} sessions.`
+          }
+        />
+      ) : (
+        <div className="session-list">
+          {filteredSessions.map((session) => (
+            <article className="session-card" key={session.id}>
+              <div className="session-card-top">
+                <div>
+                  <span className={`session-status ${session.status}`}>
+                    {session.status.replace('_', ' ')}
+                  </span>
+                  <h3>{session.title}</h3>
+                  <p>{getCandidateName(session.candidate_id)}</p>
+                </div>
+                <span className="session-id">#{session.id}</span>
+              </div>
+
+              <div className="session-details">
+                <div>
+                  <span>Scheduled</span>
+                  <strong>{formatDate(session.scheduled_at)}</strong>
+                </div>
+                <div>
+                  <span>Duration</span>
+                  <strong>{session.duration_minutes} minutes</strong>
+                </div>
+                <div>
+                  <span>Template</span>
+                  <strong>{getTemplateName(session.template_id)}</strong>
+                </div>
+              </div>
+
+              {session.notes && (
+                <p className="session-notes">{session.notes}</p>
+              )}
+
+              {session.status !== 'cancelled' &&
+                session.status !== 'completed' && (
+                  <div className="session-actions">
+                    <label>
+                      Reschedule
+                      <input
+                        type="datetime-local"
+                        value={
+                          rescheduleValues[session.id] ??
+                          getLocalDateTime(new Date(session.scheduled_at))
+                        }
+                        onChange={(e) =>
+                          setRescheduleValues((previous) => ({
+                            ...previous,
+                            [session.id]: e.target.value,
+                          }))
+                        }
+                      />
+                    </label>
+
+                    <button
+                      className="secondary-btn"
+                      disabled={updatingId === session.id}
+                      onClick={() =>
+                        updateSession(session.id, {
+                          scheduled_at: new Date(
+                            rescheduleValues[session.id] ||
+                              getLocalDateTime(new Date(session.scheduled_at))
+                          ).toISOString(),
+                        })
+                      }
+                    >
+                      Reschedule
+                    </button>
+
+                    <label>
+                      Update Status
+                      <select
+                        value={session.status}
+                        disabled={updatingId === session.id}
+                        onChange={(e) =>
+                          updateSession(session.id, {
+                            status: e.target.value,
+                          })
+                        }
+                      >
+                        <option value="scheduled">Scheduled</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                      </select>
+                    </label>
+
+                    <button
+                      className="session-cancel-btn"
+                      disabled={updatingId === session.id}
+                      onClick={() => cancelSession(session.id)}
+                    >
+                      Cancel Interview
+                    </button>
+                  </div>
+                )}
+            </article>
+          ))}
+        </div>
+      )}
     </section>
   )
 }
+
 
 function RecruiterReportsPage() {
   return (

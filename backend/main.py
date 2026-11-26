@@ -1,4 +1,4 @@
-﻿
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -8,6 +8,7 @@ from app.api.profiles import router as profiles_router
 from app.api.resume import router as resume_router
 from app.api.recruiter import router as recruiter_router
 from app.api.interview_templates import router as interview_templates_router
+from app.api.interview_sessions import router as interview_sessions_router
 
 
 app = FastAPI(
@@ -37,6 +38,7 @@ app.include_router(profiles_router)
 app.include_router(resume_router)
 app.include_router(recruiter_router)
 app.include_router(interview_templates_router)
+app.include_router(interview_sessions_router)
 
 @app.get("/")
 def home():
@@ -53,3 +55,4 @@ def health_check():
         "status": "healthy",
         "service": "FastAPI Backend"
     }
+

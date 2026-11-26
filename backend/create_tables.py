@@ -8,6 +8,7 @@ from app.models import (
     RecruiterProfile,
     Resume,
     InterviewTemplate,
+    InterviewSession,
 )
 
 
@@ -18,3 +19,5 @@ def create_tables():
 
 if __name__ == "__main__":
     create_tables()
+
+
