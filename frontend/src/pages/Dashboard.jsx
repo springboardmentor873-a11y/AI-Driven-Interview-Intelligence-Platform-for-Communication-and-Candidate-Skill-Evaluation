@@ -177,7 +177,7 @@ function CandidateView({ data, loading }) {
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <ActionCard icon="document" title="My resumes" note="Upload a resume and see the skills we find" to="/resumes" delay={120} />
         <ActionCard icon="video" title="Start a mock interview" note="Practice with your camera and microphone" to="/interview" delay={180} />
-        <ActionCard icon="chart" title="Performance analytics" note="Scores and progress over time" delay={240} />
+        <ActionCard icon="chart" title="Performance analytics" note="Scores and progress over time" to="/analytics" delay={240} />
       </div>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-5">

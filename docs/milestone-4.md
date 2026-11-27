@@ -9,8 +9,8 @@ online. This page is filled in day by day.
 
 | SRS deliverable (Milestone 4) | Status | Where |
 |---|---|---|
-| Analytics dashboard (performance tracking, skill-wise analytics, weak-area prediction, trends, ranking) | Candidate API done, page next | `apps/analytics` (Day 1) |
-| Performance visualizations | Planned | Day 2 |
+| Analytics dashboard (performance tracking, skill-wise analytics, weak-area prediction, trends, ranking) | Candidate side done | `apps/analytics` (Day 1), `/analytics` page (Day 2) |
+| Performance visualizations | Candidate charts done | `components/analytics` (Day 2) |
 | Recruiter analytics (candidate reports, comparison, monitoring) | Planned | Day 3 |
 | Admin analytics (platform-wide stats, activity, AI settings) | Planned | Day 4 |
 | Downloadable reports and performance summaries | Planned | Day 5 |
@@ -21,7 +21,7 @@ online. This page is filled in day by day.
 ### Tests
 
 - Backend: `python -m pytest` in `backend`.
-- Frontend: `npm test` in `frontend`.
+- Frontend: `npm test` in `frontend` (chart maths and wording live in `src/utils/analytics.js`).
 
 ## Day 1: candidate analytics API
 
@@ -66,3 +66,50 @@ Score rows (one per scored interview)  ->  apps/analytics/services.py  ->  GET /
 - **Only the newest 50 interviews are charted.** `summary.scored` still counts all of them.
 - The SRS also lists resume skills, but the interview answers are not tied to them, so skill-wise analytics uses
   the four scoring areas and the question topics.
+
+## Day 2: candidate analytics page
+
+### What the candidate sees
+
+The page is at `/analytics` (new **Analytics** link in the navbar, and the "Performance analytics" card on the
+dashboard now opens it). It shows the data of the Day 1 API:
+
+1. **Four number cards**: average score, latest score with its rating, best score, and progress since the first
+   interview.
+2. **Score trend**: a line chart, oldest interview on the left. The candidate can switch the overall line and each of
+   the four scores on or off. Hovering or tapping picks an interview, and the left and right arrow keys work too. The
+   box under the chart shows that interview's scores. Dashed lines mark 60 and 75.
+3. **Skills**: a radar of the four areas, with each area's recent average, best, latest, direction and where the
+   trend points next.
+4. **Where to focus**: weak skills and topics with the reason and a tip.
+5. **How you compare**: the anonymous percentile and recent activity.
+6. **By interview type** and **by question topic**: bars, weakest topics first.
+7. **How your interviews were rated**: one bar from Excellent to Poor.
+
+A row of buttons at the top filters everything by interview type (the page asks the API with `?type=`).
+
+### How it fits together
+
+- `src/utils/analytics.js` holds all the chart maths and wording (scales, line paths, radar corners, colours,
+  "+12.5", "75th"). It has no React in it and is covered by unit tests.
+- `src/components/analytics/` has the three drawing components: `TrendChart`, `SkillRadar` and `BarRows`.
+- `src/pages/Analytics.jsx` loads the data and lays out the sections. Loading, error (with "Try again") and
+  "no scored interviews yet" are each handled.
+- **No chart library was added**, so there is nothing new to install and the page stays small. The charts are drawn
+  as SVG.
+
+### Decisions
+
+- Colours use the same lines as the weak-area outlook: under 60 red, under 75 amber, 75 and above green.
+- A score that could not be measured leaves a gap in its line. It is never drawn as 0.
+- Accessibility: the chart can be reached and moved with the keyboard, the radar and bars have text labels, and the
+  trend chart has a "View the numbers as a table" list with the same data.
+- The prediction is described on the page as an estimate, not a promise.
+
+### Checked
+
+- Unit tests for every chart helper.
+- The real page was rendered with the output of the Day 1 API for a full history, a single interview and a new
+  candidate, and each of these was exercised: toggling lines, arrow keys, the type filter, the empty state, a failed
+  request and "Try again". No errors were logged.
+- It has not been looked at in a real browser from here, so check the layout on a phone-sized window as well.

@@ -28,6 +28,7 @@ const LINKS = {
   candidate: [
     { to: "/resumes", label: "Resumes" },
     { to: "/interview", label: "Interview" },
+    { to: "/analytics", label: "Analytics" },
   ],
   recruiter: [{ to: "/templates", label: "Templates" }],
   admin: [{ to: "/admin/users", label: "Users" }],
