@@ -12,6 +12,13 @@ from rest_framework.test import APITestCase
 from accounts.models import User
 from .models import Resume
 from .services import (
+    ITEM_TEXT_MAX,
+    MAX_ACHIEVEMENTS,
+    MAX_CERTIFICATIONS,
+    MAX_EDUCATION_ITEMS,
+    MAX_EXPERIENCE_ITEMS,
+    MAX_HIGHLIGHTS,
+    MAX_PROJECT_ITEMS,
     TEMPLATE_MESSAGE,
     drop_placeholder_skills,
     enrich_with_ai,
@@ -111,13 +118,150 @@ class ParseResumeTests(SimpleTestCase):
         self.assertFalse(result['ai_used'])
 
     def test_result_has_all_keys(self):
-        keys = {'skills', 'education', 'experience_years', 'has_internship', 'word_count', 'summary', 'ai_used'}
+        keys = {
+            'skills', 'education', 'experience_years', 'has_internship', 'word_count', 'summary',
+            'projects', 'experience_items', 'education_items', 'project_items', 'certifications',
+            'achievements', 'ai_used',
+        }
         self.assertEqual(set(parse_resume('hello world')), keys)
+
+    def test_rule_based_education_items_follow_detected_degrees(self):
+        result = parse_resume('B.Tech in Computer Science. Later MBA.')
+        self.assertEqual(
+            result['education_items'],
+            [
+                {'degree': 'B.E / B.Tech', 'institution': '', 'year': '', 'score': ''},
+                {'degree': 'MBA', 'institution': '', 'year': '', 'score': ''},
+            ],
+        )
+        for key in ('experience_items', 'project_items', 'certifications', 'achievements', 'projects'):
+            self.assertEqual(result[key], [])
 
     @override_settings(GEMINI_API_KEY='', GEMINI_MODEL='')
     def test_enrich_without_key_returns_baseline(self):
         baseline = parse_resume('Python developer')
         self.assertIs(enrich_with_ai('Python developer', baseline), baseline)
+
+
+GOOD_AI_DATA = {
+    'skills': ['Python'],
+    'projects': ['Library system'],
+    'summary': 'A short summary.',
+    'experience_items': [
+        {'role': 'Intern', 'company': 'Acme', 'duration': '2023', 'highlights': ['Built an API']},
+    ],
+    'education_items': [
+        {'degree': 'B.Tech', 'institution': 'ABC College', 'year': '2024', 'score': '8.5 CGPA'},
+    ],
+    'project_items': [
+        {'name': 'Library system', 'tech': 'Django', 'description': 'A book tracker.'},
+    ],
+    'certifications': ['AWS Cloud Practitioner'],
+    'achievements': ['Won a hackathon'],
+}
+
+
+@override_settings(GEMINI_API_KEY='fake', GEMINI_MODEL='fake-model')
+class AiStructuredFieldsTests(SimpleTestCase):
+    """enrich_with_ai() and the new Stage 1 fields. ai_json is always mocked - no network call."""
+
+    @patch('resumes.services.ai_json', return_value=GOOD_AI_DATA)
+    def test_valid_ai_answer_is_stored(self, _mock):
+        result = enrich_with_ai('Python developer', parse_resume('Python developer'))
+        self.assertTrue(result['ai_used'])
+        self.assertEqual(result['experience_items'], GOOD_AI_DATA['experience_items'])
+        self.assertEqual(result['education_items'], GOOD_AI_DATA['education_items'])
+        self.assertEqual(result['project_items'], GOOD_AI_DATA['project_items'])
+        self.assertEqual(result['certifications'], GOOD_AI_DATA['certifications'])
+        self.assertEqual(result['achievements'], GOOD_AI_DATA['achievements'])
+
+    @patch('resumes.services.ai_json')
+    def test_oversized_lists_are_trimmed(self, mock_json):
+        data = dict(GOOD_AI_DATA)
+        data['experience_items'] = [
+            {'role': f'Role {i}', 'company': '', 'duration': '', 'highlights': [f'h{j}' for j in range(6)]}
+            for i in range(10)
+        ]
+        data['education_items'] = [{'degree': f'Degree {i}', 'institution': '', 'year': '', 'score': ''} for i in range(10)]
+        data['project_items'] = [{'name': f'Project {i}', 'tech': '', 'description': ''} for i in range(10)]
+        data['certifications'] = [f'Cert {i}' for i in range(20)]
+        data['achievements'] = [f'Win {i}' for i in range(20)]
+        mock_json.return_value = data
+
+        result = enrich_with_ai('text', parse_resume('text'))
+        self.assertEqual(len(result['experience_items']), MAX_EXPERIENCE_ITEMS)
+        self.assertEqual(len(result['experience_items'][0]['highlights']), MAX_HIGHLIGHTS)
+        self.assertEqual(len(result['education_items']), MAX_EDUCATION_ITEMS)
+        self.assertEqual(len(result['project_items']), MAX_PROJECT_ITEMS)
+        self.assertEqual(len(result['certifications']), MAX_CERTIFICATIONS)
+        self.assertEqual(len(result['achievements']), MAX_ACHIEVEMENTS)
+
+    @patch('resumes.services.ai_json')
+    def test_long_text_is_cut_to_the_character_limit(self, mock_json):
+        data = dict(GOOD_AI_DATA)
+        data['experience_items'] = [{'role': 'x' * 500, 'company': '', 'duration': '', 'highlights': []}]
+        mock_json.return_value = data
+        result = enrich_with_ai('text', parse_resume('text'))
+        self.assertEqual(len(result['experience_items'][0]['role']), ITEM_TEXT_MAX)
+
+    @patch('resumes.services.ai_json')
+    def test_invalid_items_are_dropped_but_valid_ones_kept(self, mock_json):
+        data = dict(GOOD_AI_DATA)
+        data['education_items'] = ['not a dict', {'degree': 'B.Sc', 'institution': '', 'year': '', 'score': ''}, 123]
+        mock_json.return_value = data
+        result = enrich_with_ai('text', parse_resume('text'))
+        self.assertEqual(result['education_items'], [{'degree': 'B.Sc', 'institution': '', 'year': '', 'score': ''}])
+
+    @patch('resumes.services.ai_json')
+    def test_wrong_type_for_a_new_field_becomes_an_empty_list(self, mock_json):
+        data = dict(GOOD_AI_DATA)
+        data['certifications'] = 'not a list'
+        mock_json.return_value = data
+        result = enrich_with_ai('text', parse_resume('text'))
+        self.assertTrue(result['ai_used'])   # the core fields were still fine
+        self.assertEqual(result['certifications'], [])
+
+    @patch('resumes.services.ai_json')
+    def test_broken_core_field_rejects_the_whole_ai_answer(self, mock_json):
+        data = dict(GOOD_AI_DATA)
+        data['skills'] = 'not a list'   # skills must be a list - this breaks the core contract
+        mock_json.return_value = data
+        baseline = parse_resume('B.Tech graduate')
+        result = enrich_with_ai('B.Tech graduate', baseline)
+        self.assertIs(result, baseline)
+        self.assertFalse(result['ai_used'])
+
+    @patch('resumes.services.ai_json')
+    def test_ai_failure_keeps_the_rule_based_result(self, mock_json):
+        mock_json.return_value = None   # ai_json already returns None on any failure
+        baseline = parse_resume('B.Tech graduate')
+        result = enrich_with_ai('B.Tech graduate', baseline)
+        self.assertIs(result, baseline)
+        self.assertFalse(result['ai_used'])
+
+    @patch('resumes.services.ai_json')
+    def test_education_items_falls_back_to_rule_based_when_ai_finds_none(self, mock_json):
+        data = dict(GOOD_AI_DATA)
+        data['education_items'] = []   # the AI found no education details
+        mock_json.return_value = data
+        text = 'B.Tech in Computer Science.'
+        result = enrich_with_ai(text, parse_resume(text))
+        self.assertEqual(result['education_items'], [{'degree': 'B.E / B.Tech', 'institution': '', 'year': '', 'score': ''}])
+
+    @patch('resumes.services.ai_json')
+    def test_contact_details_are_stripped_from_ai_text(self, mock_json):
+        data = dict(GOOD_AI_DATA)
+        data['experience_items'] = [{
+            'role': 'Intern',
+            'company': 'Reach me at jane@example.com or 9876543210',
+            'duration': '',
+            'highlights': [],
+        }]
+        mock_json.return_value = data
+        result = enrich_with_ai('text', parse_resume('text'))
+        company = result['experience_items'][0]['company']
+        self.assertNotIn('@', company)
+        self.assertNotIn('9876543210', company)
 
 
 def make_pdf(text=None):
@@ -227,3 +371,96 @@ class ResumeApiTests(APITestCase):
         res = self.client.get(f'/api/resumes/{resume_id}/')
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.data['id'], resume_id)
+
+    def test_uploading_the_same_file_twice_is_refused(self):
+        pdf = make_pdf('Python and SQL developer')
+        first = self.upload(pdf)
+        self.assertEqual(first.status_code, 201)
+        second = self.upload(pdf)
+        self.assertEqual(second.status_code, 409)
+        self.assertEqual(second.data, {'detail': 'You already uploaded this file.'})
+        self.assertEqual(Resume.objects.count(), 1)
+
+    def test_the_same_file_can_be_uploaded_by_a_different_user(self):
+        pdf = make_pdf('Python and SQL developer')
+        self.assertEqual(self.upload(pdf).status_code, 201)
+        self.client.force_authenticate(self.other)
+        self.assertEqual(self.upload(pdf).status_code, 201)
+        self.assertEqual(Resume.objects.count(), 2)
+
+    def test_two_different_files_from_the_same_user_are_both_accepted(self):
+        self.assertEqual(self.upload(make_pdf('Python developer')).status_code, 201)
+        self.assertEqual(self.upload(make_pdf('Java developer')).status_code, 201)
+        self.assertEqual(Resume.objects.count(), 2)
+
+    def test_file_hash_is_stored_and_never_sent_to_the_browser(self):
+        res = self.upload(make_pdf('Python developer'))
+        stored = Resume.objects.get(pk=res.data['id'])
+        self.assertEqual(len(stored.file_hash), 64)   # a sha-256 hex digest
+        self.assertNotIn('file_hash', res.data)
+
+    def test_deleting_then_reuploading_the_same_file_is_allowed_again(self):
+        pdf = make_pdf('Python and SQL developer')
+        resume_id = self.upload(pdf).data['id']
+        self.client.delete(f'/api/resumes/{resume_id}/')
+        self.assertEqual(self.upload(pdf).status_code, 201)
+
+
+class ReanalyseApiTests(APITestCase):
+    def setUp(self):
+        self.media = tempfile.mkdtemp()
+        self.override = override_settings(MEDIA_ROOT=self.media)
+        self.override.enable()
+        self.addCleanup(shutil.rmtree, self.media, ignore_errors=True)
+        self.addCleanup(self.override.disable)
+        self.user = User.objects.create_user(username='u1', email='u1@test.com', password='Strong#Pass123')
+        self.other = User.objects.create_user(username='u2', email='u2@test.com', password='Strong#Pass123')
+        self.client.force_authenticate(self.user)
+
+    def upload(self, data):
+        f = SimpleUploadedFile('cv.pdf', data, content_type='application/pdf')
+        return self.client.post('/api/resumes/', {'file': f}, format='multipart')
+
+    @override_settings(GEMINI_API_KEY='', GEMINI_MODEL='')
+    def test_reanalyse_without_an_ai_key_gives_a_clear_message(self):
+        resume_id = self.upload(make_pdf('Python developer with 2 years of experience')).data['id']
+        res = self.client.post(f'/api/resumes/{resume_id}/reanalyse/')
+        self.assertEqual(res.status_code, 400)
+        self.assertIn('detail', res.data)
+
+    @override_settings(GEMINI_API_KEY='', GEMINI_MODEL='')
+    def test_reanalyse_with_no_saved_text_gives_a_clear_message(self):
+        resume_id = self.upload(make_pdf()).data['id']   # blank page -> no_text status, nothing saved
+        res = self.client.post(f'/api/resumes/{resume_id}/reanalyse/')
+        self.assertEqual(res.status_code, 400)
+        self.assertIn('detail', res.data)
+
+    @override_settings(GEMINI_API_KEY='fake', GEMINI_MODEL='fake-model')
+    @patch('resumes.services.ai_json', return_value=GOOD_AI_DATA)
+    def test_reanalyse_updates_the_saved_resume(self, _mock):
+        with override_settings(GEMINI_API_KEY='', GEMINI_MODEL=''):
+            resume_id = self.upload(make_pdf('Python developer with 2 years of experience')).data['id']
+        res = self.client.post(f'/api/resumes/{resume_id}/reanalyse/')
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(res.data['parsed_data']['ai_used'])
+        self.assertEqual(res.data['parsed_data']['certifications'], GOOD_AI_DATA['certifications'])
+        stored = Resume.objects.get(pk=resume_id)
+        self.assertTrue(stored.parsed_data['ai_used'])
+
+    @override_settings(GEMINI_API_KEY='fake', GEMINI_MODEL='fake-model')
+    @patch('resumes.services.ai_json', return_value=None)
+    def test_reanalyse_when_the_ai_call_fails(self, _mock):
+        with override_settings(GEMINI_API_KEY='', GEMINI_MODEL=''):
+            resume_id = self.upload(make_pdf('Python developer')).data['id']
+        res = self.client.post(f'/api/resumes/{resume_id}/reanalyse/')
+        self.assertEqual(res.status_code, 400)
+        self.assertIn('detail', res.data)
+
+    @override_settings(GEMINI_API_KEY='fake', GEMINI_MODEL='fake-model')
+    @patch('resumes.services.ai_json', return_value=GOOD_AI_DATA)
+    def test_reanalyse_only_works_for_the_owner(self, _mock):
+        with override_settings(GEMINI_API_KEY='', GEMINI_MODEL=''):
+            resume_id = self.upload(make_pdf('Python developer')).data['id']
+        self.client.force_authenticate(self.other)
+        res = self.client.post(f'/api/resumes/{resume_id}/reanalyse/')
+        self.assertEqual(res.status_code, 404)

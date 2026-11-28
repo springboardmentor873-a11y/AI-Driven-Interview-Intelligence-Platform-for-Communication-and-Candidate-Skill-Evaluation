@@ -1,6 +1,8 @@
+from django.conf import settings
 from rest_framework import serializers
 
 from resumes.models import Resume
+from .lifecycle import active_question, question_seconds_left, question_status
 from .models import CATEGORIES, DIFFICULTIES, InterviewQuestion, InterviewSession
 
 MAX_AUDIO_SIZE = 10 * 1024 * 1024   # 10 MB
@@ -13,7 +15,6 @@ class InterviewCreateSerializer(serializers.Serializer):
     domain = serializers.CharField(max_length=100, required=False, allow_blank=True, default='')
     difficulty = serializers.ChoiceField(choices=[d for d, _ in DIFFICULTIES], default='medium')
     num_questions = serializers.IntegerField(min_value=3, max_value=10, default=5)
-    time_limit_minutes = serializers.IntegerField(min_value=5, max_value=60, default=15)
     resume = serializers.PrimaryKeyRelatedField(queryset=Resume.objects.none(), required=False, allow_null=True)
 
     def __init__(self, *args, **kwargs):
@@ -29,10 +30,16 @@ class QuestionSerializer(serializers.ModelSerializer):
     answered = serializers.SerializerMethodField()
     answer_text = serializers.SerializerMethodField()
     has_audio = serializers.SerializerMethodField()
+    answer_duration_seconds = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
+    seconds_left = serializers.SerializerMethodField()
 
     class Meta:
         model = InterviewQuestion
-        fields = ('id', 'order_no', 'question_text', 'category', 'answered', 'answer_text', 'has_audio')
+        fields = (
+            'id', 'order_no', 'question_text', 'category', 'answered', 'answer_text', 'has_audio',
+            'answer_duration_seconds', 'status', 'seconds_left',
+        )
         read_only_fields = fields
 
     def _answer(self, obj):
@@ -49,20 +56,42 @@ class QuestionSerializer(serializers.ModelSerializer):
         answer = self._answer(obj)
         return bool(answer and answer.audio_file)
 
+    def get_answer_duration_seconds(self, obj):
+        # How long the candidate actually spent on this question, for the summary screen.
+        answer = self._answer(obj)
+        return answer.duration_seconds if answer else None
+
+    def get_status(self, obj):
+        return question_status(obj)
+
+    def get_seconds_left(self, obj):
+        return question_seconds_left(obj)
+
 
 class InterviewListSerializer(serializers.ModelSerializer):
     answered_count = serializers.IntegerField(read_only=True)
     resume_name = serializers.CharField(source='resume.original_name', read_only=True, default='')
-    seconds_left = serializers.IntegerField(read_only=True)
+    question_seconds = serializers.SerializerMethodField()
+    active_question_id = serializers.SerializerMethodField()
 
     class Meta:
         model = InterviewSession
         fields = (
             'id', 'category', 'domain', 'difficulty', 'status', 'num_questions', 'time_limit_minutes',
-            'question_source', 'resume', 'resume_name', 'answered_count', 'seconds_left',
+            'question_source', 'resume', 'resume_name', 'answered_count',
+            'question_seconds', 'active_question_id',
             'started_at', 'ended_at', 'created_at',
         )
         read_only_fields = fields
+
+    def get_question_seconds(self, obj):
+        return settings.INTERVIEW_QUESTION_SECONDS
+
+    def get_active_question_id(self, obj):
+        if obj.status != InterviewSession.Status.IN_PROGRESS:
+            return None
+        question = active_question(obj)
+        return question.pk if question else None
 
 
 class InterviewDetailSerializer(InterviewListSerializer):
@@ -91,10 +120,12 @@ def _looks_like_audio(header):
 
 
 class AnswerInputSerializer(serializers.Serializer):
+    """duration_seconds is NOT accepted here any more - the server works it out
+    from the question's own started_at, so the browser's clock cannot be trusted
+    or spoofed for it."""
     question_id = serializers.IntegerField()
     text_answer = serializers.CharField(max_length=MAX_TEXT_LENGTH, required=False, allow_blank=True, default='')
     audio_file = serializers.FileField(required=False, allow_null=True)
-    duration_seconds = serializers.FloatField(min_value=0, max_value=3600, required=False, default=0)
 
     def validate_audio_file(self, f):
         if f is None:

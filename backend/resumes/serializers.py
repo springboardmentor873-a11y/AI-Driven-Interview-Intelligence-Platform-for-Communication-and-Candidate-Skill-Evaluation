@@ -1,9 +1,26 @@
+import hashlib
+
 from rest_framework import serializers
+from rest_framework.exceptions import APIException
 
 from .models import Resume
 from .services import process_resume
 
 MAX_SIZE = 5 * 1024 * 1024   # 5 MB
+
+
+class DuplicateResumeError(APIException):
+    status_code = 409
+    default_detail = 'You already uploaded this file.'
+    default_code = 'duplicate_resume'
+
+
+def _file_sha256(f):
+    digest = hashlib.sha256()
+    for chunk in f.chunks():
+        digest.update(chunk)
+    f.seek(0)
+    return digest.hexdigest()
 
 
 class ResumeSerializer(serializers.ModelSerializer):
@@ -23,6 +40,17 @@ class ResumeSerializer(serializers.ModelSerializer):
         if header != b'%PDF-':
             raise serializers.ValidationError('This file is not a real PDF.')
         return f
+
+    def validate(self, data):
+        # One hash of the whole file, reused both to reject a repeat upload and
+        # to store on the row so the next upload can be checked the same way.
+        file_hash = _file_sha256(data['file'])
+        request = self.context.get('request')
+        owner = request.user if request else None
+        if owner and Resume.objects.filter(owner=owner, file_hash=file_hash).exists():
+            raise DuplicateResumeError()
+        data['file_hash'] = file_hash
+        return data
 
     def create(self, validated_data):
         resume = super().create(validated_data)

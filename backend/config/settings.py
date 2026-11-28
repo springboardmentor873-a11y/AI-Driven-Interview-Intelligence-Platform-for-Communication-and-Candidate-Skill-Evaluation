@@ -135,6 +135,10 @@ REST_FRAMEWORK = {
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 GEMINI_MODEL = os.getenv('GEMINI_MODEL', '')
 
+# How long a candidate gets to answer one interview question. Used by the
+# interviews app and sent to the frontend so the number is never hard-coded there.
+INTERVIEW_QUESTION_SECONDS = 120
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),

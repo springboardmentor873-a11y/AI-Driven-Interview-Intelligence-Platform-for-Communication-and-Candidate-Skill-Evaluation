@@ -16,6 +16,9 @@ class Resume(models.Model):
     extracted_text = models.TextField(blank=True)
     parsed_data = models.JSONField(default=dict, blank=True)
     status = models.CharField(max_length=20, default='uploaded')
+    # SHA-256 of the uploaded bytes, used only to stop the same user re-uploading
+    # the exact same file twice. Blank for resumes uploaded before this field existed.
+    file_hash = models.CharField(max_length=64, blank=True, default='', db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

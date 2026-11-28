@@ -22,34 +22,91 @@ const uploadMessage = {
 
 const HISTORY_LIMIT = 8
 
+// A small error for one section of the page, with its own Retry button.
+// `dark` is for use on the dark "practice history" panel.
+function SectionError({ message, onRetry, dark = false }) {
+  return (
+    <div className={`rounded-2xl px-4 py-3 text-sm ${dark ? 'bg-paper/10 text-paper' : 'bg-clay/10 text-clay'}`}>
+      <p>{message}</p>
+      <button
+        type='button'
+        onClick={onRetry}
+        className={`mt-1 font-semibold underline underline-offset-4 ${dark ? 'text-saffron' : ''}`}
+      >
+        Retry
+      </button>
+    </div>
+  )
+}
+
 export default function CandidateDashboard() {
   const { user } = useAuth()
   const [stats, setStats] = useState(null)
+  const [statsError, setStatsError] = useState('')
   const [resumes, setResumes] = useState([])
+  const [resumesError, setResumesError] = useState('')
   const [interviews, setInterviews] = useState([])
+  const [interviewsError, setInterviewsError] = useState('')
   const [message, setMessage] = useState(null)
   const [dragging, setDragging] = useState(false)
   const [busy, setBusy] = useState(false)
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
   const inputRef = useRef(null)
 
-  const fetchAll = () => Promise.all([api.get('/dashboard/'), api.get('/resumes/'), api.get('/interviews/')])
+  // Each section loads and fails on its own - one going wrong never hides the others.
+  const loadStats = () =>
+    api
+      .get('/dashboard/')
+      .then((r) => {
+        setStats(r.data)
+        setStatsError('')
+      })
+      .catch((err) => setStatsError(errorText(err, 'We could not load your stats.')))
 
-  const show = ([d, r, i]) => {
-    setStats(d.data)
-    setResumes(r.data)
-    setInterviews(i.data)
-  }
+  const loadResumes = () =>
+    api
+      .get('/resumes/')
+      .then((r) => {
+        setResumes(r.data)
+        setResumesError('')
+      })
+      .catch((err) => setResumesError(errorText(err, 'We could not load your resumes.')))
 
-  const showLoadError = (err) => setMessage({ type: 'error', text: errorText(err, 'We could not load your data.') })
+  const loadInterviews = () =>
+    api
+      .get('/interviews/')
+      .then((r) => {
+        setInterviews(r.data)
+        setInterviewsError('')
+      })
+      .catch((err) => setInterviewsError(errorText(err, 'We could not load your practice history.')))
 
-  const reload = () => fetchAll().then(show).catch(showLoadError)
+  // Used after an upload or a delete: the resume list is reloaded, and if that
+  // first attempt fails it is retried once more before showing an error, so a
+  // short network hiccup right after a successful action doesn't look like a problem.
+  const reloadResumesWithRetry = () =>
+    api
+      .get('/resumes/')
+      .then((r) => {
+        setResumes(r.data)
+        setResumesError('')
+      })
+      .catch(() =>
+        api
+          .get('/resumes/')
+          .then((r) => {
+            setResumes(r.data)
+            setResumesError('')
+          })
+          .catch((err) => setResumesError(errorText(err, 'We could not load your resumes.')))
+      )
 
   useEffect(() => {
-    fetchAll()
-      .then(show)
-      .catch(showLoadError)
+    Promise.allSettled([loadStats(), loadResumes(), loadInterviews()])
   }, [])
+
+  const updateResume = (updated) =>
+    setResumes((all) => all.map((item) => (item.id === updated.id ? updated : item)))
 
   const uploadFile = async (file) => {
     if (!file) return
@@ -59,8 +116,10 @@ export default function CandidateDashboard() {
     body.append('file', file)
     try {
       const { data } = await api.post('/resumes/', body)
+      // The upload itself succeeded - say so, no matter what happens next.
       setMessage(uploadMessage[data.status] || { type: 'ok', text: 'Resume uploaded.' })
-      reload()
+      await reloadResumesWithRetry()
+      loadStats()
     } catch (err) {
       setMessage({ type: 'error', text: errorText(err, 'Upload failed.') })
     } finally {
@@ -75,7 +134,8 @@ export default function CandidateDashboard() {
     try {
       await api.delete(`/resumes/${id}/`)
       setMessage({ type: 'ok', text: 'Resume deleted.' })
-      reload()
+      await reloadResumesWithRetry()
+      loadStats()
     } catch (err) {
       setMessage({ type: 'error', text: errorText(err, 'We could not delete this resume.') })
     }
@@ -98,9 +158,17 @@ export default function CandidateDashboard() {
       }
     >
       <div className='mb-8 grid gap-4 sm:grid-cols-3'>
-        <StatCard label='Resumes uploaded' value={stats?.resumes} tone='sand' />
-        <StatCard label='Practice interviews' value={stats?.interviews} tone='moss' />
-        <StatCard label='Assessments' value={stats?.assessments} tone='saffron' />
+        {statsError ? (
+          <div className='sm:col-span-3'>
+            <SectionError message={statsError} onRetry={loadStats} />
+          </div>
+        ) : (
+          <>
+            <StatCard label='Resumes uploaded' value={stats?.resumes} tone='sand' />
+            <StatCard label='Practice interviews' value={stats?.interviews} tone='moss' />
+            <StatCard label='Assessments' value={stats?.assessments} tone='saffron' />
+          </>
+        )}
       </div>
 
       <div className='grid gap-6 lg:grid-cols-3'>
@@ -124,8 +192,12 @@ export default function CandidateDashboard() {
               className='hidden'
               onChange={(e) => uploadFile(e.target.files[0])}
             />
-            <p className='font-display text-2xl font-semibold'>{busy ? 'Uploading and reading...' : 'Drop your resume here'}</p>
-            <p className='mt-1 text-sm text-ink/60'>or click to browse. PDF only, up to 5 MB.</p>
+            <p className='font-display text-2xl font-semibold'>
+              {busy ? 'Reading your resume with AI...' : 'Drop your resume here'}
+            </p>
+            <p className='mt-1 text-sm text-ink/60'>
+              {busy ? 'This can take up to 30 seconds.' : 'or click to browse. PDF only, up to 5 MB.'}
+            </p>
           </div>
 
           {message && (
@@ -139,59 +211,67 @@ export default function CandidateDashboard() {
           )}
 
           <h2 className='mb-3 mt-8 font-display text-2xl font-semibold'>Your resumes</h2>
-          <ul className='space-y-3'>
-            {resumes.length === 0 && (
-              <li className='rounded-2xl bg-sand/60 px-5 py-4 text-sm text-ink/60'>Nothing here yet. Upload your first one above.</li>
-            )}
-            {resumes.map((r) => (
-              <li key={r.id} className='rounded-2xl bg-white/70 px-5 py-4'>
-                <div className='flex items-center gap-4'>
-                  <span className='grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-clay text-xs font-bold text-paper'>PDF</span>
-                  <div className='min-w-0 flex-1'>
-                    <p className='truncate font-semibold'>{r.original_name}</p>
-                    <p className='text-xs text-ink/55'>{new Date(r.created_at).toLocaleString()}</p>
-                  </div>
-                  <span
-                    className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${resumeStatusStyle[r.status] || resumeStatusStyle.uploaded}`}
-                  >
-                    {resumeStatusLabel[r.status] || r.status}
-                  </span>
-                </div>
-                <ResumeDetails resume={r} />
-                <div className='mt-3 flex flex-wrap items-center gap-3 text-sm'>
-                  {confirmDeleteId === r.id ? (
-                    <>
-                      <span className='font-semibold'>Delete this resume for good?</span>
-                      <button
-                        onClick={() => deleteResume(r.id)}
-                        className='rounded-full bg-clay px-4 py-1 font-semibold text-paper transition hover:opacity-90'
-                      >
-                        Yes, delete
-                      </button>
-                      <button
-                        onClick={() => setConfirmDeleteId(null)}
-                        className='rounded-full border border-ink/20 px-4 py-1 font-medium transition hover:bg-ink hover:text-paper'
-                      >
-                        Cancel
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={() => setConfirmDeleteId(r.id)}
-                      className='font-semibold text-clay underline underline-offset-4'
+          {resumesError ? (
+            <SectionError message={resumesError} onRetry={loadResumes} />
+          ) : (
+            <ul className='space-y-3'>
+              {resumes.length === 0 && (
+                <li className='rounded-2xl bg-sand/60 px-5 py-4 text-sm text-ink/60'>Nothing here yet. Upload your first one above.</li>
+              )}
+              {resumes.map((r) => (
+                <li key={r.id} className='rounded-2xl bg-white/70 px-5 py-4'>
+                  <div className='flex items-center gap-4'>
+                    <span className='grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-clay text-xs font-bold text-paper'>PDF</span>
+                    <div className='min-w-0 flex-1'>
+                      <p className='truncate font-semibold'>{r.original_name}</p>
+                      <p className='text-xs text-ink/55'>{new Date(r.created_at).toLocaleString()}</p>
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${resumeStatusStyle[r.status] || resumeStatusStyle.uploaded}`}
                     >
-                      Delete
-                    </button>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
+                      {resumeStatusLabel[r.status] || r.status}
+                    </span>
+                  </div>
+                  <ResumeDetails resume={r} onUpdated={updateResume} />
+                  <div className='mt-3 flex flex-wrap items-center gap-3 text-sm'>
+                    {confirmDeleteId === r.id ? (
+                      <>
+                        <span className='font-semibold'>Delete this resume for good?</span>
+                        <button
+                          onClick={() => deleteResume(r.id)}
+                          className='rounded-full bg-clay px-4 py-1 font-semibold text-paper transition hover:opacity-90'
+                        >
+                          Yes, delete
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteId(null)}
+                          className='rounded-full border border-ink/20 px-4 py-1 font-medium transition hover:bg-ink hover:text-paper'
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmDeleteId(r.id)}
+                        className='font-semibold text-clay underline underline-offset-4'
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
 
         <aside className='h-fit rounded-3xl bg-ink p-7 text-paper'>
           <h3 className='font-display text-2xl font-semibold'>Practice history</h3>
-          {interviews.length === 0 ? (
+          {interviewsError ? (
+            <div className='mt-4'>
+              <SectionError message={interviewsError} onRetry={loadInterviews} dark />
+            </div>
+          ) : interviews.length === 0 ? (
             <p className='mt-2 text-sm text-paper/70'>
               No interviews yet. Press Start practice interview to create your first one.
             </p>

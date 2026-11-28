@@ -19,6 +19,11 @@ class AuthTests(APITestCase):
     def test_dashboard_requires_login(self):
         self.assertEqual(self.client.get('/api/dashboard/').status_code, 401)
 
+    def test_dashboard_reports_the_question_time(self):
+        user = User.objects.create_user(username='d1', email='d1@test.com', password='Strong#Pass123')
+        self.client.force_authenticate(user)
+        self.assertEqual(self.client.get('/api/dashboard/').data['question_seconds'], 120)
+
     def test_candidate_cannot_see_other_resumes(self):
         from resumes.models import Resume
         u1 = User.objects.create_user(username='c1', email='c1@test.com', password='Strong#Pass123')

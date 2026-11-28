@@ -2,7 +2,6 @@ import uuid
 
 from django.conf import settings
 from django.db import models
-from django.utils import timezone
 
 CATEGORIES = [('hr', 'HR'), ('technical', 'Technical'), ('behavioral', 'Behavioral'), ('aptitude', 'Aptitude')]
 DIFFICULTIES = [('easy', 'Easy'), ('medium', 'Medium'), ('hard', 'Hard')]
@@ -45,20 +44,13 @@ class InterviewSession(models.Model):
         'resumes.Resume', null=True, blank=True, on_delete=models.SET_NULL, related_name='interview_sessions'
     )
     num_questions = models.PositiveSmallIntegerField(default=5)
+    # Informational only since Stage 3: num_questions x the per-question time.
+    # Kept so older interviews (created before per-question timing) still show a number.
     time_limit_minutes = models.PositiveSmallIntegerField(default=15)
     question_source = models.CharField(max_length=10, choices=QUESTION_SOURCES, default='bank')
     started_at = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
-    @property
-    def seconds_left(self):
-        """Time left, counted by the server (the browser clock is never trusted).
-        Only meaningful while the interview is running; otherwise None."""
-        if self.status != self.Status.IN_PROGRESS or not self.started_at:
-            return None
-        used = (timezone.now() - self.started_at).total_seconds()
-        return max(0, int(self.time_limit_minutes * 60 - used))
 
     def __str__(self):
         return f'Session {self.pk} - {self.candidate} - {self.status}'
@@ -70,6 +62,10 @@ class InterviewQuestion(models.Model):
     category = models.CharField(max_length=20, choices=CATEGORIES)
     order_no = models.PositiveIntegerField()
     evaluation_rubric = models.JSONField(default=dict, blank=True)
+    # When the candidate was allowed to start answering this question (null = not started yet).
+    started_at = models.DateTimeField(null=True, blank=True)
+    # Set when the candidate presses Skip, or when the time runs out unanswered.
+    skipped = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['order_no']

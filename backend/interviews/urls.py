@@ -6,6 +6,8 @@ from .views import (
     InterviewDetailView,
     InterviewListCreateView,
     InterviewStartView,
+    QuestionSkipView,
+    QuestionStartView,
 )
 
 urlpatterns = [
@@ -14,4 +16,6 @@ urlpatterns = [
     path('interviews/<int:pk>/start/', InterviewStartView.as_view()),
     path('interviews/<int:pk>/answers/', InterviewAnswerView.as_view()),
     path('interviews/<int:pk>/complete/', InterviewCompleteView.as_view()),
+    path('interviews/<int:pk>/questions/<int:qid>/start/', QuestionStartView.as_view()),
+    path('interviews/<int:pk>/questions/<int:qid>/skip/', QuestionSkipView.as_view()),
 ]

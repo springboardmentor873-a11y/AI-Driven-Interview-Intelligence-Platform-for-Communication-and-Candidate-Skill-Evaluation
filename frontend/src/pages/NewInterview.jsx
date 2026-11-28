@@ -13,7 +13,7 @@ const categories = [
 ]
 
 const suggestedDomains = ['Python', 'Java', 'Web Development', 'JavaScript', 'SQL', 'Data Structures', 'React', 'Django']
-const timeOptions = [5, 10, 15, 20, 30, 45, 60]
+const DEFAULT_QUESTION_SECONDS = 120   // shown only until /dashboard/ reports the real server setting
 
 export default function NewInterview() {
   const navigate = useNavigate()
@@ -21,7 +21,7 @@ export default function NewInterview() {
   const [domain, setDomain] = useState('')
   const [difficulty, setDifficulty] = useState('medium')
   const [count, setCount] = useState(5)
-  const [minutes, setMinutes] = useState(15)
+  const [questionSeconds, setQuestionSeconds] = useState(DEFAULT_QUESTION_SECONDS)
   const [resumeId, setResumeId] = useState('')
   const [resumes, setResumes] = useState([])
   const [busy, setBusy] = useState(false)
@@ -35,6 +35,16 @@ export default function NewInterview() {
       .catch(() => setResumes([]))
   }, [])
 
+  // How long one question gets is a server setting, never hard-coded here.
+  useEffect(() => {
+    api
+      .get('/dashboard/')
+      .then((r) => {
+        if (r.data.question_seconds) setQuestionSeconds(r.data.question_seconds)
+      })
+      .catch(() => {})
+  }, [])
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -45,7 +55,6 @@ export default function NewInterview() {
         domain: category === 'technical' ? domain.trim() : '',
         difficulty,
         num_questions: Number(count),
-        time_limit_minutes: Number(minutes),
         resume: resumeId ? Number(resumeId) : null,
       })
       navigate(`/interview/${data.id}`)
@@ -65,7 +74,7 @@ export default function NewInterview() {
         </Link>
       }
     >
-      <form onSubmit={handleSubmit} className='max-w-3xl space-y-8'>
+      <form onSubmit={handleSubmit} className='space-y-8'>
         {error && <p className='rounded-xl bg-clay/10 px-4 py-3 text-sm text-clay'>{error}</p>}
 
         <section>
@@ -130,32 +139,22 @@ export default function NewInterview() {
           </div>
         </section>
 
-        <section className='grid gap-5 sm:grid-cols-2'>
-          <div>
-            <label htmlFor='count' className='mb-1.5 block text-sm font-semibold'>
-              Number of questions
-            </label>
-            <select id='count' value={count} onChange={(e) => setCount(e.target.value)} className='field'>
-              {[3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-            <p className='mt-1.5 text-xs text-ink/55'>HR, behavioral and aptitude sets have up to 7 questions.</p>
-          </div>
-          <div>
-            <label htmlFor='minutes' className='mb-1.5 block text-sm font-semibold'>
-              Time limit
-            </label>
-            <select id='minutes' value={minutes} onChange={(e) => setMinutes(e.target.value)} className='field'>
-              {timeOptions.map((m) => (
-                <option key={m} value={m}>
-                  {m} minutes
-                </option>
-              ))}
-            </select>
-          </div>
+        <section>
+          <label htmlFor='count' className='mb-1.5 block text-sm font-semibold'>
+            Number of questions
+          </label>
+          <select id='count' value={count} onChange={(e) => setCount(e.target.value)} className='field max-w-xs'>
+            {[3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
+          <p className='mt-1.5 text-xs text-ink/55'>
+            {count} questions x {questionSeconds / 60} minutes = about {(count * questionSeconds) / 60} minutes
+            total. HR, behavioral and aptitude sets have up to 7 questions. Every question has its own timer,
+            checked by the server.
+          </p>
         </section>
 
         <section>

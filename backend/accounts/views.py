@@ -26,6 +26,8 @@ class DashboardView(APIView):
     """Role-scoped numbers."""
 
     def get(self, request):
+        from django.conf import settings
+
         from interviews.models import Assessment, InterviewSession
 
         user = request.user
@@ -35,6 +37,7 @@ class DashboardView(APIView):
                 'resumes': user.resumes.count(),
                 'interviews': user.interview_sessions.count(),
                 'assessments': Assessment.objects.filter(session__candidate=user).count(),
+                'question_seconds': settings.INTERVIEW_QUESTION_SECONDS,
             })
         return Response({
             'role': user.role,
@@ -42,6 +45,7 @@ class DashboardView(APIView):
             'recruiters': User.objects.filter(role='recruiter').count(),
             'interviews': InterviewSession.objects.count(),
             'assessments': Assessment.objects.count(),
+            'question_seconds': settings.INTERVIEW_QUESTION_SECONDS,
         })
 
 
