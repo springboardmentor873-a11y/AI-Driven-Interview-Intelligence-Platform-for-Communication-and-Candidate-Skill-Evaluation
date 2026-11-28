@@ -11,6 +11,8 @@ import Templates from "./pages/Templates";
 import InterviewSetup from "./pages/InterviewSetup";
 import InterviewRoom from "./pages/InterviewRoom";
 import Analytics from "./pages/Analytics";
+import CandidateReport from "./pages/CandidateReport";
+import RecruiterAnalytics from "./pages/RecruiterAnalytics";
 
 export default function App() {
   return (
@@ -33,6 +35,8 @@ export default function App() {
             </Route>
             <Route element={<ProtectedRoute roles={["recruiter"]} />}>
               <Route path="/templates" element={<Templates />} />
+              <Route path="/recruiter/analytics" element={<RecruiterAnalytics />} />
+              <Route path="/recruiter/candidates/:id" element={<CandidateReport />} />
             </Route>
             <Route element={<ProtectedRoute roles={["admin"]} />}>
               <Route path="/admin/users" element={<AdminUsers />} />

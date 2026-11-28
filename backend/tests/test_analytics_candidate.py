@@ -11,11 +11,11 @@ URL = "/api/analytics/candidate/"
 
 
 def make_scored(user, overall=70, *, parts=None, interview_type="hr", status="completed", categories=None,
-                per_answer=None, with_score=True, difficulty="medium", ended=None):
+                per_answer=None, with_score=True, difficulty="medium", ended=None, template=None):
     """A session with a saved Score. `parts` is a dict of the four part scores; missing ones default to `overall`."""
     session = InterviewSession.objects.create(
         candidate=user, interview_type=interview_type, difficulty=difficulty, status=status,
-        ended_at=ended or timezone.now(),
+        ended_at=ended or timezone.now(), template=template,
     )
     for order, category in enumerate(categories or [], start=1):
         Question.objects.create(session=session, text=f"Question {order}?", order=order, category=category)

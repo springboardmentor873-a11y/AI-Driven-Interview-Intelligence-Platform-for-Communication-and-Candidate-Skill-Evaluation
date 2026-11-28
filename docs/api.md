@@ -306,3 +306,53 @@ short `tip`. Order: high before medium, skills before topics, lowest first.
 
 **Ranking** is the candidate's average overall score compared with every candidate's average, as a percentile
 (a tie counts as half). It appears only when at least 5 candidates have scored interviews, and it never names anyone.
+
+### Recruiter analytics
+
+All five endpoints are for recruiters only (candidates and admins get 403). A recruiter sees **only interviews taken
+on their own templates**. A candidate's practice interviews, custom interviews and other recruiters' templates are
+never included, and a candidate with nothing on the recruiter's templates is a 404, as if they did not exist.
+Candidates are told this on the interview setup page when they pick a template.
+
+Optional `?type=hr|technical|behavioral|aptitude` works on the list, report and compare endpoints (anything else is 400).
+Lists take `?limit=` (1 to 100, default 25) and `?offset=`.
+
+| Endpoint | What it returns |
+|---|---|
+| `GET /api/analytics/recruiter/` | Overview of the recruiter's interviews (below) |
+| `GET /api/analytics/recruiter/candidates/` | The recruiter's candidates with their scores. `?q=` search words (each must match a name or email), `?sort=average\|latest\|interviews\|name`, `?order=asc\|desc` |
+| `GET /api/analytics/recruiter/candidates/<id>/` | One candidate's report, limited to this recruiter's templates |
+| `GET /api/analytics/recruiter/compare/?candidates=3,7` | 2 to 4 different candidates side by side |
+| `GET /api/analytics/recruiter/sessions/` | Sessions for monitoring. `?status=scheduled\|in_progress\|completed\|cancelled`, `?q=` |
+
+**Overview**: `summary` (`templates`, `published_templates`, `candidates`, `sessions_total`, `scored`, `average_overall`,
+`best_overall`, `completion_rate`), `status_counts`, `parts` (average of each of the four scores), `rating_counts`,
+`weekly` (the last 12 weeks, oldest first, each with `week_start`, `interviews`, `average_overall`), `templates`
+(per template: `sessions`, `candidates`, `completed`, `scored`, `completion_rate`, `average_overall`, `best_overall`),
+`top_candidates` (the best 5) and `activity`. `completion_rate` is the share of *finished* interviews (completed or
+cancelled) that were completed, and is `null` until one has finished.
+
+**Candidate rows** (list, top candidates): `candidate` (`id`, `name`, `email`), `sessions` (all statuses), `interviews`
+(scored), `average_overall`, `best_overall`, `latest_overall`, `latest_rating`, `last_interview_at`, `direction`,
+`predicted_next` and `parts` (average of each score). A candidate with no scored interview has `null` scores and is
+always sorted last. Ties are ordered by candidate id so pages stay stable. The response has `count`, `limit`, `offset`
+and `results`.
+
+**Candidate report**: the same sections as the candidate's own analytics (`summary`, `overall`, `parts`, `trend`,
+`by_type`, `by_category`, `weak_areas`) plus `candidate` (`id`, `name`, `email`, `joined`), `by_template`, `strengths`
+(skills averaging 75 or more), `standing` (see below) and `sessions` (the newest 20, any status). Weak areas are
+written about the candidate ("Their recent...") and have no practice tips. Answers and transcripts are not included.
+`standing` is the candidate's percentile among this recruiter's scored candidates, and only appears
+(`available: true`) when at least 3 of them have scored interviews.
+
+**Compare**: `candidates` (in the order asked, each with `sessions`, `interviews`, `overall` and each part's stats,
+`rating` and a `trend`), `leaders` (for `overall` and each part, the ids with the highest average; everyone who shares
+it on a tie; empty unless at least 2 candidates have a score) and `cohort` (the average across all the recruiter's
+candidates, each counted once). Missing, repeated, non-numeric or more than 4 ids are 400. An id with nothing on the
+recruiter's templates is 404.
+
+**Sessions**: `counts` per status and `all` (always for the whole list, ignoring `?status=`), `count` (matching the
+filter) and `results`, with active interviews first and then the newest. Each has `candidate`, `template`, `status`,
+`created_at`, `started_at`, `ended_at`, `duration_seconds`, `questions`, `answered`, `progress` (percent answered),
+`overall`, `rating` and `stalled`. `stalled` is `true` for an interview "in progress" for more than 3 hours, which is
+most likely abandoned.

@@ -100,6 +100,9 @@ export default function InterviewSetup() {
               {[TYPES[template.interview_type], LEVELS[template.difficulty], template.domain].filter(Boolean).join(" · ")}
               {" · "}
               {template.question_count} questions · {template.duration_minutes} min
+              <p className="mt-2 text-xs text-white/50">
+                {template.recruiter_name} can see your scores, skills and progress for interviews you take on this template.
+              </p>
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">

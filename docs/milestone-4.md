@@ -11,7 +11,7 @@ online. This page is filled in day by day.
 |---|---|---|
 | Analytics dashboard (performance tracking, skill-wise analytics, weak-area prediction, trends, ranking) | Candidate side done | `apps/analytics` (Day 1), `/analytics` page (Day 2) |
 | Performance visualizations | Candidate charts done | `components/analytics` (Day 2) |
-| Recruiter analytics (candidate reports, comparison, monitoring) | Planned | Day 3 |
+| Recruiter analytics (candidate reports, comparison, monitoring) | Done | `/recruiter/analytics`, `/recruiter/candidates/:id` (Day 3) |
 | Admin analytics (platform-wide stats, activity, AI settings) | Planned | Day 4 |
 | Downloadable reports and performance summaries | Planned | Day 5 |
 | Notifications (reminders, session alerts, email) | Planned | Day 6 |
@@ -113,3 +113,74 @@ A row of buttons at the top filters everything by interview type (the page asks 
   candidate, and each of these was exercised: toggling lines, arrow keys, the type filter, the empty state, a failed
   request and "Try again". No errors were logged.
 - It has not been looked at in a real browser from here, so check the layout on a phone-sized window as well.
+
+## Day 3: recruiter analytics
+
+### What the recruiter gets
+
+A new **Analytics** link in the recruiter navbar (and the "Candidate reports" and "Compare candidates" cards on the
+dashboard) opens `/recruiter/analytics`, with four tabs:
+
+1. **Overview**: candidates, interviews scored, average score and completion rate; how many interviews are in
+   progress, scheduled, completed and cancelled right now; the skills of the whole group on a radar; the average
+   score by week; the top 5 candidates; how interviews were rated; and the results of each template.
+2. **Candidates**: everyone who took an interview on the recruiter's templates, with search, a filter by interview
+   type, sorting, pages of 25, and a tick box on each row to pick candidates to compare.
+3. **Compare**: 2 to 4 candidates side by side, with all four skills on one radar, a table with a "Highest" tag on the
+   best score in each row, and the average of all the recruiter's candidates as a reference.
+4. **Sessions**: every session with its status. Interviews in progress come first with a bar for how many questions
+   have been answered, and one that has been "in progress" for more than 3 hours is marked "Possibly abandoned". The
+   list refreshes by itself every 15 seconds.
+
+A click on a candidate's name opens `/recruiter/candidates/:id`, the **candidate report**: scores, the trend chart,
+skills, strengths, weak areas, results by template, interview type and question topic, the candidate's place among
+the recruiter's candidates, and their recent interviews. It reuses the same charts as the candidate's own page.
+
+### Who can see what
+
+- **A recruiter only sees interviews taken on their own templates.** That is the only link between a recruiter and a
+  candidate in the platform. Practice interviews, custom interviews and other recruiters' templates are never
+  included, and asking for a candidate outside this scope gives "not found", the same as for a candidate who does
+  not exist. This is covered by tests on every endpoint.
+- **Candidates are told.** When a candidate picks a template, the setup page now says that the recruiter who made it
+  can see their scores, skills and progress for interviews on that template.
+- **Recruiters do not see answers.** A report has scores and summaries, not what the candidate said.
+- Admins are not part of this scope. Platform-wide analytics for admins is Day 4.
+
+### How it fits together
+
+```
+apps/analytics/recruiter.py   scope(recruiter) -> overview, candidate_rows, candidate_report, compare, monitor_sessions
+apps/analytics/services.py    the Day 1 helpers, now shared (trend, parts, topics, weak areas)
+apps/analytics/stats.py       the same plain maths
+```
+
+- Every recruiter query starts from `scope()`, which is "sessions whose template was created by this recruiter".
+- Query counts stay the same however many candidates there are: overview 11, candidate list 3, sessions 2,
+  report 7, compare 5 (tests keep these bounds).
+- The weekly trend is bucketed in Python rather than with a database date function, so it behaves the same on SQLite
+  and PostgreSQL.
+- In the frontend, the pieces the candidate page already had (number cards, skills panel, weak areas, rating bar,
+  trend chart with switches) moved to `components/analytics` and are shared. `hooks/useApi.js` loads data, can
+  refresh on a timer, and keeps the old data on screen if a refresh fails.
+
+### Decisions and limits
+
+- **"Completion rate" counts only finished interviews** (completed or cancelled), so an interview still in
+  progress does not count against a template.
+- **A place among candidates needs 3 scored candidates**, and the cohort average counts each candidate once.
+- **"Possibly abandoned" is a guess** from time alone (3 hours in progress). It is a constant in `recruiter.py`.
+- Comparison is limited to 4 candidates so the table and radar stay readable.
+- Selected candidates for comparison are kept while the recruiter moves between the tabs, but not after a reload.
+- Downloadable candidate reports are Day 5, and email alerts for new interviews are Day 6.
+
+### Checked
+
+- 64 new backend tests (access for every role, scope and privacy, every sort, filter and error, ties, empty data,
+  query counts).
+- The real React app was run against the real Django server with a seeded database (6 candidates, two recruiters,
+  live, stalled, scheduled and cancelled sessions). 49 checks passed with no console errors: every tab, search,
+  sort, filter, ticking and limiting candidates, comparing, removing a candidate, status filter, opening a report,
+  the out-of-scope and unknown candidate pages, a candidate being turned away from the recruiter pages, and the
+  privacy note on the setup page.
+- It has not been looked at in a real browser from here, so check the layout, especially the tables on a narrow window.

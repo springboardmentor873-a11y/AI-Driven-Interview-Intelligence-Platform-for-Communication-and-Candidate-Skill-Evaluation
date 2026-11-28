@@ -17,6 +17,18 @@ export const WATCH_BELOW = 75;
 
 export const TYPE_LABELS = { hr: "HR", technical: "Technical", behavioral: "Behavioral", aptitude: "Aptitude" };
 
+export const STATUSES = {
+  scheduled: { label: "Scheduled", style: "bg-sky-500/15 text-sky-300" },
+  in_progress: { label: "In progress", style: "bg-emerald-500/15 text-emerald-300" },
+  completed: { label: "Completed", style: "bg-white/10 text-white/70" },
+  cancelled: { label: "Cancelled", style: "bg-red-500/15 text-red-300" },
+};
+
+export const COMPARE_MIN = 2;
+export const COMPARE_MAX = 4;
+// One colour per compared candidate, in the order they were picked
+export const COMPARE_COLORS = ["#f472b6", "#38bdf8", "#fbbf24", "#34d399"];
+
 export const DIRECTIONS = {
   improving: { label: "Improving", arrow: "↑", tone: "text-emerald-300" },
   steady: { label: "Steady", arrow: "→", tone: "text-white/60" },
@@ -143,4 +155,41 @@ export function rankingText(ranking) {
   if (!ranking?.available) return ranking?.reason || "";
   const higher = ranking.percentile;
   return `Your average is higher than ${higher}% of the other ${ranking.candidates_compared - 1} candidates.`;
+}
+
+// --- recruiter pages ------------------------------------------------------------
+
+/** Add or remove a candidate id from the comparison list. A fifth pick is ignored. */
+export function toggleSelection(selected, id, max = COMPARE_MAX) {
+  if (selected.includes(id)) return selected.filter((item) => item !== id);
+  return selected.length >= max ? selected : [...selected, id];
+}
+
+/** "45 sec", "12 min" or "1 h 5 min". */
+export function formatDuration(seconds) {
+  if (seconds === null || seconds === undefined) return "—";
+  if (seconds < 60) return `${Math.round(seconds)} sec`;
+  const minutes = Math.round(seconds / 60);
+  return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
+}
+
+/** Up to two capital letters from a name. */
+export function initials(name) {
+  const letters = (name || "").trim().split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word[0].toUpperCase());
+  return letters.join("") || "?";
+}
+
+/** "Week of 17 Nov". `locale` and `timeZone` are only given by tests. */
+export function weekLabel(iso, locale, timeZone) {
+  return `Week of ${new Date(`${iso}T12:00:00Z`).toLocaleDateString(locale, { day: "numeric", month: "short", timeZone })}`;
+}
+
+/** "1–25 of 60" for a page of a list. */
+export function pageRange(offset, shown, count) {
+  return shown ? `${offset + 1}–${offset + shown} of ${count}` : "0 of 0";
+}
+
+/** The `?` part of the comparison request. */
+export function compareParams(ids, type) {
+  return { candidates: ids.join(","), ...(type ? { type } : {}) };
 }

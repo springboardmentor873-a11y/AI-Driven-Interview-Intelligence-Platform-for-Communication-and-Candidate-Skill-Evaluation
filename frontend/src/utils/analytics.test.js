@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  formatChange, formatScore, linePath, nearestIndex, ordinal, radarPoint, radarPolygon, rankingText, ratingShares,
-  scaleX, scaleY, scoreTone, seriesPoints, shortDate,
+  compareParams, formatChange, formatDuration, formatScore, initials, linePath, nearestIndex, ordinal, pageRange, radarPoint, radarPolygon, rankingText, ratingShares,
+  scaleX, scaleY, scoreTone, seriesPoints, shortDate, toggleSelection, weekLabel,
 } from "./analytics.js";
 
 const box = { left: 0, right: 100, top: 0, bottom: 100 };
@@ -110,4 +110,43 @@ test("rankingText", () => {
 test("ordinal numbers", () => {
   assert.deepEqual([0, 1, 2, 3, 4, 11, 12, 13, 21, 22, 23, 50, 75, 100, 101, 111].map(ordinal),
     ["0th", "1st", "2nd", "3rd", "4th", "11th", "12th", "13th", "21st", "22nd", "23rd", "50th", "75th", "100th", "101st", "111th"]);
+});
+
+test("toggleSelection adds, removes and stops at the limit", () => {
+  assert.deepEqual(toggleSelection([], 5), [5]);
+  assert.deepEqual(toggleSelection([5, 6], 5), [6]);
+  assert.deepEqual(toggleSelection([1, 2, 3, 4], 9), [1, 2, 3, 4]);
+  assert.deepEqual(toggleSelection([1, 2, 3, 4], 2), [1, 3, 4]);
+  assert.deepEqual(toggleSelection([1, 2], 3, 2), [1, 2]);
+});
+
+test("formatDuration", () => {
+  assert.equal(formatDuration(null), "—");
+  assert.equal(formatDuration(45), "45 sec");
+  assert.equal(formatDuration(720), "12 min");
+  assert.equal(formatDuration(3900), "1 h 5 min");
+  assert.equal(formatDuration(7200), "2 h 0 min");
+});
+
+test("initials", () => {
+  assert.equal(initials("Amy Adams"), "AA");
+  assert.equal(initials("amy"), "A");
+  assert.equal(initials("Mary Jane Watson"), "MJ");
+  assert.equal(initials(""), "?");
+  assert.equal(initials(undefined), "?");
+});
+
+test("weekLabel", () => {
+  assert.equal(weekLabel("2026-11-23", "en-GB", "UTC"), "Week of 23 Nov");
+});
+
+test("pageRange", () => {
+  assert.equal(pageRange(0, 25, 60), "1–25 of 60");
+  assert.equal(pageRange(50, 10, 60), "51–60 of 60");
+  assert.equal(pageRange(0, 0, 0), "0 of 0");
+});
+
+test("compareParams", () => {
+  assert.deepEqual(compareParams([3, 7]), { candidates: "3,7" });
+  assert.deepEqual(compareParams([3, 7, 9], "hr"), { candidates: "3,7,9", type: "hr" });
 });

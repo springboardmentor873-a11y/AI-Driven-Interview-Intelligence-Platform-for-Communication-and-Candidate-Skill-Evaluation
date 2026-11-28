@@ -30,7 +30,10 @@ const LINKS = {
     { to: "/interview", label: "Interview" },
     { to: "/analytics", label: "Analytics" },
   ],
-  recruiter: [{ to: "/templates", label: "Templates" }],
+  recruiter: [
+    { to: "/templates", label: "Templates" },
+    { to: "/recruiter/analytics", label: "Analytics" },
+  ],
   admin: [{ to: "/admin/users", label: "Users" }],
 };
 

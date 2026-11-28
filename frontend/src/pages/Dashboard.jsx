@@ -239,8 +239,8 @@ function RecruiterView({ data, loading }) {
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <ActionCard icon="template" title="Interview templates" note="Create and manage interviews" to="/templates" delay={120} />
-        <ActionCard icon="users" title="Candidate reports" note="Scores and feedback per candidate" delay={180} />
-        <ActionCard icon="chart" title="Compare candidates" note="Side-by-side comparison" delay={240} />
+        <ActionCard icon="users" title="Candidate reports" note="Scores and progress per candidate" to="/recruiter/analytics?tab=candidates" delay={180} />
+        <ActionCard icon="chart" title="Compare candidates" note="Side-by-side comparison" to="/recruiter/analytics?tab=compare" delay={240} />
       </div>
 
       <Panel title="Your templates" linkTo="/templates" linkLabel="Manage" delay={160}>

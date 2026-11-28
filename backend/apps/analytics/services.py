@@ -62,8 +62,8 @@ def _risk(recent, predicted, direction):
     return None
 
 
-def _reason(label, recent, predicted, direction):
-    text = f"Your recent {label.lower()} average is {recent:.0f} out of 100"
+def _reason(label, recent, predicted, direction, who="your"):
+    text = f"{who.capitalize()} recent {label.lower()} average is {recent:.0f} out of 100"
     if direction == "declining":
         text += " and it has been falling"
     if predicted is not None:
@@ -71,11 +71,14 @@ def _reason(label, recent, predicted, direction):
     return text + "."
 
 
-def _scored_sessions(user, interview_type):
-    """Completed, scored interviews of this candidate, oldest first (the newest TREND_LIMIT of them)."""
-    queryset = InterviewSession.objects.filter(
-        candidate=user, status=InterviewSession.Status.COMPLETED, score__overall_score__isnull=False,
-    )
+def scored_queryset(sessions):
+    """Completed interviews that have an overall score, out of any queryset of sessions."""
+    return sessions.filter(status=InterviewSession.Status.COMPLETED, score__overall_score__isnull=False)
+
+
+def _scored_sessions(sessions, interview_type):
+    """The scored interviews of a queryset, oldest first (the newest TREND_LIMIT of them) and how many there are."""
+    queryset = scored_queryset(sessions)
     if interview_type:
         queryset = queryset.filter(interview_type=interview_type)
     total = queryset.count()
@@ -171,7 +174,8 @@ def _by_category(sessions):
     return rows[:TOPIC_LIMIT]
 
 
-def _weak_areas(parts, topics):
+def _weak_areas(parts, topics, who="your", tips=True):
+    """Skills and topics to work on. `who` is "your" for the candidate and "their" for a recruiter reading the report."""
     weak = []
     for part in parts:
         risk = _risk(part["recent_average"], part["predicted_next"], part["direction"])
@@ -180,8 +184,8 @@ def _weak_areas(parts, topics):
                 "kind": "skill", "key": part["key"], "label": part["label"], "risk": risk,
                 "recent_average": part["recent_average"], "predicted_next": part["predicted_next"],
                 "direction": part["direction"],
-                "reason": _reason(part["label"], part["recent_average"], part["predicted_next"], part["direction"]),
-                "tip": PART_TIPS[part["key"]],
+                "reason": _reason(part["label"], part["recent_average"], part["predicted_next"], part["direction"], who),
+                "tip": PART_TIPS[part["key"]] if tips else "",
             })
     weak.sort(key=lambda w: (RISK_ORDER[w["risk"]], w["recent_average"]))
 
@@ -194,8 +198,8 @@ def _weak_areas(parts, topics):
             weak_topics.append({
                 "kind": "topic", "key": topic["name"].lower(), "label": topic["name"], "risk": risk,
                 "recent_average": topic["average"], "predicted_next": None, "direction": "not_enough_data",
-                "reason": f"Your answers on {topic['name']} average {topic['average']:.0f} out of 100 over {topic['answers']} questions.",
-                "tip": f"Practise more {topic['name']} questions and prepare one concrete example for each.",
+                "reason": f"{who.capitalize()} answers on {topic['name']} average {topic['average']:.0f} out of 100 over {topic['answers']} questions.",
+                "tip": f"Practise more {topic['name']} questions and prepare one concrete example for each." if tips else "",
             })
     weak_topics.sort(key=lambda w: (RISK_ORDER[w["risk"]], w["recent_average"]))
     return weak + weak_topics[:3]
@@ -238,7 +242,7 @@ def _activity(user, now):
 def candidate_analytics(user, interview_type=None, now=None):
     """Everything the candidate analytics page needs, in one dictionary."""
     now = now or timezone.now()
-    scored_total, sessions = _scored_sessions(user, interview_type)
+    scored_total, sessions = _scored_sessions(InterviewSession.objects.filter(candidate=user), interview_type)
     overall_values = [s.score.overall_score for s in sessions]
     parts = _parts(sessions)
     categories = _by_category(sessions)
