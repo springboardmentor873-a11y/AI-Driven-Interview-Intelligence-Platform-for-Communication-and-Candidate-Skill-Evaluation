@@ -356,3 +356,53 @@ filter) and `results`, with active interviews first and then the newest. Each ha
 `created_at`, `started_at`, `ended_at`, `duration_seconds`, `questions`, `answered`, `progress` (percent answered),
 `overall`, `rating` and `stalled`. `stalled` is `true` for an interview "in progress" for more than 3 hours, which is
 most likely abandoned.
+
+### Admin analytics and settings
+
+Admins only (everyone else gets 403).
+
+| Endpoint | What it returns |
+|---|---|
+| `GET /api/analytics/admin/` | Platform-wide overview (below) |
+| `GET /api/analytics/admin/activity/` | The latest activity, newest first. `?kind=signup\|interview\|resume\|template\|admin`, `?limit=` (1 to 100, default 30) |
+| `GET /api/analytics/admin/ai/` | How the AI service is doing, from the calls the server logged |
+| `GET /api/admin/settings/ai/` | The AI settings, with the server default and the effective value of each |
+| `PATCH /api/admin/settings/ai/` | Change the AI settings |
+| `POST /api/admin/settings/ai/test/` | Make one small real AI call with the saved settings (10 per hour per admin) |
+
+**Overview**: `users` (`total`, `active`, `inactive`, `by_role`, `new_last_7_days`, `new_last_30_days`,
+`active_candidates_7_days`, `active_candidates_30_days`, `active_recruiters_30_days`, `signups_weekly`),
+`interviews` (`total`, `status_counts`, `type_counts`, `scored`, `average_overall`, `best_overall`, `completion_rate`,
+`average_duration_seconds`, `median_duration_seconds`, `rating_counts`, `parts`, `weekly`), `content` (`templates`,
+`published_templates`, `resumes`, `resume_sources`), `top_recruiters`, `top_templates` (the best 5 of each) and `ai`
+(the last 24 hours at a glance). This counts every interview, including practice interviews and every recruiter's
+templates. Weekly lists have the last 12 weeks, oldest first. The average length uses the newest 500 finished interviews.
+
+**Activity** merges five sources, each event with `kind`, `event`, `at`, `summary` (a sentence), `actor` and `detail`:
+`signup` (joined), `interview` (started, completed, cancelled), `resume` (uploaded), `template` (created) and `admin`
+(what admins did, from the audit log).
+
+**Audit log.** The server records, with who did it and when: a user's role being changed (`user.role_changed`), a user
+being deactivated or reactivated (`user.deactivated`, `user.activated`), AI settings being changed
+(`settings.ai_updated`, with the old and new value of each field) and the AI connection being tested
+(`settings.ai_tested`). A change that changes nothing is not logged. Entries cannot be edited or deleted through
+the API, and keep the admin's email even if the account is deleted. They are read-only in the Django admin.
+
+**AI usage**: `config` (`enabled`, `key_configured`, `model`, `fallback_model`), `windows` (`last_24_hours`,
+`last_7_days`, `last_30_days`, each with `calls`, `successes`, `failures`, `success_rate`, `average_latency_ms`,
+`used_backup_model`), `by_purpose` and `by_model` (7 days), `errors` (7 days, by reason), `daily` (14 days),
+`recent_failures` (the last 10) and `coverage` (how much feedback and how many resumes came from the AI and how many
+from the built-in rules). A call is one `generate_json` request with all its retries. Prompts and answers are never
+stored. The reasons are `rate_limited`, `timeout`, `server_error`, `rejected` (a wrong key or model name),
+`bad_json` and `other`.
+
+**AI settings.** `PATCH` takes any of `enabled` (true or false), `model`, `fallback_model` (letters, numbers and `. - _ :`,
+up to 80), `timeout_seconds` (5 to 120) and `review_rate_per_hour` (1 to 1000, per user). A field left out is unchanged.
+A blank text or a `null` number puts the server default back. The response is the full settings: for each value its
+`override`, the server `default` and the `effective` value, plus `key_configured`, `updated_at` and `updated_by`.
+The API key itself is never returned and cannot be changed here; it stays in the server environment. Changes apply to
+the next AI call on every server, because the settings are read from the database each time. Switching `enabled`
+off makes every AI feature use its rule-based fallback, the same as having no key.
+
+`POST .../test/` returns `{ok: true, latency_ms, model}`, or `{ok: false, reason}` where the reason is `no_key`,
+`disabled` or `failed` (with `error_kind` and `model`). Testing is logged in the audit log and in the AI usage.

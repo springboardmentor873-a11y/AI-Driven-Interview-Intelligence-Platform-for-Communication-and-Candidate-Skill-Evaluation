@@ -193,3 +193,73 @@ export function pageRange(offset, shown, count) {
 export function compareParams(ids, type) {
   return { candidates: ids.join(","), ...(type ? { type } : {}) };
 }
+
+// --- admin pages ----------------------------------------------------------------
+
+export const FEED_KINDS = {
+  signup: { label: "Sign-ups", dot: "bg-sky-400" },
+  interview: { label: "Interviews", dot: "bg-emerald-400" },
+  resume: { label: "Resumes", dot: "bg-violet-400" },
+  template: { label: "Templates", dot: "bg-pink-400" },
+  admin: { label: "Admin actions", dot: "bg-amber-400" },
+};
+
+export const AI_PURPOSES = {
+  feedback: "Interview feedback",
+  questions: "Question generation",
+  speech_review: "Answer review",
+  resume_skills: "Resume parsing",
+  settings_test: "Connection tests",
+};
+
+export const ERROR_KINDS = {
+  rate_limited: "Too many requests",
+  timeout: "Timed out",
+  server_error: "Provider error",
+  rejected: "Rejected (key or model name)",
+  bad_json: "Unusable reply",
+  other: "Other",
+};
+
+/** "just now", "5 min ago", "3 h ago", "2 days ago", then a date. `now` is only given by tests. */
+export function timeAgo(iso, now = Date.now(), locale, timeZone) {
+  const seconds = Math.max(0, Math.round((now - new Date(iso).getTime()) / 1000));
+  if (seconds < 60) return "just now";
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)} h ago`;
+  if (seconds < 7 * 86400) {
+    const days = Math.floor(seconds / 86400);
+    return `${days} ${days === 1 ? "day" : "days"} ago`;
+  }
+  return shortDate(iso, locale, timeZone);
+}
+
+/** Text from a number box: blank gives null (use the server default), digits give a number, anything else gives undefined. */
+export function parseOptionalInt(text) {
+  const trimmed = String(text ?? "").trim();
+  if (trimmed === "") return null;
+  return /^\d+$/.test(trimmed) ? Number(trimmed) : undefined;
+}
+
+/** The first message of each field in an API error like {"timeout_seconds": ["..."]}. */
+export function fieldErrors(data) {
+  const errors = {};
+  if (data && typeof data === "object") {
+    for (const [field, message] of Object.entries(data)) errors[field] = Array.isArray(message) ? message[0] : String(message);
+  }
+  return errors;
+}
+
+/** Width (percent) of each count out of the largest one, for plain count bars. */
+export function countShares(rows) {
+  const largest = Math.max(0, ...rows.map((row) => row.value));
+  return rows.map((row) => ({ ...row, percent: largest ? (row.value / largest) * 100 : 0 }));
+}
+
+/** What the connection test result means, in words. */
+export function connectionMessage(result) {
+  if (result.ok) return `It works. The ${result.model} model answered in ${result.latency_ms} ms.`;
+  if (result.reason === "no_key") return "No API key is set on the server, so the AI cannot be used. Set GEMINI_API_KEY and restart the server.";
+  if (result.reason === "disabled") return "The AI is switched off above. Switch it on and save to test it.";
+  return `The call to ${result.model} failed: ${ERROR_KINDS[result.error_kind] || "unknown error"}.`;
+}

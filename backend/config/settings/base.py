@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     "apps.interviews",
     "apps.scoring",
     "apps.analytics",
+    "apps.system",
 ]
 
 MIDDLEWARE = [
@@ -103,6 +104,8 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         # per user, for the AI-backed interview actions (see apps/ai/throttles.py)
         "ai_review": os.getenv("AI_REVIEW_RATE", "30/hour"),
+        # an admin pressing "Test connection" in the AI settings (each one is a real AI call)
+        "ai_settings_test": "10/hour",
     },
 }
 

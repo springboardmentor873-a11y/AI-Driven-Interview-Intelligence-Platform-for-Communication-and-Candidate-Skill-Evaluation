@@ -11,3 +11,13 @@ class AIReviewThrottle(UserRateThrottle):
     """
 
     scope = "ai_review"
+
+    def get_rate(self):
+        # An admin can set the limit in the AI settings. Without one, the server default (AI_REVIEW_RATE) applies.
+        try:
+            from apps.system import store
+
+            override = store.review_rate_override()
+        except Exception:  # a problem reading settings must not stop interviews
+            override = None
+        return f"{override}/hour" if override else super().get_rate()

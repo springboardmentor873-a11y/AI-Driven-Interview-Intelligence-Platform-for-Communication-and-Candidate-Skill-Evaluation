@@ -45,6 +45,7 @@ backend/
   apps/interviews/ Templates, question generation, sessions and recordings
   apps/scoring/    Score and feedback schema (used from Milestone 3)
   apps/analytics/  Score trends, skill-wise results and weak-area outlook (Milestone 4)
+  apps/system/     Admin AI settings, audit log and AI call log (Milestone 4)
   tests/           Pytest tests
 frontend/src/
   api/             Axios client with automatic token refresh
@@ -70,4 +71,4 @@ docs/              Scope and workflows, database schema, API reference, wirefram
 | 1. Requirements, database design and core setup | Complete |
 | 2. Resume parsing and interview engine | Complete |
 | 3. Speech analysis and AI monitoring | Complete |
-| 4. Analytics, testing and deployment | In progress (Day 3 of 8: recruiter analytics) |
+| 4. Analytics, testing and deployment | In progress (Day 4 of 8: admin analytics and AI settings) |

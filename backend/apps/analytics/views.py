@@ -2,10 +2,10 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.accounts.permissions import IsCandidate, IsRecruiter
+from apps.accounts.permissions import IsAdmin, IsCandidate, IsRecruiter
 from apps.interviews.models import InterviewSession, InterviewType
 
-from . import recruiter, services
+from . import admin_stats, recruiter, services
 
 
 def _interview_type(request):
@@ -110,3 +110,34 @@ class RecruiterSessionsView(APIView):
         return Response(recruiter.monitor_sessions(
             request.user, status=status, limit=limit, offset=offset, search=(request.query_params.get("q") or "").strip()[:100],
         ))
+
+
+class AdminOverviewView(APIView):
+    """Platform-wide numbers: users, interviews, content, the busiest recruiters and templates, and a small AI summary."""
+
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        return Response(admin_stats.overview())
+
+
+class AdminActivityView(APIView):
+    """The latest activity on the platform, newest first. ?kind=signup|interview|resume|template|admin, ?limit= (1 to 100, default 30)."""
+
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        kind = request.query_params.get("kind") or None
+        if kind and kind not in admin_stats.FEED_KINDS:
+            raise ValidationError({"kind": f"Choose one of: {', '.join(admin_stats.FEED_KINDS)}."})
+        limit = _number(request, "limit", admin_stats.FEED_DEFAULT, 1, admin_stats.FEED_MAX)
+        return Response(admin_stats.activity(kind, limit))
+
+
+class AdminAIUsageView(APIView):
+    """How the AI service is doing, from the calls the server logged."""
+
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        return Response(admin_stats.ai_usage())

@@ -4,6 +4,7 @@ import pytest
 
 from apps.ai import gemini
 from apps.ai.throttles import AIReviewThrottle
+from apps.system.models import SystemSettings
 from apps.interviews.models import Answer
 from apps.scoring.models import Score
 
@@ -128,3 +129,10 @@ def test_ai_reviews_are_rate_limited_per_user(client, auth_client, make_user, se
     other = auth_client(make_user("flow-other@example.com"))
     other_sid = run_interview(other)
     assert other.post(f"{SESSIONS}{other_sid}/score/").status_code == 200     # another user has their own allowance
+
+
+def test_an_admin_can_change_the_review_limit(client, settings):
+    settings.GEMINI_API_KEY = ""
+    SystemSettings.objects.create(ai_review_rate_per_hour=2)  # what the admin AI settings page saves
+    sid = run_interview(client)
+    assert [client.post(f"{SESSIONS}{sid}/score/").status_code for _ in range(3)] == [200, 200, 429]

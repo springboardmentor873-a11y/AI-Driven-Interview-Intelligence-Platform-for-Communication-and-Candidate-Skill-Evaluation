@@ -12,7 +12,7 @@ online. This page is filled in day by day.
 | Analytics dashboard (performance tracking, skill-wise analytics, weak-area prediction, trends, ranking) | Candidate side done | `apps/analytics` (Day 1), `/analytics` page (Day 2) |
 | Performance visualizations | Candidate charts done | `components/analytics` (Day 2) |
 | Recruiter analytics (candidate reports, comparison, monitoring) | Done | `/recruiter/analytics`, `/recruiter/candidates/:id` (Day 3) |
-| Admin analytics (platform-wide stats, activity, AI settings) | Planned | Day 4 |
+| Admin analytics (platform-wide stats, activity, AI settings) | Done | `/admin/analytics` (Day 4) |
 | Downloadable reports and performance summaries | Planned | Day 5 |
 | Notifications (reminders, session alerts, email) | Planned | Day 6 |
 | Testing and validation, production setup, CI | Planned | Day 7 |
@@ -184,3 +184,59 @@ apps/analytics/stats.py       the same plain maths
   the out-of-scope and unknown candidate pages, a candidate being turned away from the recruiter pages, and the
   privacy note on the setup page.
 - It has not been looked at in a real browser from here, so check the layout, especially the tables on a narrow window.
+
+## Day 4: admin analytics, activity log and AI settings
+
+### What the admin gets
+
+A new **Analytics** link in the admin navbar (and the "Platform settings" and "Platform-wide analytics" cards on the
+dashboard) opens `/admin/analytics`, with three tabs:
+
+1. **Platform overview**: users, interviews, average score and completion rate for the **whole platform**; people by
+   role, who joined and who was active recently; sign-ups and interviews per week; interviews by status and type
+   and how long they take; the skills of everyone on a radar; content (templates and resumes); the busiest
+   recruiters and the most used templates; and a small AI summary.
+2. **Activity**: a live feed of sign-ups, interviews started, finished or cancelled, resumes, templates, and **what
+   admins did** (the audit log). It can be filtered by kind and refreshes by itself every 30 seconds.
+3. **AI settings and usage**: switch the AI on or off, choose the model and the backup model, set the timeout and the
+   AI-reviews-per-hour limit, and **test the connection**. Under it: calls, success rate and response time over 24
+   hours, 7 days and 30 days; calls per day; usage and failures by feature; why calls failed; how much feedback and
+   how many resumes were written by the AI and how many by the built-in rules; and the latest failures.
+
+### What changed behind it
+
+- **A new `apps/system` app** (one migration, `0001_initial`, run `python manage.py migrate`) with three tables:
+  `SystemSettings` (one row of admin overrides), `AuditLog` (what admins did) and `AICall` (one row per AI call).
+- **The AI module follows the admin's settings** (`apps/ai/gemini.py`). A blank setting means "use the server
+  default", so nothing changes until an admin changes something. The key stays in the environment and is never
+  shown or editable. If the settings or the log cannot be read or written, the interview carries on with the server
+  defaults: a settings problem must never stop a candidate.
+- **Every AI call is logged** in one place, with the feature that made it (read from the calling module, so no other
+  code changed), the model, how many attempts it took, how long, and why it failed. No prompts or answers are stored.
+- **The per-user AI review limit** can now be set by an admin and applies at once.
+- **Admin changes to users are audited** (role changes, deactivating and reactivating accounts).
+
+### Decisions and limits
+
+- **Settings are read from the database on every AI call** (one small query next to a call that takes seconds). This
+  means a change applies at once on every server, with no cache to go stale.
+- **Only settings that are safe to change live are editable**: the AI switch, models, timeout and review limit.
+  Secrets (the API key), the database and the security settings stay in the environment.
+- **The audit log records admin actions, not logins or every API call**, so it stays small and readable.
+- **The activity feed shows the newest 100 at most.** It is for watching the platform, not for searching history.
+- **The connection test makes a real (tiny) AI call**, so it is limited to 10 per hour and uses the saved settings.
+- **Admins see names and emails** of users in the feed and in the top recruiters list.
+
+### Checked
+
+- 98 new backend tests (access for every role, every validation rule, overrides actually used by the AI module,
+  switch-off falls back, every failure reason logged, logging and settings failures never break a call, audit entries
+  for each admin action, the activity feed, the AI usage windows and query counts), plus a flow test that an
+  admin-set limit really returns 429. The 414 older tests still pass.
+- The real React app was run against the real Django server with a seeded database (including AI call history and
+  an audit entry). 48 checks passed with no console errors: every tab, the activity filters and "Show more",
+  invalid values in the browser and from the server, a real save that was read back from the server, resetting to the
+  defaults, the connection test, the audit trail showing the admin's own changes, and a recruiter and a candidate
+  being turned away.
+- A bug found this way and fixed: after saving, the page reloaded the form and the "Saved" message vanished at once.
+- It has not been looked at in a real browser from here, so check the layout on a narrow window.

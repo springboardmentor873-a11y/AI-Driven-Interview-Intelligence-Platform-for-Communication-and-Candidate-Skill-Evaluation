@@ -6,6 +6,7 @@ import Resumes from "./pages/Resumes";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminUsers from "./pages/AdminUsers";
 import Templates from "./pages/Templates";
 import InterviewSetup from "./pages/InterviewSetup";
@@ -40,6 +41,7 @@ export default function App() {
             </Route>
             <Route element={<ProtectedRoute roles={["admin"]} />}>
               <Route path="/admin/users" element={<AdminUsers />} />
+              <Route path="/admin/analytics" element={<AdminAnalytics />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

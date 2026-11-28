@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  compareParams, formatChange, formatDuration, formatScore, initials, linePath, nearestIndex, ordinal, pageRange, radarPoint, radarPolygon, rankingText, ratingShares,
-  scaleX, scaleY, scoreTone, seriesPoints, shortDate, toggleSelection, weekLabel,
+  compareParams, connectionMessage, countShares, fieldErrors, formatChange, formatDuration, formatScore, initials, linePath, nearestIndex, ordinal, pageRange, parseOptionalInt, radarPoint, radarPolygon, rankingText, ratingShares,
+  scaleX, scaleY, scoreTone, seriesPoints, shortDate, timeAgo, toggleSelection, weekLabel,
 } from "./analytics.js";
 
 const box = { left: 0, right: 100, top: 0, bottom: 100 };
@@ -149,4 +149,47 @@ test("pageRange", () => {
 test("compareParams", () => {
   assert.deepEqual(compareParams([3, 7]), { candidates: "3,7" });
   assert.deepEqual(compareParams([3, 7, 9], "hr"), { candidates: "3,7,9", type: "hr" });
+});
+
+test("timeAgo", () => {
+  const now = new Date("2026-11-28T12:00:00Z").getTime();
+  const ago = (seconds) => new Date(now - seconds * 1000).toISOString();
+  assert.equal(timeAgo(ago(5), now), "just now");
+  assert.equal(timeAgo(ago(120), now), "2 min ago");
+  assert.equal(timeAgo(ago(3 * 3600), now), "3 h ago");
+  assert.equal(timeAgo(ago(86400), now), "1 day ago");
+  assert.equal(timeAgo(ago(3 * 86400), now), "3 days ago");
+  assert.equal(timeAgo("2026-11-01T10:00:00Z", now, "en-GB", "UTC"), "1 Nov");
+  assert.equal(timeAgo(new Date(now + 60000).toISOString(), now), "just now"); // a clock a little ahead
+});
+
+test("parseOptionalInt", () => {
+  assert.equal(parseOptionalInt(""), null);
+  assert.equal(parseOptionalInt("  "), null);
+  assert.equal(parseOptionalInt(null), null);
+  assert.equal(parseOptionalInt("30"), 30);
+  assert.equal(parseOptionalInt(" 45 "), 45);
+  assert.equal(parseOptionalInt("-5"), undefined);
+  assert.equal(parseOptionalInt("3.5"), undefined);
+  assert.equal(parseOptionalInt("abc"), undefined);
+});
+
+test("fieldErrors keeps the first message of each field", () => {
+  assert.deepEqual(fieldErrors({ timeout_seconds: ["Too high.", "x"], model: "Bad." }), { timeout_seconds: "Too high.", model: "Bad." });
+  assert.deepEqual(fieldErrors(undefined), {});
+  assert.deepEqual(fieldErrors("nope"), {});
+});
+
+test("countShares scales to the largest count", () => {
+  assert.deepEqual(countShares([{ value: 2 }, { value: 4 }, { value: 0 }]).map((r) => r.percent), [50, 100, 0]);
+  assert.deepEqual(countShares([{ value: 0 }]).map((r) => r.percent), [0]);
+  assert.deepEqual(countShares([]), []);
+});
+
+test("connectionMessage", () => {
+  assert.match(connectionMessage({ ok: true, model: "m", latency_ms: 420 }), /works.*m.*420 ms/);
+  assert.match(connectionMessage({ ok: false, reason: "no_key" }), /No API key/);
+  assert.match(connectionMessage({ ok: false, reason: "disabled" }), /switched off/);
+  assert.match(connectionMessage({ ok: false, reason: "failed", model: "m", error_kind: "rejected" }), /m failed: Rejected/);
+  assert.match(connectionMessage({ ok: false, reason: "failed", model: "m", error_kind: "weird" }), /unknown error/);
 });

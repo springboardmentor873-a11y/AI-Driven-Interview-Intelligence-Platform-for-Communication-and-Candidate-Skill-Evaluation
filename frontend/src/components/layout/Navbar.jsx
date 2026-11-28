@@ -34,7 +34,10 @@ const LINKS = {
     { to: "/templates", label: "Templates" },
     { to: "/recruiter/analytics", label: "Analytics" },
   ],
-  admin: [{ to: "/admin/users", label: "Users" }],
+  admin: [
+    { to: "/admin/users", label: "Users" },
+    { to: "/admin/analytics", label: "Analytics" },
+  ],
 };
 
 export default function Navbar() {

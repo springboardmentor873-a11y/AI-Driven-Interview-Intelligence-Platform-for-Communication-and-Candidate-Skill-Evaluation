@@ -11,6 +11,8 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
+from apps.system import audit
+
 from .permissions import IsAdmin
 from .serializers import (
     AdminUserSerializer,
@@ -102,7 +104,15 @@ class AdminUserViewSet(
                 raise ValidationError(
                     "You cannot demote or deactivate your own account."
                 )
+        before = {"role": serializer.instance.role, "is_active": serializer.instance.is_active}
         serializer.save()
+        user = serializer.instance
+        if user.role != before["role"]:
+            audit.record(self.request.user, "user.role_changed", user.email, {"from": before["role"], "to": user.role})
+        if user.is_active != before["is_active"]:
+            audit.record(self.request.user, "user.activated" if user.is_active else "user.deactivated", user.email)
+
+
 class GoogleLoginView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []

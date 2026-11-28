@@ -292,8 +292,8 @@ function AdminView({ data, loading }) {
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <ActionCard icon="users" title="Manage users" note="See everyone on the platform" to="/admin/users" delay={120} />
-        <ActionCard icon="shield" title="Platform settings" note="Configuration and access" delay={180} />
-        <ActionCard icon="chart" title="Platform-wide analytics" note="Usage across all interviews" delay={240} />
+        <ActionCard icon="shield" title="Platform settings" note="AI settings and usage" to="/admin/analytics?tab=ai" delay={180} />
+        <ActionCard icon="chart" title="Platform-wide analytics" note="Usage across all interviews" to="/admin/analytics" delay={240} />
       </div>
 
       <Panel title="Users by role" linkTo="/admin/users" linkLabel="Manage users" delay={160}>
